@@ -10,12 +10,10 @@
     </div>
 
     <div class="inline-flex gap-x-4 md:gap-x-6">
-      <router-link to="">
+      <router-link to="/notifications">
         <FontAwesomeIcon icon="bell" class="text-xl" />
       </router-link>
-      <router-link to="">
-        <FontAwesomeIcon icon="user" class="text-xl" />
-      </router-link>
+      <DropdownMenuC :menus="state.menus"> </DropdownMenuC>
       <button class="md:hidden" @click="navigationStore.toggleSidebar">
         <FontAwesomeIcon icon="bars" class="text-xl" />
       </button>
@@ -24,17 +22,48 @@
 </template>
 
 <script setup>
-import { defineComponent } from 'vue'
+import { defineComponent, reactive } from 'vue'
+import { useRouter } from 'vue-router'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
+import DropdownMenuC from './DropdownMenuC.vue'
 import { library } from '@fortawesome/fontawesome-svg-core'
-import { faWallet, faBell, faUser, faXmark, faBars } from '@fortawesome/free-solid-svg-icons'
+import { faBell, faUser, faGear, faLinkSlash } from '@fortawesome/free-solid-svg-icons'
 import { useNavigationStore } from '@/stores/navigation.store.js'
+import { useEthereumStore } from '@/stores/ethereum.store'
+import { showToast } from '@/utils/toast.utils'
 
-library.add(faWallet, faBell, faUser, faXmark, faBars)
+library.add(faBell, faUser, faGear, faLinkSlash)
 
 defineComponent({
   name: 'NavbarC',
 })
 
+const router = useRouter()
+
 let navigationStore = useNavigationStore()
+let ethereumStore = useEthereumStore()
+
+let state = reactive({
+  menus: [
+    {
+      icon: faUser,
+      name: 'Accounts',
+      path: '/accounts',
+    },
+    {
+      icon: faGear,
+      name: 'Settings',
+      path: '/settings',
+    },
+    {
+      icon: faLinkSlash,
+      name: 'Disconnect',
+      handler: async () => {
+        await ethereumStore.disconnect()
+        router.push({ name: 'connect' })
+        showToast('success', 'Successfully disconnected from wallet.', 5000)
+      },
+    },
+  ],
+})
 </script>
