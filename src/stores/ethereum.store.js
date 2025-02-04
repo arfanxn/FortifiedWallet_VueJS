@@ -72,7 +72,7 @@ export const useEthereumStore = defineStore('ethereum', {
      */
     async disconnect() {
       await ethereumService.disconnect()
-      this.activeAccount = ''
+      this.activeAccount = null
       this.accounts = []
       this.isConnected = false
       this._persist();
