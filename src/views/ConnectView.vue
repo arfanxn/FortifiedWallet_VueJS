@@ -25,28 +25,27 @@ import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 import { library } from '@fortawesome/fontawesome-svg-core'
 import { faLink } from '@fortawesome/free-solid-svg-icons'
 import { useEthereumStore } from '@/stores/ethereum.store.js'
-import { useToastStore } from '@/stores/toast.store.js'
+import { showToast } from '@/utils/toast.utils'
 
 library.add(faLink)
 
 const router = useRouter()
 
 let ethereumStore = useEthereumStore()
-let toastStore = useToastStore()
 
 onMounted(() => {
   if (!ethereumStore.isConnected) {
-    toastStore.addToast('info', 'Please connect to your wallet.')
+    showToast('info', 'Please connect to your wallet.')
   }
 })
 
 async function connect() {
   try {
     await ethereumStore.connect()
-    toastStore.addToast('success', 'Successfully connected to wallet.', 5000)
+    showToast('success', 'Successfully connected to wallet.', 5000)
     router.push('/')
   } catch {
-    toastStore.addToast('error', ethereumStore.errorMessage)
+    showToast('error', ethereumStore.errorMessage)
   }
 }
 </script>
