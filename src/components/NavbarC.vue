@@ -15,7 +15,7 @@
       </router-link>
       <DropdownMenuC :menus="state.menus"> </DropdownMenuC>
       <button class="md:hidden" @click="navigationStore.toggleSidebar">
-        <FontAwesomeIcon icon="bars" class="text-xl" />
+        <FontAwesomeIcon :icon="faBars" class="text-xl" />
       </button>
     </div>
   </nav>
@@ -27,12 +27,12 @@ import { useRouter } from 'vue-router'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 import DropdownMenuC from './DropdownMenuC.vue'
 import { library } from '@fortawesome/fontawesome-svg-core'
-import { faBell, faUser, faGear, faLinkSlash } from '@fortawesome/free-solid-svg-icons'
+import { faBell, faUser, faGear, faLinkSlash, faBars } from '@fortawesome/free-solid-svg-icons'
 import { useNavigationStore } from '@/stores/navigation.store.js'
 import { useEthereumStore } from '@/stores/ethereum.store'
 import { showToast } from '@/utils/toast.utils'
 
-library.add(faBell, faUser, faGear, faLinkSlash)
+library.add(faBell, faUser, faGear, faLinkSlash, faBars)
 
 defineComponent({
   name: 'NavbarC',
