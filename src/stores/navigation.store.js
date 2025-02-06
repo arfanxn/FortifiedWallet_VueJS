@@ -26,7 +26,7 @@ export const useNavigationStore = defineStore('navigation', {
     ],
   }),
   getters: {
-    // TODO: implement activeMenu getter
+    //
   },
   actions: {
     toggleSidebar() {

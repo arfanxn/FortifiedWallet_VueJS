@@ -6,8 +6,7 @@
       <span class="md:hidden"><FontAwesomeIcon icon="wallet" class="text-2xl" /></span>
       <span class="hidden md:block"
         ><h1 class="text-xl font-bold">
-          <!-- TODO: implement active menu getter{{ navigationStore.activeMenu.name }} -->
-          {{ `Dashboard` }}
+          {{ navigationStore.menus.find((menu) => menu.path == $route.path).name }}
         </h1></span
       >
     </div>
