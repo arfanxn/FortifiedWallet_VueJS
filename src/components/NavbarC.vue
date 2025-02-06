@@ -1,10 +1,13 @@
 <template>
-  <nav class="flex grow items-center justify-between bg-slate-700 px-4 py-6 text-slate-200 md:px-8">
+  <nav
+    class="flex grow items-center justify-between border-b-2 bg-slate-300 px-4 py-6 text-slate-700 md:px-8"
+  >
     <div>
       <span class="md:hidden"><FontAwesomeIcon icon="wallet" class="text-2xl" /></span>
       <span class="hidden md:block"
         ><h1 class="text-xl font-bold">
-          {{ navigationStore.activeMenu.name }}
+          <!-- TODO: implement active menu getter{{ navigationStore.activeMenu.name }} -->
+          {{ `Dashboard` }}
         </h1></span
       >
     </div>
