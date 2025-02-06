@@ -30,7 +30,7 @@ export const useNavigationStore = defineStore('navigation', {
     activeMenu() {
       const route = useRoute()
       const path = route?.path
-      return this.menus.find(menu => menu.path === path) ?? this.menus[0] // if null, return the dashboard menu
+      return this.menus.find(menu => menu.path === path)
     },
   },
   actions: {
