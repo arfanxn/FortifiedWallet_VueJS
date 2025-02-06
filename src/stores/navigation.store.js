@@ -1,6 +1,5 @@
 // stores/ethers.ts
 import { defineStore } from 'pinia';
-import { useRoute } from 'vue-router';
 
 export const useNavigationStore = defineStore('navigation', {
   state: () => ({
@@ -27,11 +26,7 @@ export const useNavigationStore = defineStore('navigation', {
     ],
   }),
   getters: {
-    activeMenu() {
-      const route = useRoute()
-      const path = route?.path ?? '/'
-      return this.menus.find(menu => menu.path === path)
-    },
+    // TODO: implement activeMenu getter
   },
   actions: {
     toggleSidebar() {
