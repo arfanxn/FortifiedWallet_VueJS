@@ -29,7 +29,7 @@ export const useNavigationStore = defineStore('navigation', {
   getters: {
     activeMenu() {
       const route = useRoute()
-      const path = route?.path
+      const path = route?.path ?? '/'
       return this.menus.find(menu => menu.path === path)
     },
   },
