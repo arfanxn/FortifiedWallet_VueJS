@@ -21,6 +21,14 @@ const router = createRouter({
       }
     },
     {
+      path: '/transactions',
+      name: 'transactions',
+      component: () => import('../views/TransactionView.vue'),
+      meta: {
+        requiresWallet: true,
+      }
+    },
+    {
       path: '/connect',
       name: 'connect',
       component: () => import('../views/ConnectView.vue'),
