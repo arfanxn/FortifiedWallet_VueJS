@@ -2,7 +2,7 @@
   <button class="relative" @click="isDropdownOpened = !isDropdownOpened">
     <FontAwesomeIcon icon="user" class="text-xl" />
     <ul
-      class="absolute right-0 min-w-44 origin-top-right flex-col items-start overflow-auto rounded-lg border-2 border-slate-200 bg-slate-700 transition duration-300 ease-in-out md:min-w-64"
+      class="absolute right-0 min-w-44 origin-top-right flex-col items-start overflow-auto rounded-lg bg-slate-700 outline-2 outline-slate-200 transition duration-300 ease-in-out md:min-w-64"
       :class="{
         'flex opacity-100': isDropdownOpened,
         'hidden opacity-0': !isDropdownOpened,

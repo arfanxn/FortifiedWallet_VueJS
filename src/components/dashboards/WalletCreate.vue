@@ -1,6 +1,6 @@
 <template>
-  <section class="flex flex-col border-r-2 border-b-2 border-slate-600 bg-slate-300 text-slate-700">
-    <header class="inline-flex items-center justify-between border-b-1 px-4 py-4 md:px-4">
+  <section class="flex flex-col bg-slate-300 text-slate-700 outline-1">
+    <header class="inline-flex items-center justify-between px-4 py-4 outline-1 md:px-4">
       <h2 class="text-lg font-bold">Add</h2>
     </header>
 
@@ -37,7 +37,7 @@
           :icon="faRotateLeft"
           class="bg-red-700! text-slate-200! hover:bg-red-600! hover:text-slate-100!"
         />
-        <ButtonC  :text="'Add'" :icon="faPlus" class="" />
+        <ButtonC :text="'Add'" :icon="faPlus" class="" />
       </div>
     </form>
   </section>

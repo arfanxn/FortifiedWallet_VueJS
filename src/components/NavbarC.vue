@@ -1,6 +1,6 @@
 <template>
   <nav
-    class="flex grow items-center justify-between border-b-2 bg-slate-300 px-4 py-6 text-slate-700 md:px-8"
+    class="flex grow items-center justify-between bg-slate-300 px-4 py-6 text-slate-700 outline-2 md:px-8"
   >
     <div>
       <span class="md:hidden"><FontAwesomeIcon icon="wallet" class="text-2xl" /></span>
