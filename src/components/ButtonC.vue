@@ -4,31 +4,26 @@
     @click="onClick()"
   >
     <FontAwesomeIcon :icon="props.icon" class="text-sm" v-if="props.icon" />
-    <span>{{ props.name }}</span>
+    <span>{{ props.text }}</span>
   </button>
 </template>
 
 <script setup>
-import { defineComponent, defineProps } from 'vue'
-import { useRouter } from 'vue-router'
+import { defineComponent, defineProps, defineEmits } from 'vue'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 
 defineComponent({
   name: 'ButtonC',
 })
 
-let router = useRouter()
+const emit = defineEmits(['onClick'])
 
 let props = defineProps({
-  name: String,
+  text: String,
   icon: Object,
-  path: String,
-  handler: Function,
 })
 
 const onClick = () => {
-  const menu = props
-  if (menu.path != null) router.push(menu.path)
-  else menu.handler()
+  emit('onClick')
 }
 </script>
