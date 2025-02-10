@@ -8,7 +8,7 @@
 import { onMounted } from 'vue'
 
 onMounted(async () => {
-  document.body.classList.add('bg-white')
+  document.body.classList.add('bg-slate-300')
   document.getElementById('app')?.classList?.add('min-h-screen')
 })
 </script>
