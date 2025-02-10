@@ -1,7 +1,7 @@
 <template>
   <AuthLayout>
     <main class="flex">
-      <WalletList />
+      <WalletList @walletOnClick="(address) => showWallet(address)" />
       <div class="flex w-full flex-col">
         <WalletMenu />
         <WalletCreate v-if="route.query.menu === 'create'" />
@@ -16,7 +16,7 @@
 <script setup>
 import { onMounted } from 'vue'
 import AuthLayout from '@/layouts/AuthLayout.vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { library } from '@fortawesome/fontawesome-svg-core'
 import { faLink } from '@fortawesome/free-solid-svg-icons'
 // import { useEthereumStore } from '@/stores/ethereum.store.js'
@@ -30,8 +30,13 @@ import WalletTransfer from '@/components/dashboards/WalletTransfer.vue'
 library.add(faLink)
 
 const route = useRoute()
+const router = useRouter()
 
 // let ethereumStore = useEthereumStore()
 
 onMounted(() => {})
+
+function showWallet(address) {
+  router.push({ path: '/', query: { menu: 'show' , wallet: address} })
+}
 </script>
