@@ -1,85 +1,96 @@
 // stores/ethers.ts
+import { ref, computed } from 'vue'
 import { defineStore } from 'pinia';
 import { ethereumService } from '@/services/ethereum.service.js';
-import _ from 'lodash';
 
-export const useEthereumStore = defineStore('ethereum', {
+export const useEthereumStore = defineStore('ethereum', () => {
+  // ==========================================================================
+  //                                Constants
+  // ==========================================================================
+  const stateKey = 'ethereum'
+
+
+  // ==========================================================================
+  //                                Internal functions
+  // ==========================================================================
   /**
-   * State of the Ethers store.
+   * Stores the current state in the local storage.
    *
-   * @property {string|null} activeAccount - The currently active Ethereum account.
-   * @property {string[]} accounts - An array of all Ethereum accounts.
-   * @property {Error|null} error - An error Object if connecting to MetaMask failed.
-   * @property {boolean} isConnected - Whether MetaMask is connected.
+   * The current state is stored in the 'ethereum' key in the local storage.
+   *
+   * @returns {void}
    */
-  state: () => ({
-    activeAccount: null,
-    accounts: [],
-    error: null,
-    isConnected: JSON.parse(localStorage.getItem('ethereum'))?.isConnected || false,
-  }),
+  function persistState() {
+    const state = { accounts: accounts.value }
+    localStorage.setItem(stateKey, JSON.stringify(state))
+  }
+  /**
+   * Retrieves the current state from the local storage.
+   *
+   * The current state is retrieved from the 'ethereum' key in the local storage.
+   *
+   * @returns {Object | null} The current state in JSON format, or null if not found.
+   */
+  function restoreState() {
+    const stateString = localStorage.getItem(stateKey)
+    const state = stateString ? JSON.parse(stateString) : null
+    accounts.value = state.accounts
+  }
 
-  getters: {
-    /**
-     * The error message to display to the user if connecting to MetaMask failed.
-     * Capitalizes the first letter of the error message.
-     *
-     * @type {string|null}
-     */
-    errorMessage() {
-      return this.error ? _(this.error.shortMessage || this.error.message || 'Unkown error.').capitalize() : null;
-    }
-  },
+  // ==========================================================================
+  //                                States
+  // ==========================================================================
+  const accounts = ref([])
 
-  actions: {
-    /**
-     * Connects to MetaMask and initializes the store with the connected
-     * accounts.
-     *
-     * If MetaMask is not installed, it will throw an error with a message
-     * that can be used to display an error to the user.
-     *
-     * @throws {Error} - If connecting to MetaMask failed.
-     */
-    async connect() {
-      try {
-        this.accounts = await ethereumService.connect()
-        this.activeAccount = this.accounts[0]
-        this.isConnected = true
 
-        // Listen for account changes
-        ethereumService.onAccountsChanged((_accounts) => {
-          this.$patch({
-            activeAccount: _accounts[0] || null,
-            accounts: _accounts,
-            isConnected: _accounts.length > 0
-          })
+  // ==========================================================================
+  //                                Getters
+  // ==========================================================================
+  const activeAccount = computed(() => accounts.value[0])
+  const isConnected = computed(() => accounts.value.length > 0)
 
-          this._persist();
-        })
 
-      } catch (error) {
-        this.error = error
-        this.isConnected = false
-        throw error
-      }
+  // ==========================================================================
+  //                                Actions
+  // ==========================================================================
+  /**
+   * Connects to the Ethereum provider and retrieves the connected accounts.
+   *
+   * Also, it stores the connected accounts in the local storage.
+   *
+   * @returns {Promise<void>}
+   * @throws {Error}
+   */
+  const connect = async () => {
+    accounts.value = await ethereumService.connect()
+    persistState()
+  }
+  /**
+   * Disconnects from the Ethereum provider and clears the connected accounts.
+   *
+   * @returns {Promise<void>}
+   * @throws {Error}
+   */
+  const disconnect = async () => {
+    await ethereumService.disconnect()
+    accounts.value = []
+    persistState()
+  }
 
-      this._persist();
-    },
+  // ==========================================================================
+  //                                  Initializations
+  // ==========================================================================
+  restoreState()
 
-    /**
-     * Disconnects from MetaMask and resets the store to its initial state.
-     */
-    async disconnect() {
-      await ethereumService.disconnect()
-      this.activeAccount = null
-      this.accounts = []
-      this.isConnected = false
-      this._persist();
-    },
+  // ==========================================================================
+  //                                Returns the store
+  // ==========================================================================
+  return {
+    accounts,
+    isConnected,
+    activeAccount,
+    connect,
+    disconnect
+  }
+})
 
-    _persist() {
-      localStorage.setItem('ethereum', JSON.stringify({ isConnected: this.isConnected }))
-    }
-  },
-});

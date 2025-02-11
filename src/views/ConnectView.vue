@@ -44,8 +44,8 @@ async function connect() {
     await ethereumStore.connect()
     showToast('success', 'Successfully connected to wallet.', 5000)
     router.push('/')
-  } catch {
-    showToast('error', ethereumStore.errorMessage)
+  } catch (error) {
+    showToast('error', error)
   }
 }
 </script>

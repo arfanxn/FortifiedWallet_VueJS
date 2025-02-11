@@ -44,7 +44,7 @@
 </template>
 
 <script setup>
-import { defineComponent, reactive, watch, computed } from 'vue'
+import { defineComponent, reactive, computed } from 'vue'
 import TextFieldC from '@/components/TextFieldC.vue'
 import ButtonC from '@/components/ButtonC.vue'
 import { useVuelidate } from '@vuelidate/core'
@@ -68,7 +68,7 @@ const [minimumApprovalsRequired, minumumSigners, maximumSigners] = [2, 2, 10]
 
 const form = reactive({
   name: null,
-  signers: [null, null],
+  signers: [ethereumStore.activeAccount, null],
   minimum_approvals_required: minimumApprovalsRequired,
 })
 const signersLength = computed(() => form.signers.length)
@@ -125,13 +125,13 @@ const rules = computed(() => ({
 
 const v$ = useVuelidate(rules, form)
 
-// Watch for changes to the active Ethereum account and update the first signer accordingly
-watch(
-  () => ethereumStore.activeAccount,
-  () => {
-    form.signers[0] = ethereumStore.activeAccount
-  },
-)
+// // Watch for changes to the active Ethereum account and update the first signer accordingly
+// watch(
+//   () => ethereumStore.activeAccount,
+//   () => {
+//     form.signers[0] = ethereumStore.activeAccount
+//   },
+// )
 
 /**
  * When a user inputs a signer, either add or remove a row from the form based on the input.
@@ -159,7 +159,7 @@ function signerOnInput(index) {
  */
 function resetForm() {
   form.name = null
-  form.signers = [form.signers[0], null]
+  form.signers = [ethereumStore.activeAccount, null]
   form.minimum_approvals_required = minimumApprovalsRequired
 }
 
