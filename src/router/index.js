@@ -1,5 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import { useEthereumStore } from '@/stores/ethereum.store.js'
+import { useBlockchainStore } from '@/stores/blockchain.store.js'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -38,8 +38,8 @@ const router = createRouter({
 
 router.beforeEach((to, from, next) => {
   if (to.meta.requiresWallet) {
-    const ethereumStore = useEthereumStore()
-    ethereumStore.isConnected ? ethereumStore.connect() : next({ name: 'connect' })
+    const blockchainStore = useBlockchainStore()
+    blockchainStore.isConnected ? blockchainStore.connect() : next({ name: 'connect' })
   }
 
   next()
