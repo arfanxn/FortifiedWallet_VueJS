@@ -1,13 +1,13 @@
 // stores/ethers.ts
-import { ref, computed } from 'vue'
+import { ref, computed, markRaw, } from 'vue'
 import { defineStore } from 'pinia';
-import { ethereumService } from '@/services/ethereum.service.js';
+import { connect as connectProvider, getAccounts } from '@/services/blockchain.service';
 
-export const useEthereumStore = defineStore('ethereum', () => {
+export const useBlockchainStore = defineStore('blockchain', () => {
   // ==========================================================================
   //                                Constants
   // ==========================================================================
-  const stateKey = 'ethereum'
+  const localStorageKey = 'blockchain'
 
 
   // ==========================================================================
@@ -21,8 +21,10 @@ export const useEthereumStore = defineStore('ethereum', () => {
    * @returns {void}
    */
   function persistState() {
-    const state = { accounts: accounts.value }
-    localStorage.setItem(stateKey, JSON.stringify(state))
+    const state = {
+      accounts: accounts.value
+    }
+    localStorage.setItem(localStorageKey, JSON.stringify(state))
   }
   /**
    * Retrieves the current state from the local storage.
@@ -32,14 +34,17 @@ export const useEthereumStore = defineStore('ethereum', () => {
    * @returns {Object | null} The current state in JSON format, or null if not found.
    */
   function restoreState() {
-    const stateString = localStorage.getItem(stateKey)
-    const state = stateString ? JSON.parse(stateString) : null
+    const stateString = localStorage.getItem(localStorageKey)
+    if (stateString == null) return
+    const state = JSON.parse(stateString)
+    if (state == null) return
     accounts.value = state.accounts
   }
 
   // ==========================================================================
   //                                States
   // ==========================================================================
+  const provider = ref({})
   const accounts = ref([])
 
 
@@ -62,7 +67,9 @@ export const useEthereumStore = defineStore('ethereum', () => {
    * @throws {Error}
    */
   const connect = async () => {
-    accounts.value = await ethereumService.connect()
+    provider.value = markRaw(await connectProvider())
+    accounts.value = await getAccounts(provider.value)
+
     persistState()
   }
   /**
@@ -72,13 +79,15 @@ export const useEthereumStore = defineStore('ethereum', () => {
    * @throws {Error}
    */
   const disconnect = async () => {
-    await ethereumService.disconnect()
+    await provider.value.removeAllListeners()
+    await window.ethereum.removeAllListeners()
+    provider.value = {}
     accounts.value = []
     persistState()
   }
 
   // ==========================================================================
-  //                                  Initializations
+  //                               Initializations
   // ==========================================================================
   restoreState()
 
@@ -86,6 +95,7 @@ export const useEthereumStore = defineStore('ethereum', () => {
   //                                Returns the store
   // ==========================================================================
   return {
+    provider,
     accounts,
     isConnected,
     activeAccount,
