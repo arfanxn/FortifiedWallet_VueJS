@@ -1,7 +1,9 @@
 <!-- eslint-disable vue/multi-word-component-names -->
 <template>
-  <ToastC />
-  <slot />
+  <main>
+    <ToastC />
+    <slot />
+  </main>
 </template>
 
 <script setup>
