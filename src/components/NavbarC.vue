@@ -31,7 +31,7 @@ import DropdownMenuC from './DropdownMenuC.vue'
 import { library } from '@fortawesome/fontawesome-svg-core'
 import { faBell, faUser, faGear, faLinkSlash, faBars } from '@fortawesome/free-solid-svg-icons'
 import { useNavigationStore } from '@/stores/navigation.store.js'
-import { useEthereumStore } from '@/stores/ethereum.store'
+import { useBlockchainStore } from '@/stores/blockchain.store'
 import { showToast } from '@/utils/toast.utils'
 
 library.add(faBell, faUser, faGear, faLinkSlash, faBars)
@@ -43,7 +43,7 @@ defineComponent({
 const router = useRouter()
 
 let navigationStore = useNavigationStore()
-let ethereumStore = useEthereumStore()
+let blockchainStore = useBlockchainStore()
 
 let state = reactive({
   menus: [
@@ -61,7 +61,7 @@ let state = reactive({
       icon: faLinkSlash,
       name: 'Disconnect',
       handler: async () => {
-        await ethereumStore.disconnect()
+        await blockchainStore.disconnect()
         router.push({ name: 'connect' })
         showToast('success', 'Successfully disconnected from wallet.', 5000)
       },
