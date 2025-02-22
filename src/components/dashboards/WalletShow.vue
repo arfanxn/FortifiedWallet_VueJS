@@ -8,35 +8,31 @@
       <div class="flex basis-1/3 flex-col gap-y-2">
         <div class="flex flex-col gap-y-0.5">
           <h2>Name</h2>
-          <span>{{ `Main Wallet` }}</span>
+          <span>{{ wallet.name }}</span>
         </div>
 
         <div class="flex flex-col gap-y-0.5">
           <h2>Total balance</h2>
-          <span>{{ `$999` }}</span>
+          <span>{{ wallet.totalBalanceInUsd }}</span>
         </div>
 
         <div class="flex flex-col gap-y-0.5">
           <h2>Min approvals</h2>
-          <span>{{ `2` }}</span>
+          <span>{{ wallet.minimumApprovals }}</span>
         </div>
       </div>
 
       <div class="flex basis-2/3 flex-col gap-y-2">
         <div class="flex flex-col gap-y-0.5">
           <h2 class="font-bold">Address</h2>
-          <span class="font-semibold">{{ `0xf39Fd6e51aad88F6F4ce6aB8827279cffFb9226` }}</span>
+          <span class="font-semibold">{{ wallet.address }}</span>
         </div>
 
         <ul class="flex flex-col gap-y-0.5">
           <h2 class="font-bold">Signers</h2>
           <li
             class="inline-flex gap-x-2 font-semibold"
-            v-for="(signer, index) in [
-              '0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92261',
-              '0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92262',
-              '0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92263',
-            ]"
+            v-for="(signer, index) in wallet.signers"
             :key="index"
           >
             <span>{{ index + 1 }}.</span>
@@ -49,15 +45,23 @@
 </template>
 
 <script setup>
-import { defineComponent } from 'vue'
+import { computed, defineComponent } from 'vue'
 import { faPlus, faRotateLeft } from '@fortawesome/free-solid-svg-icons'
+import { useWalletStore } from '@/stores/wallet.store'
 import { library } from '@fortawesome/fontawesome-svg-core'
+import { useRoute } from 'vue-router'
 
 library.add(faPlus, faRotateLeft)
 
-// let ethereumStore = useEthereumStore()
-
 defineComponent({
   name: 'WalletShow',
+})
+
+const route = useRoute()
+
+let walletStore = useWalletStore()
+
+const wallet = computed(() => {
+  return walletStore.wallets.find((wallet) => wallet.address == route.query.wallet)
 })
 </script>
