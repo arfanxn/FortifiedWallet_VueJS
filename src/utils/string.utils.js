@@ -22,6 +22,15 @@ export function notEmpty(string) {
   return string != '' && string != null
 }
 
+/**
+ * Checks if a given string is empty or null.
+ *
+ * @param {string} string - The string to check.
+ * @returns {boolean} Whether the string is not empty and not null.
+ */
+export function empty(string) {
+  return notEmpty(string) == false
+}
 
 /**
  * Formats an Ethereum address to a shortened version for display purposes.
