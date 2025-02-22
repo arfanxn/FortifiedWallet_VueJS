@@ -4,20 +4,26 @@
       <h2 class="text-lg font-bold">Add</h2>
     </header>
 
-    <form
-      class="grid items-start justify-between gap-4 px-4 py-4 md:grid-cols-3"
-      @submit.prevent="onSubmit"
-    >
-      <div class="flex flex-col gap-4">
+    <form class="grid items-start gap-4 px-4 py-4 md:grid-cols-3" @submit.prevent="onSubmit">
+      <div class="grid gap-4 md:col-span-1 md:row-span-4">
         <TextFieldC v-model="form.name" label="Name" name="name" placeholder="Main Wallet" />
         <TextFieldC
-          v-model="form.minimum_approvals_required"
+          v-model="form.minimumApprovals"
           label="Min approvals"
-          name="minimum_approvals_required"
+          name="minimumApprovals"
           placeholder="2"
         />
       </div>
-      <div class="grid gap-4 md:col-span-2 md:grid-cols-2">
+      <div class="grid gap-4 md:col-span-2 md:row-span-1 md:grid-cols-2">
+        <TextFieldC
+          v-model="form.password"
+          label="Password"
+          name="password"
+          placeholder="Your password"
+        />
+        <TextFieldC v-model="form.salt" label="Salt" name="salt" placeholder="Password salt" />
+      </div>
+      <div class="grid gap-4 md:col-span-2 md:row-span-2 md:grid-cols-2">
         <TextFieldC
           v-for="(_, index) in form.signers"
           :key="index"
@@ -29,7 +35,7 @@
           placeholder="0x..."
         />
       </div>
-      <div class="flex justify-between gap-x-4 md:col-span-3">
+      <div class="flex justify-between gap-x-4 md:col-span-3 md:row-span-1">
         <ButtonC
           @onClick="resetForm"
           type="button"
@@ -44,20 +50,31 @@
 </template>
 
 <script setup>
-import { defineComponent, reactive, computed } from 'vue'
+import { defineComponent, reactive, computed, toRaw } from 'vue'
 import TextFieldC from '@/components/TextFieldC.vue'
 import ButtonC from '@/components/ButtonC.vue'
 import { useVuelidate } from '@vuelidate/core'
-import { required, alphaNum, numeric, between, maxLength, helpers } from '@vuelidate/validators'
-import { useEthereumStore } from '@/stores/ethereum.store'
+import {
+  required,
+  alphaNum,
+  numeric,
+  between,
+  maxLength,
+  minLength,
+  helpers,
+} from '@vuelidate/validators'
+import { useBlockchainStore } from '@/stores/blockchain.store'
 import { validateAndToast } from '@/utils/validator.utils'
-import { notEmpty } from '@/utils/string.utils'
+import { empty, notEmpty } from '@/utils/string.utils'
 import { faPlus, faRotateLeft } from '@fortawesome/free-solid-svg-icons'
 import { library } from '@fortawesome/fontawesome-svg-core'
+import { useWallet } from '@/composables/wallet.composable'
+import { ethers } from 'ethers'
 
 library.add(faPlus, faRotateLeft)
 
-let ethereumStore = useEthereumStore()
+let blockchainStore = useBlockchainStore()
+const { createWallet } = useWallet()
 
 defineComponent({
   name: 'WalletCreate',
@@ -68,8 +85,10 @@ const [minimumApprovalsRequired, minumumSigners, maximumSigners] = [2, 2, 10]
 
 const form = reactive({
   name: null,
-  signers: [ethereumStore.activeAccount, null],
-  minimum_approvals_required: minimumApprovalsRequired,
+  signers: [blockchainStore.activeAccount, null],
+  minimumApprovals: minimumApprovalsRequired,
+  password: null,
+  salt: null,
 })
 const signersLength = computed(() => form.signers.length)
 const signersLastIndex = computed(() => signersLength.value - 1)
@@ -82,12 +101,12 @@ const rules = computed(() => ({
   // The minimum number of approvals required is required, numeric, and between
   // the minimum number of signers (2) and the length of the signers array, which
   // is at least 2.
-  minimum_approvals_required: {
+  minimumApprovals: {
     required: helpers.withMessage('Minimum approvals is required.', required),
     numeric: helpers.withMessage('Minimum approvals must be numeric.', numeric),
     between: helpers.withMessage(
       `Minimum approvals must be between ${minimumApprovalsRequired} and ${form.signers.length}.`,
-      between(minimumApprovalsRequired, form.signers.length),
+      between(minimumApprovalsRequired, form.signers.lengt),
     ),
   },
 
@@ -121,17 +140,17 @@ const rules = computed(() => ({
       })
     }),
   },
+  password: {
+    required: helpers.withMessage('Password is required.', required),
+    minLength: helpers.withMessage('Password must be at least 8 characters.', minLength(8)),
+  },
+  salt: {
+    required: helpers.withMessage('Salt is required.', required),
+    minLength: helpers.withMessage('Salt must be at least 32 characters.', minLength(32)),
+  },
 }))
 
 const v$ = useVuelidate(rules, form)
-
-// // Watch for changes to the active Ethereum account and update the first signer accordingly
-// watch(
-//   () => ethereumStore.activeAccount,
-//   () => {
-//     form.signers[0] = ethereumStore.activeAccount
-//   },
-// )
 
 /**
  * When a user inputs a signer, either add or remove a row from the form based on the input.
@@ -143,13 +162,16 @@ const v$ = useVuelidate(rules, form)
 function signerOnInput(index) {
   const signer = form.signers[index]
 
-  if (index == signersLastIndex.value && notEmpty(signer) && signersLength.value < maximumSigners)
-    form.signers.push('')
-  else if (
-    index == signersSecondLastIndex.value &&
-    !notEmpty(signer) &&
-    signersLength.value > minumumSigners
-  )
+  const indexIsLastSignersIndex = index == signersLastIndex.value
+  const signerNotEmpty = notEmpty(signer)
+  const signersLengthBelowMax = signersLength.value < maximumSigners
+
+  const indexIsSecondLastSignersIndex = index == signersSecondLastIndex.value
+  const signerIsEmpty = empty(signer)
+  const signersLengthAboveMin = signersLength.value > minumumSigners
+
+  if (indexIsLastSignersIndex && signerNotEmpty && signersLengthBelowMax) form.signers.push('')
+  else if (indexIsSecondLastSignersIndex && signerIsEmpty && signersLengthAboveMin)
     form.signers.splice(-1)
 }
 
@@ -159,14 +181,30 @@ function signerOnInput(index) {
  */
 function resetForm() {
   form.name = null
-  form.signers = [ethereumStore.activeAccount, null]
-  form.minimum_approvals_required = minimumApprovalsRequired
+  form.signers = [blockchainStore.activeAccount, null]
+  form.minimumApprovals = minimumApprovalsRequired
+  form.password = null
+  form.salt = null
 }
 
 async function onSubmit() {
   const isValid = await validateAndToast(v$)
   if (!isValid) return
 
-  console.log('success submitting')
+  let { name, signers, minimumApprovals, password, salt } = toRaw(form)
+
+  signers = signers.filter((signer, index) => {
+    if (index == signersLastIndex.value && empty(signer)) return false
+    return true
+  })
+
+  const passwordHash = ethers.solidityPackedKeccak256(['string', 'string'], [password, salt])
+
+  createWallet({
+    name,
+    signers,
+    minimumApprovals,
+    passwordHash,
+  })
 }
 </script>
