@@ -1,4 +1,4 @@
-import { showToast } from "@/utils/toast.utils"
+import { showToast } from "@/helpers/toast.helpers"
 import { ethers } from "ethers"
 
 
@@ -21,19 +21,19 @@ export async function validateAndToast(v$) {
 
 
 /**
- * Validates whether a given string is a valid Ethereum address.
+ * Checks if a given string is a valid Ethereum address.
  *
- * This function first checks the address format to ensure it matches the
+ * It first checks the address format to ensure it matches the
  * standard Ethereum address pattern. Then, it performs a checksum
  * validation using ethers.js library to confirm its authenticity.
  *
  * @param {string} address - The Ethereum address to validate.
- * @returns {boolean} - True if the address is valid, false otherwise.
+ * @returns {boolean} True if the address is valid, false otherwise.
  */
-export function validateAddress(address) {
+export function isValidAddr(address) {
   // Quick format check first
   if (/^0x[a-fA-F0-9]{40}$/.test(address) == false) return false;
 
   // Full checksum validation
-  return ethers.utils.isAddress(address);
+  return ethers.isAddress(address);
 };

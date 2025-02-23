@@ -15,7 +15,7 @@
       <router-link to="/notifications">
         <FontAwesomeIcon icon="bell" class="text-xl" />
       </router-link>
-      <DropdownMenuC :menus="state.menus"> </DropdownMenuC>
+      <DropdownMenuC :menus="state.menus" />
       <button class="md:hidden" @click="navigationStore.toggleSidebar">
         <FontAwesomeIcon :icon="faBars" class="text-xl" />
       </button>
@@ -32,7 +32,7 @@ import { library } from '@fortawesome/fontawesome-svg-core'
 import { faBell, faUser, faGear, faLinkSlash, faBars } from '@fortawesome/free-solid-svg-icons'
 import { useNavigationStore } from '@/stores/navigation.store.js'
 import { useBlockchainStore } from '@/stores/blockchain.store'
-import { showToast } from '@/utils/toast.utils'
+import { showToast } from '@/helpers/toast.helpers.js'
 
 library.add(faBell, faUser, faGear, faLinkSlash, faBars)
 

@@ -24,24 +24,24 @@ import GuestLayout from '@/layouts/GuestLayout.vue'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 import { library } from '@fortawesome/fontawesome-svg-core'
 import { faLink } from '@fortawesome/free-solid-svg-icons'
-import { useEthereumStore } from '@/stores/ethereum.store.js'
-import { showToast } from '@/utils/toast.utils'
+import { useBlockchainStore } from '@/stores/blockchain.store.js'
+import { showToast } from '@/helpers/toast.helpers'
 
 library.add(faLink)
 
 const router = useRouter()
 
-let ethereumStore = useEthereumStore()
+let blockchainStore = useBlockchainStore()
 
 onMounted(() => {
-  if (!ethereumStore.isConnected) {
+  if (!blockchainStore.isConnected) {
     showToast('info', 'Please connect to your wallet.')
   }
 })
 
 async function connect() {
   try {
-    await ethereumStore.connect()
+    await blockchainStore.connect()
     showToast('success', 'Successfully connected to wallet.', 5000)
     router.push('/')
   } catch (error) {

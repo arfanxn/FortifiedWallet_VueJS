@@ -58,15 +58,12 @@ import TextFieldC from '@/components/TextFieldC.vue'
 import ButtonC from '@/components/ButtonC.vue'
 import { useVuelidate } from '@vuelidate/core'
 import { numeric, helpers } from '@vuelidate/validators'
-// import { useEthereumStore } from '@/stores/ethereum.store'
-import { validateAndToast } from '@/utils/validator.utils'
+import { validateAndToast } from '@/helpers/validator.helpers'
 import { notEmpty } from '@/utils/string.utils'
 import { faPlus, faRotateLeft } from '@fortawesome/free-solid-svg-icons'
 import { library } from '@fortawesome/fontawesome-svg-core'
 
 library.add(faPlus, faRotateLeft)
-
-// let ethereumStore = useEthereumStore()
 
 defineComponent({
   name: 'WalletCreate',

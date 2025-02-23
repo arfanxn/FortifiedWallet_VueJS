@@ -26,11 +26,11 @@
           <div class="inline-flex items-center gap-x-2">
             <FontAwesomeIcon :icon="faArrowRightArrowLeft" class="w-4 text-sm" />
             <span class="font-semibold">{{
-              formatEthereumAddress(`0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266`)
+              formatEthAddr(`0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266`)
             }}</span>
             <FontAwesomeIcon :icon="faArrowRightLong" class="w-4 text-sm" />
             <span class="font-semibold">{{
-              formatEthereumAddress(`0xf39Fd6e51aad88F6F4ce6aB8827279cffFb944e4`)
+              formatEthAddr(`0xf39Fd6e51aad88F6F4ce6aB8827279cffFb944e4`)
             }}</span>
           </div>
 
@@ -92,7 +92,7 @@
 
 <script setup>
 import { defineComponent, ref } from 'vue'
-import { formatEthereumAddress } from '@/utils/string.utils'
+import { formatEthAddr } from '@/helpers/string.helpers'
 import TextFieldC from '@/components/TextFieldC.vue'
 import ButtonC from '@/components/ButtonC.vue'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
@@ -121,7 +121,7 @@ library.add(
   faCalendar,
 )
 
-// let ethereumStore = useEthereumStore()
+// let blockchainStore = useBlockchainStore()
 
 defineComponent({
   name: 'WalletShow',

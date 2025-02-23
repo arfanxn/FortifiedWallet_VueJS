@@ -64,7 +64,7 @@ import {
   helpers,
 } from '@vuelidate/validators'
 import { useBlockchainStore } from '@/stores/blockchain.store'
-import { validateAndToast } from '@/utils/validator.utils'
+import { validateAndToast } from '@/helpers/validator.helpers'
 import { empty, notEmpty } from '@/utils/string.utils'
 import { faPlus, faRotateLeft } from '@fortawesome/free-solid-svg-icons'
 import { library } from '@fortawesome/fontawesome-svg-core'
@@ -106,7 +106,7 @@ const rules = computed(() => ({
     numeric: helpers.withMessage('Minimum approvals must be numeric.', numeric),
     between: helpers.withMessage(
       `Minimum approvals must be between ${minimumApprovalsRequired} and ${form.signers.length}.`,
-      between(minimumApprovalsRequired, form.signers.lengt),
+      between(minimumApprovalsRequired, form.signers.length),
     ),
   },
 

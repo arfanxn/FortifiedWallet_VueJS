@@ -1,5 +1,3 @@
-
-
 /**
  * Checks if a given string contains a given substring.
  *
@@ -30,17 +28,4 @@ export function notEmpty(string) {
  */
 export function empty(string) {
   return notEmpty(string) == false
-}
-
-/**
- * Formats an Ethereum address to a shortened version for display purposes.
- *
- * This function takes an Ethereum address and returns a string with the first
- * 6 characters, followed by an ellipsis, and the last 4 characters of the address.
- *
- * @param {string} address - The Ethereum address to format.
- * @returns {string} The formatted Ethereum address.
- */
-export function formatEthereumAddress(address) {
-  return `${address.slice(0, 6)}...${address.slice(-4)}`;
 }

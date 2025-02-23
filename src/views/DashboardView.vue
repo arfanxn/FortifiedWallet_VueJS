@@ -19,7 +19,6 @@ import AuthLayout from '@/layouts/AuthLayout.vue'
 import { useRoute, useRouter } from 'vue-router'
 import { library } from '@fortawesome/fontawesome-svg-core'
 import { faLink } from '@fortawesome/free-solid-svg-icons'
-// import { useEthereumStore } from '@/stores/ethereum.store.js'
 import WalletList from '@/components/dashboards/WalletList.vue'
 import WalletMenu from '@/components/dashboards/WalletMenu.vue'
 import WalletCreate from '@/components/dashboards/WalletCreate.vue'
@@ -32,11 +31,9 @@ library.add(faLink)
 const route = useRoute()
 const router = useRouter()
 
-// let ethereumStore = useEthereumStore()
-
 onMounted(() => {})
 
 function showWallet(address) {
-  router.push({ path: '/', query: { menu: 'show' , wallet: address} })
+  router.push({ path: '/', query: { menu: 'show', wallet: address } })
 }
 </script>
