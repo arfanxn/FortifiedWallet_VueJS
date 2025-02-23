@@ -36,10 +36,6 @@ const props = defineProps({
     type: String,
     required: true,
   },
-  selectedOption: {
-    type: Object,
-    required: true,
-  },
   options: {
     type: Array,
     required: true,
