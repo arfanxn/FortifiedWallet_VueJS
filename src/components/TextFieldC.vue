@@ -8,6 +8,7 @@
       :name="props.name"
       :disabled="props.disabled"
       :placeholder="props.placeholder"
+      :value="props.value ?? model"
       @input="emit('onInput', $event)"
       @blur="emit('onBlur', $event)"
       @focus="emit('onFocus', $event)"
@@ -44,6 +45,10 @@ const props = defineProps({
   disabled: {
     type: Boolean,
     default: false,
+  },
+  value: {
+    type: String,
+    default: null,
   },
 })
 </script>
