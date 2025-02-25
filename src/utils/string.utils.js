@@ -17,7 +17,7 @@ export function contains(string, substring) {
  * @returns {boolean} Whether the string is not empty and not null.
  */
 export function notEmpty(string) {
-  return string != '' && string != null
+  return string != '' && string != null && string != undefined
 }
 
 /**
