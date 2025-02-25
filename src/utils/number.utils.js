@@ -1,0 +1,13 @@
+/**
+ * Extracts all numeric characters from a given string.
+ *
+ * This function takes a string input and removes all non-numeric
+ * characters, returning a string composed only of digits.
+ *
+ * @param {string} string - The input string from which to extract numbers.
+ * @returns {string} A string containing only the numeric characters from the input.
+ */
+export function extractNumber(string) {
+  const number = String(string).replace(/\D/g, ''); // "a1b2c3!@#" -> 123
+  return number
+}
