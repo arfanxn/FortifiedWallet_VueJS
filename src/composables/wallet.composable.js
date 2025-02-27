@@ -1,8 +1,8 @@
-// import { connect, getAccounts } from "@/services/ethereum.service";
 import { storeToRefs } from "pinia";
 import { useBlockchainStore } from "@/stores/blockchain.store";
 import { useWalletStore } from "@/stores/wallet.store";
 import * as walletService from "@/services/wallet.service.js";
+import * as tokenService from "@/services/token.service.js";
 
 export function useWallet() {
   const blockchainStore = useBlockchainStore()
@@ -22,13 +22,19 @@ export function useWallet() {
   const fetchWallets = async () => {
     const provider = blockchainStore.provider
     const signerAddress = blockchainStore.activeAccount
-    const tuples = await walletService.fetchWalletsBySigner(provider, signerAddress, 0, 10)
+    const tuples = await walletService.fetchWalletsBySigner(provider, signerAddress, { offset: 0, limit: 10 })
     walletStore.wallets = tuples.map(tupleToWallet)
   }
 
   const createWallet = async ({ name, signers, minimumApprovals, passwordHash }) => {
-    const signer = await blockchainStore.provider.getSigner()
-    await walletService.createWallet(signer, name, signers, minimumApprovals, passwordHash)
+    const providerSigner = await blockchainStore.provider.getSigner()
+    await walletService.createWallet(providerSigner, { name, signers, minimumApprovals, passwordHash })
+  }
+
+  const depositWallet = async (walletAddr, { token, value }) => {
+    const providerSigner = await blockchainStore.provider.getSigner()
+    await tokenService.approve(providerSigner, token, { spender: walletAddr, value })
+    await walletService.deposit(providerSigner, walletAddr, { token, value })
   }
 
   return {
@@ -37,5 +43,6 @@ export function useWallet() {
     // ================================== Methods ==================================
     fetchWallets,
     createWallet,
+    depositWallet,
   }
 }
