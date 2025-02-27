@@ -64,7 +64,7 @@ import {
   helpers,
 } from '@vuelidate/validators'
 import { useBlockchainStore } from '@/stores/blockchain.store'
-import { validateAndToast } from '@/helpers/validator.helpers'
+import { isValidAddr, validateAndToast } from '@/helpers/validator.helpers'
 import { empty, notEmpty } from '@/utils/string.utils'
 import { faPlus, faRotateLeft } from '@fortawesome/free-solid-svg-icons'
 import { library } from '@fortawesome/fontawesome-svg-core'
@@ -125,7 +125,7 @@ const rules = computed(() => ({
     // Validate each signer in the signers array by checking if it's in the correct Ethereum address format.
     // If it's the last signer and the signers array length is not at the minimum or maximum, return true to allow adding a new row.
     // Otherwise, check if the signer is not empty and matches the Ethereum address regex pattern.
-    validFormat: helpers.withMessage('Signers must be valid Ethereum addresses.', (signers) => {
+    validAddr: helpers.withMessage('Signers must be valid Ethereum addresses.', (signers) => {
       return signers.every((signer, index) => {
         // If it's the last signer and the signers array length is not at the minimum or maximum, return true to allow adding a new row.
         const [isLastIndex, notMinLength, notMaxLength] = [
@@ -136,7 +136,7 @@ const rules = computed(() => ({
         if (isLastIndex && notMinLength && notMaxLength) return true
 
         // Validate the signer
-        return notEmpty(signer) && /^0x[a-fA-F0-9]{40}$/.test(signer)
+        return isValidAddr(signer)
       })
     }),
   },

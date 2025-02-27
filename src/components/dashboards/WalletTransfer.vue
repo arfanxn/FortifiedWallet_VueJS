@@ -1,11 +1,11 @@
 <template>
-  <section class="flex flex-col bg-slate-300 text-slate-700 outline-1">
+  <section class="flex flex-col bg-slate-300 text-slate-700">
     <header class="inline-flex items-center justify-between px-4 py-4 md:px-4">
       <h2 class="text-lg font-bold">Transfer</h2>
     </header>
 
     <form
-      class="grid items-start justify-between gap-4 px-4 py-4 md:grid-cols-2"
+      class="grid grid-cols-1 items-start justify-between gap-4 px-4 py-4 md:grid-cols-2"
       @submit.prevent="onSubmit"
     >
       <TextFieldC
@@ -58,7 +58,7 @@ import TextFieldC from '@/components/TextFieldC.vue'
 import ButtonC from '@/components/ButtonC.vue'
 import { useVuelidate } from '@vuelidate/core'
 import { numeric, helpers } from '@vuelidate/validators'
-import { validateAndToast } from '@/helpers/validator.helpers'
+import { isValidAddr, validateAndToast } from '@/helpers/validator.helpers'
 import { notEmpty } from '@/utils/string.utils'
 import { faPlus, faRotateLeft } from '@fortawesome/free-solid-svg-icons'
 import { library } from '@fortawesome/fontawesome-svg-core'
@@ -78,21 +78,18 @@ const form = reactive({
 
 const rules = computed(() => ({
   sender: {
-    validFormat: helpers.withMessage(
-      'Sender address must be valid Ethereum address.',
-      (address) => notEmpty(address) && /^0x[a-fA-F0-9]{40}$/.test(address),
+    validAddr: helpers.withMessage('Sender address must be valid Ethereum address.', (address) =>
+      isValidAddr(address),
     ),
   },
   receiver: {
-    validFormat: helpers.withMessage(
-      'Receiver address must be valid Ethereum address.',
-      (address) => notEmpty(address) && /^0x[a-fA-F0-9]{40}$/.test(address),
+    validAddr: helpers.withMessage('Receiver address must be valid Ethereum address.', (address) =>
+      isValidAddr(address),
     ),
   },
   token: {
-    validFormat: helpers.withMessage(
-      'Token address must be valid ERC20 address.',
-      (address) => notEmpty(address) && /^0x[a-fA-F0-9]{40}$/.test(address),
+    validAddr: helpers.withMessage('Token address must be valid ERC20 address.', (address) =>
+      isValidAddr(address),
     ),
   },
   amount: {
