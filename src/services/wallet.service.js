@@ -1,5 +1,8 @@
 // services/wallet.service.js
+import { TransactionFailedError } from "@/errors/ethereum.errors";
+import { didTransactionFail, } from "@/helpers/ethereum.helpers";
 import { isZeroAddress } from "@/helpers/string.helpers";
+import { tryRethrow } from "@/utils/error.utils";
 import { ethers } from "ethers";
 
 const _walletFactoryContractAddr = () => import.meta.env.VITE__WALLET_FACTORY_CONTRACT_ADDRESS
@@ -17,6 +20,9 @@ const walletFactoryAbis = [
 const walletAbis = [
   // deposit
   'function deposit(address token, uint256 value)',
+
+  // Deposited event
+  'event Deposited(address indexed sender, uint256 value)',
 ]
 
 /**
@@ -55,27 +61,49 @@ export const fetchWalletsBySigner = async (provider, signerAddr, { offset, limit
 }
 
 
+/**
+ * Creates a new wallet by interacting with the wallet factory contract.
+ *
+ * @param {Object} providerSigner - An ethers.js signer object for signing transactions.
+ * @param {Object} params - An object containing the following properties:
+ *   - {string} name - The name of the wallet.
+ *   - {address[]} signers - The list of signer addresses authorized for the wallet.
+ *   - {number} minimumApprovals - The minimum number of approvals required for transactions.
+ *   - {bytes32} passwordHash - A hash representing the password for the wallet.
+ * @throws {Error|TransactionFailedError} If fails.
+ */
 export const createWallet = async (providerSigner, { name, signers, minimumApprovals, passwordHash }) => {
-  // TODO: update this function to follows blockchain function best practice
-  const contract = new ethers.Contract(_walletFactoryContractAddr(), walletFactoryAbis, providerSigner);
-
-  const tx = await contract.createWallet(name, signers, minimumApprovals, passwordHash)
-  const receipt = await tx.wait()
-  console.log(receipt.logs)
-  return true
+  await tryRethrow(async () => {
+    const contract = new ethers.Contract(_walletFactoryContractAddr(), walletFactoryAbis, providerSigner);
+    const tx = await contract.createWallet(name, signers, minimumApprovals, passwordHash)
+    const receipt = await tx.wait()
+    // Check if transaction was successful
+    if (didTransactionFail(receipt)) throw TransactionFailedError;
+  })
 }
 
-
+/**
+ * Deposits funds into a wallet. This function will throw an exception if the contract call fails.
+ *
+ * @param {Object} signer - An ethers.js signer object for interacting with Ethereum.
+ * @param {string} walletAddr - The Ethereum address of the wallet to deposit funds into.
+ * @param {Object} opts - An object containing the following properties:
+ *   - {string} token - The Ethereum address of the token to deposit. If the zero address is provided, ETH is deposited.
+ *   - {string|number|BN} value - The amount of the token (or ETH) to deposit.
+ * @returns {Promise<boolean>} A promise that resolves to true if the deposit was successful.
+ * @throws {Error|TransactionFailedError} If fails.
+ */
 export const deposit = async (signer, walletAddr, { token, value }) => {
-  // TODO: update this function to follows blockchain function best practice
-  const contract = new ethers.Contract(walletAddr, walletAbis, signer);
+  await tryRethrow(async () => {
+    const contract = new ethers.Contract(walletAddr, walletAbis, signer);
 
-  // Deposit either ETH (when token is the zero address) or ERC-20 tokens (when token is a valid contract address)
-  const tx = isZeroAddress(token)
-    ? await contract.deposit(token, value, { value }) // Deposit ETH
-    : await contract.deposit(token, value) // Deposit ERC-20 tokens
-  const receipt = await tx.wait()
-  console.log(receipt.logs)
-  return true
+    // Deposit either ETH (when token is the zero address) or ERC-20 tokens (when token is a valid contract address)
+    const tx = isZeroAddress(token)
+      ? await contract.deposit(token, value, { value }) // Deposit ETH
+      : await contract.deposit(token, value) // Deposit ERC-20 tokens
+    const receipt = await tx.wait()
+    // Check if transaction was successful
+    if (didTransactionFail(receipt)) throw TransactionFailedError;
+  })
 }
 

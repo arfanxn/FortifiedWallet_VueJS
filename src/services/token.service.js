@@ -1,4 +1,7 @@
 // services/token.service.js
+import { TransactionFailedError } from "@/errors/ethereum.errors";
+import { didTransactionFail } from "@/helpers/ethereum.helpers";
+import { tryRethrow } from "@/utils/error.utils";
 import { ethers } from "ethers";
 
 const tokenAbis = [
@@ -30,12 +33,22 @@ export const decimals = async (provider, tokenAddr) => {
   return await contract.decimals()
 }
 
+/**
+ * Approves a certain amount of a token to be spent by a certain spender.
+ *
+ * @param {Object} providerSigner - An ethers.js providerSigner object for interacting with Ethereum.
+ * @param {string} tokenAddr - The Ethereum address of the token to be approved.
+ * @param {{ spender: string, value: number|string|BN }} opts - An object containing the following properties:
+ *   - {string} spender - The Ethereum address of the account that is allowed to spend the token.
+ *   - {number|string|BN} value - The amount of the token to be approved.
+ * @returns {Promise<void>} A promise that resolves when the approval transaction has been successfully mined.
+ * @throws {Error|TransactionFailedError} If fails.
+ */
 export const approve = async (providerSigner, tokenAddr, { spender, value }) => {
-  // TODO: update this function to follows blockchain function best practice
-  const contract = new ethers.Contract(tokenAddr, tokenAbis, providerSigner);
-
-  const tx = await contract.approve(spender, value)
-  const receipt = await tx.wait()
-  console.log(receipt.logs)
-  return true
+  await tryRethrow(async () => {
+    const contract = new ethers.Contract(tokenAddr, tokenAbis, providerSigner);
+    const tx = await contract.approve(spender, value)
+    const receipt = await tx.wait()
+    if (didTransactionFail(receipt)) throw TransactionFailedError;
+  })
 }
