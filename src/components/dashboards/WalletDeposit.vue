@@ -116,9 +116,8 @@ const form = reactive({
 const rules = computed(() => {
   return {
     wallet: {
-      validFormat: helpers.withMessage(
-        'Wallet address must be valid Ethereum address.',
-        (address) => notEmpty(address) && isValidAddr(address),
+      validAddr: helpers.withMessage('Wallet address must be valid Ethereum address.', (address) =>
+        isValidAddr(address),
       ),
     },
     token: {
@@ -126,12 +125,15 @@ const rules = computed(() => {
         'Token address is required.',
         requiredIf(isTokenDeposit.value),
       ),
-      validFormat: helpers.withMessage(
-        'Token address must be valid ERC20 address.',
-        (address) => notEmpty(address) && isValidAddr(address),
+      validAddr: helpers.withMessage('Token address must be valid ERC20 address.', (address) =>
+        // If this is a token deposit, the token address must be a valid Ethereum address.
+        // If it's an ether deposit, the token address is not required.
+        isTokenDeposit.value ? isValidAddr(address) : true,
       ),
       tokenExists: helpers.withMessage('Token does not exist.', () =>
-        notEmpty(tokenMetadata.value?.name),
+        // If this is a token deposit, the token address must exist and be a valid Ethereum address.
+        // If it's an ether deposit, the token address is not required.
+        isTokenDeposit.value ? notEmpty(tokenMetadata.value?.name) : true,
       ),
     },
     amount: {
