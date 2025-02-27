@@ -1,7 +1,10 @@
 <!-- eslint-disable vue/multi-word-component-names -->
 <template>
   <main>
+    <!-- Utilities -->
     <ToastC />
+
+    <!-- Main -->
     <slot />
   </main>
 </template>
