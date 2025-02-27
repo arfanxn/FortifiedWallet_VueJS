@@ -1,6 +1,6 @@
 <template>
-  <section class="flex flex-col bg-slate-300 text-slate-700 outline-1">
-    <header class="inline-flex items-center justify-between px-4 py-4 outline-1 md:px-4">
+  <section class="flex flex-col bg-slate-300 text-slate-700">
+    <header class="inline-flex items-center justify-between px-4 py-4 md:px-4">
       <h2 class="text-lg font-bold">Add</h2>
     </header>
 
