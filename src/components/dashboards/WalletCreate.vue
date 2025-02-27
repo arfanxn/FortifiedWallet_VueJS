@@ -70,11 +70,16 @@ import { faPlus, faRotateLeft } from '@fortawesome/free-solid-svg-icons'
 import { library } from '@fortawesome/fontawesome-svg-core'
 import { useWallet } from '@/composables/wallet.composable'
 import { ethers } from 'ethers'
+import { showToast } from '@/helpers/toast.helpers'
+import { useRouter } from 'vue-router'
+import { formatEthAddr } from '@/helpers/string.helpers'
 
 library.add(faPlus, faRotateLeft)
 
 let blockchainStore = useBlockchainStore()
-const { createWallet } = useWallet()
+const { createWallet, fetchWallets } = useWallet()
+
+const router = useRouter()
 
 defineComponent({
   name: 'WalletCreate',
@@ -139,6 +144,9 @@ const rules = computed(() => ({
         return isValidAddr(signer)
       })
     }),
+    unique: helpers.withMessage('Signers must be unique.', (signers) =>
+      signers.every((signer, index) => !signers.slice(0, index).includes(signer)),
+    ),
   },
   password: {
     required: helpers.withMessage('Password is required.', required),
@@ -187,10 +195,7 @@ function resetForm() {
   form.salt = null
 }
 
-async function onSubmit() {
-  const isValid = await validateAndToast(v$)
-  if (!isValid) return
-
+function processForm() {
   let { name, signers, minimumApprovals, password, salt } = toRaw(form)
 
   signers = signers.filter((signer, index) => {
@@ -200,11 +205,31 @@ async function onSubmit() {
 
   const passwordHash = ethers.solidityPackedKeccak256(['string', 'string'], [password, salt])
 
-  createWallet({
+  return {
     name,
     signers,
     minimumApprovals,
+    password,
     passwordHash,
-  })
+    salt,
+  }
+}
+
+async function onSubmit() {
+  if (!(await validateAndToast(v$))) return
+  handleCreateSubmission()
+}
+
+async function handleCreateSubmission() {
+  try {
+    const { name, signers, minimumApprovals, passwordHash } = processForm()
+    const walletAddr = await createWallet({ name, signers, minimumApprovals, passwordHash })
+    const message = `Wallet created with address "${formatEthAddr(walletAddr)}".`
+    showToast('success', message, 10 * 1000)
+    router.push({ path: '/', query: { menu: 'show', wallet: walletAddr } })
+    fetchWallets()
+  } catch {
+    showToast('error', 'Wallet creation failed.')
+  }
 }
 </script>

@@ -28,7 +28,8 @@ export function useWallet() {
 
   const createWallet = async ({ name, signers, minimumApprovals, passwordHash }) => {
     const providerSigner = await blockchainStore.provider.getSigner()
-    await walletService.createWallet(providerSigner, { name, signers, minimumApprovals, passwordHash })
+    const walletAddr = await walletService.createWallet(providerSigner, { name, signers, minimumApprovals, passwordHash })
+    return walletAddr
   }
 
   const depositWallet = async (walletAddr, { token, value }) => {

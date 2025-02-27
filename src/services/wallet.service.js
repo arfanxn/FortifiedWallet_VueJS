@@ -12,9 +12,11 @@ const walletFactoryAbis = [
   'function getWalletAddressesBySigner(address, uint256, uint256) view returns (address[])',
   // getWalletsBySigner
   'function getWalletsBySigner(address, uint256, uint256) view returns (tuple(string name, address addr, address[] signers, uint256 minimumApprovals, uint256 totalBalanceInUsd)[])',
-
   // createWallet
-  'function createWallet(string, address[], uint256, bytes32) returns (address)'
+  'function createWallet(string, address[], uint256, bytes32) returns (address)',
+
+  // WalletCreated event
+  'event WalletCreated(address indexed wallet, address[] signers)',
 ]
 
 const walletAbis = [
@@ -65,20 +67,25 @@ export const fetchWalletsBySigner = async (provider, signerAddr, { offset, limit
  * Creates a new wallet by interacting with the wallet factory contract.
  *
  * @param {Object} providerSigner - An ethers.js signer object for signing transactions.
- * @param {Object} params - An object containing the following properties:
+ * @param {Object} opts - An object containing the following properties:
  *   - {string} name - The name of the wallet.
  *   - {address[]} signers - The list of signer addresses authorized for the wallet.
  *   - {number} minimumApprovals - The minimum number of approvals required for transactions.
- *   - {bytes32} passwordHash - A hash representing the password for the wallet.
+ *   - {string} passwordHash - A hash representing the password for the wallet.
+ * @returns {Promise<string>} The address of the newly created wallet.
  * @throws {Error|TransactionFailedError} If fails.
  */
 export const createWallet = async (providerSigner, { name, signers, minimumApprovals, passwordHash }) => {
-  await tryRethrow(async () => {
+  return await tryRethrow(async () => {
     const contract = new ethers.Contract(_walletFactoryContractAddr(), walletFactoryAbis, providerSigner);
     const tx = await contract.createWallet(name, signers, minimumApprovals, passwordHash)
     const receipt = await tx.wait()
     // Check if transaction was successful
     if (didTransactionFail(receipt)) throw TransactionFailedError;
+    const logs = receipt.logs
+    const event = logs[0]
+    const walletAddr = event.args[0]
+    return walletAddr
   })
 }
 
