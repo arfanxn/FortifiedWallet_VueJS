@@ -230,17 +230,16 @@ async function handleDepositSubmission() {
       token: processedForm.token,
       value: processedForm.amount,
     })
+    // Show a success toast with the deposit information
+    // Navigate to the "show" menu with the wallet as the active wallet
+    // Refresh the wallets to display the updated balance
+    showToast('success', formatDepositSuccessMessageForToast(), 10 * 1000)
+    router.push({ path: '/', query: { menu: 'show', wallet: form.wallet } })
+    fetchWallets()
   } catch {
     showToast('error', 'Deposit failed.')
     return
   }
-
-  // Show a success toast with the deposit information
-  // Navigate to the "show" menu with the wallet as the active wallet
-  // Refresh the wallets to display the updated balance
-  showToast('success', formatDepositSuccessMessageForToast(), 10 * 1000)
-  router.push({ path: '/', query: { menu: 'show', wallet: form.wallet } })
-  fetchWallets()
 }
 
 /**
