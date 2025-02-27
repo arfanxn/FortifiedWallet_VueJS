@@ -1,6 +1,6 @@
 <template>
   <section class="flex w-full flex-col bg-slate-300 text-slate-700">
-    <header class="flex w-full justify-between px-4 py-4 outline-1 outline-slate-600">
+    <header class="flex w-full justify-between px-4 py-4">
       <div class="flex gap-x-2" v-if="notEmpty(route.query.wallet)">
         <ButtonC
           :icon="faPlus"
@@ -20,7 +20,7 @@
       </div>
 
       <ButtonC
-        class="ml-auto bg-transparent text-slate-700 outline-slate-700 hover:bg-transparent hover:text-slate-700"
+        class="ml-auto hidden! bg-transparent text-slate-700 outline-slate-700 hover:bg-transparent hover:text-slate-700 md:inline-flex!"
         :icon="faPlus"
         text="Add a wallet"
         @onClick="() => router.push({ path: '/', query: { menu: 'create' } })"

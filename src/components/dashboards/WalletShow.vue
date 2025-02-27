@@ -1,5 +1,5 @@
 <template>
-  <section class="flex flex-col bg-slate-300 text-slate-700 outline-1">
+  <section class="flex flex-col bg-slate-300 text-slate-700">
     <header class="inline-flex items-center justify-between px-4 py-4 md:px-4">
       <h2 class="text-lg font-bold">Details</h2>
     </header>
@@ -8,35 +8,38 @@
       <div class="flex basis-1/3 flex-col gap-y-2">
         <div class="flex flex-col gap-y-0.5">
           <h2>Name</h2>
-          <span>{{ wallet.name }}</span>
+          <span>{{ wallet?.name }}</span>
         </div>
 
         <div class="flex flex-col gap-y-0.5">
           <h2>Total balance</h2>
-          <span>{{ wallet.totalBalanceInUsd }}</span>
+          <span class="inline-flex items-center">
+            <FontAwesomeIcon :icon="faDollarSign" class="text-sm" />
+            <span>{{ formatUsd(wallet?.totalBalanceInUsd ?? 0) }}</span>
+          </span>
         </div>
 
         <div class="flex flex-col gap-y-0.5">
           <h2>Min approvals</h2>
-          <span>{{ wallet.minimumApprovals }}</span>
+          <span>{{ wallet?.minimumApprovals ?? 0 }}</span>
         </div>
       </div>
 
       <div class="flex basis-2/3 flex-col gap-y-2">
         <div class="flex flex-col gap-y-0.5">
-          <h2 class="font-bold">Address</h2>
-          <span class="font-semibold">{{ wallet.address }}</span>
+          <h2>Address</h2>
+          <span class="font-mono break-all whitespace-pre-wrap">{{ wallet?.address }}</span>
         </div>
 
         <ul class="flex flex-col gap-y-0.5">
-          <h2 class="font-bold">Signers</h2>
+          <h2>Signers</h2>
           <li
-            class="inline-flex gap-x-2 font-semibold"
-            v-for="(signer, index) in wallet.signers"
+            class="flex gap-x-2 font-mono"
+            v-for="(signer, index) in wallet?.signers"
             :key="index"
           >
-            <span>{{ index + 1 }}.</span>
-            <span>{{ signer }}</span>
+            <span class="min-w-[1rem]">{{ index + 1 }}.</span>
+            <span class="break-all whitespace-pre-wrap">{{ signer }}</span>
           </li>
         </ul>
       </div>
@@ -46,12 +49,14 @@
 
 <script setup>
 import { computed, defineComponent } from 'vue'
-import { faPlus, faRotateLeft } from '@fortawesome/free-solid-svg-icons'
+import { faDollarSign } from '@fortawesome/free-solid-svg-icons'
+import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 import { useWalletStore } from '@/stores/wallet.store'
 import { library } from '@fortawesome/fontawesome-svg-core'
 import { useRoute } from 'vue-router'
+import { formatUsd } from '@/helpers/string.helpers'
 
-library.add(faPlus, faRotateLeft)
+library.add(faDollarSign)
 
 defineComponent({
   name: 'WalletShow',
