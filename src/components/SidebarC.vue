@@ -1,6 +1,7 @@
 <template>
-  <teleport to="#sidebar">
+  <teleport to="#sidebars">
     <section
+      id="sidebar"
       class="fixed top-0 bottom-0 left-0 flex w-full transform flex-col justify-between gap-y-8 overflow-y-auto bg-slate-700 py-8 font-serif transition-transform duration-300 md:w-64 md:translate-x-0 md:gap-y-16 md:py-8"
       :class="{ '-translate-x-full': !navigationStore.isSidebarOpened }"
       style="scrollbar-width: none"
