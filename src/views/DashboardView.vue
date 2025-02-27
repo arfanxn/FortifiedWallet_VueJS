@@ -1,15 +1,15 @@
 <template>
   <AuthLayout>
-    <main class="flex">
-      <WalletList @walletOnClick="(address) => showWallet(address)" />
-      <div class="flex w-full flex-col">
+    <div class="flex flex-col items-start md:flex-row">
+      <WalletList class="w-full md:basis-1/4" @walletOnClick="(address) => showWallet(address)" />
+      <div class="flex w-full flex-col md:basis-3/4">
         <WalletMenu />
         <WalletCreate v-if="route.query.menu === 'create'" />
         <WalletDeposit v-else-if="route.query.menu === 'deposit'" />
         <WalletTransfer v-else-if="route.query.menu === 'transfer'" />
         <WalletShow v-else-if="route.query.menu === 'show'" />
       </div>
-    </main>
+    </div>
   </AuthLayout>
 </template>
 
