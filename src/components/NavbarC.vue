@@ -1,26 +1,29 @@
 <template>
-  <nav
-    class="flex grow items-center justify-between bg-slate-300 px-4 py-6 text-slate-700 outline-2 md:px-8"
-  >
-    <div>
-      <span class="md:hidden"><FontAwesomeIcon icon="wallet" class="text-2xl" /></span>
-      <span class="hidden md:block"
-        ><h1 class="text-xl font-bold">
-          {{ navigationStore.menus.find((menu) => menu.path == $route.path).name }}
-        </h1></span
-      >
-    </div>
+  <teleport to="#navbars">
+    <nav
+      id="navbar"
+      class="fixed top-0 right-0 left-0 flex items-center justify-between border-b-2 border-slate-700 bg-slate-300 px-4 py-6 text-slate-700 md:px-8"
+    >
+      <div>
+        <span class="md:hidden"><FontAwesomeIcon icon="wallet" class="text-2xl" /></span>
+        <span class="hidden md:block"
+          ><h1 class="text-xl font-bold">
+            {{ navigationStore.menus.find((menu) => menu.path == $route.path).name }}
+          </h1></span
+        >
+      </div>
 
-    <div class="inline-flex gap-x-4 md:gap-x-6">
-      <router-link to="/notifications">
-        <FontAwesomeIcon icon="bell" class="text-xl" />
-      </router-link>
-      <DropdownMenuC :menus="state.menus" />
-      <button class="md:hidden" @click="navigationStore.toggleSidebar">
-        <FontAwesomeIcon :icon="faBars" class="text-xl" />
-      </button>
-    </div>
-  </nav>
+      <div class="inline-flex gap-x-4 md:gap-x-6">
+        <router-link to="/notifications">
+          <FontAwesomeIcon icon="bell" class="text-xl" />
+        </router-link>
+        <DropdownMenuC :menus="state.menus" />
+        <button class="md:hidden" @click="navigationStore.toggleSidebar">
+          <FontAwesomeIcon :icon="faBars" class="text-xl" />
+        </button>
+      </div>
+    </nav>
+  </teleport>
 </template>
 
 <script setup>
