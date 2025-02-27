@@ -230,8 +230,7 @@ async function handleDepositSubmission() {
       token: processedForm.token,
       value: processedForm.amount,
     })
-  } catch (e) {
-    console.log(e)
+  } catch {
     showToast('error', 'Deposit failed.')
     return
   }
