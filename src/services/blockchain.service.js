@@ -1,4 +1,5 @@
 // services/ethereumService.ts
+import { MetamaskNotInstalledError } from "@/errors/ethereum.errors";
 import { ethers } from "ethers";
 
 
@@ -10,7 +11,7 @@ import { ethers } from "ethers";
  */
 
 export const connect = async () => {
-  if (!window.ethereum || !window.ethereum.isMetaMask) throw new Error('MetaMask is not installed!');
+  if (!window.ethereum || !window.ethereum.isMetaMask) throw MetamaskNotInstalledError;
   const provider = new ethers.BrowserProvider(window.ethereum);
   return provider
 }
