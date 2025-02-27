@@ -4,7 +4,6 @@
       v-if="toastStore.toasts.length > 0"
       class="fixed top-2 right-2 left-2 flex flex-col items-center gap-y-2 transition-transform duration-300 md:top-4 md:right-4 md:left-auto md:w-88 md:translate-x-0 md:gap-y-4"
     >
-      <!-- TODO: fix word is breaking -->
       <li
         class="flex w-full items-center gap-x-4 rounded-lg border-2 bg-white px-4 py-2 text-slate-700"
         :class="getBorderByType(toast.type)"
