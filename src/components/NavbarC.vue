@@ -8,7 +8,9 @@
         <span class="md:hidden"><FontAwesomeIcon icon="wallet" class="text-2xl" /></span>
         <span class="hidden md:block"
           ><h1 class="text-xl font-bold">
-            {{ navigationStore.menus.find((menu) => menu.path == $route.path).name }}
+            {{
+              navigationStore.menus.find((menu) => menu.routeName == getRootRoute($route).name).name
+            }}
           </h1></span
         >
       </div>
@@ -36,6 +38,7 @@ import { faBell, faUser, faGear, faLinkSlash, faBars } from '@fortawesome/free-s
 import { useNavigationStore } from '@/stores/navigation.store.js'
 import { useBlockchainStore } from '@/stores/blockchain.store'
 import { showToast } from '@/helpers/toast.helpers.js'
+import { getRootRoute } from '@/helpers/route.helpers'
 
 library.add(faBell, faUser, faGear, faLinkSlash, faBars)
 

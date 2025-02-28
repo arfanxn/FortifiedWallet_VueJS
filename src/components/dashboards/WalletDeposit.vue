@@ -5,14 +5,14 @@
 
       <div class="flew-row flex gap-4">
         <ButtonC
-          @onClick="() => router.push({ path: '/', query: { ...route.query, type: 'eth' } })"
+          @onClick="() => router.push({ name: 'wallet.deposit', params: { depositType: 'eth' } })"
           type="button"
           :text="'ETH'"
           class="rounded-none border-slate-700 bg-transparent px-1! font-bold text-slate-700! outline-none hover:bg-transparent hover:text-slate-700!"
           :class="{ 'border-b': isEtherDeposit }"
         />
         <ButtonC
-          @onClick="() => router.push({ path: '/', query: { ...route.query, type: 'erc20' } })"
+          @onClick="() => router.push({ name: 'wallet.deposit', params: { depositType: 'token' } })"
           type="button"
           :text="'ERC20'"
           class="rounded-none border-slate-700 bg-transparent px-1! font-bold text-slate-700! outline-none hover:bg-transparent hover:text-slate-700!"
@@ -103,13 +103,13 @@ const { fetchTokenMetadata } = useToken()
 const { units, selectedUnitValue, getTextByValue, resetSelectedUnitValue } = useEthereumUnit()
 
 const depositType = computed(() =>
-  ['erc20', 'token'].includes(route.query.type?.toLowerCase()) ? 'token' : 'eth',
+  ['erc20', 'token'].includes(route.params?.depositType?.toLowerCase()) ? 'token' : 'eth',
 )
 const isEtherDeposit = computed(() => depositType.value === 'eth')
 const isTokenDeposit = computed(() => depositType.value === 'token')
 
 const form = reactive({
-  wallet: route.query.wallet,
+  wallet: route.params.walletAddr,
   token: null,
   amount: null,
 })
@@ -234,7 +234,7 @@ async function handleDepositSubmission() {
     // Navigate to the "show" menu with the wallet as the active wallet
     // Refresh the wallets to display the updated balance
     showToast('success', formatDepositSuccessMessageForToast(), 10 * 1000)
-    router.push({ path: '/', query: { menu: 'show', wallet: form.wallet } })
+    router.push({ name: 'wallet.show', params: { walletAddr: form.wallet } })
     fetchWallets()
   } catch {
     showToast('error', 'Deposit failed.')

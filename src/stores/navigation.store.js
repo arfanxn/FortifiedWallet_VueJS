@@ -9,19 +9,19 @@ export const useNavigationStore = defineStore('navigation', () => {
   const isSidebarOpened = ref(false)
   const menus = ref([
     {
-      path: '/',
+      routeName: 'dashboard',
       name: '0xDashboard',
       symbol: '0xH',
       icon: 'house',
     },
     {
-      path: '/tokens',
+      routeName: 'token.index',
       name: '0xTokens',
       symbol: '0xT',
       icon: 'coins',
     },
     {
-      path: '/transactions',
+      routeName: 'transaction.index',
       name: '0xTransactions',
       symbol: '0xT',
       icon: 'right-left',

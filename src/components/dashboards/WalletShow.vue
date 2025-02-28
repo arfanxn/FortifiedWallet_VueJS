@@ -4,7 +4,10 @@
       <h2 class="text-lg font-bold">Details</h2>
     </header>
 
-    <main class="flex flex-col items-start gap-4 px-4 py-4 font-semibold md:flex-row">
+    <main
+      class="flex flex-col items-start gap-4 px-4 py-4 font-semibold md:flex-row"
+      v-if="isWalletFound"
+    >
       <div class="flex basis-1/3 flex-col gap-y-2">
         <div class="flex flex-col gap-y-0.5">
           <h2>Name</h2>
@@ -44,6 +47,15 @@
         </ul>
       </div>
     </main>
+    <main class="flex items-center justify-center gap-4 px-4 py-4 font-semibold md:flex-row" v-else>
+      <h2 class="font-mono text-lg">
+        Wallet
+        <span class="font-mono">{{
+          notEmpty(route.params.walletAddr) ? formatEthAddr(route.params.walletAddr) : ''
+        }}</span>
+        is not found.
+      </h2>
+    </main>
   </section>
 </template>
 
@@ -54,7 +66,8 @@ import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 import { useWalletStore } from '@/stores/wallet.store'
 import { library } from '@fortawesome/fontawesome-svg-core'
 import { useRoute } from 'vue-router'
-import { formatUsd } from '@/helpers/string.helpers'
+import { formatEthAddr, formatUsd } from '@/helpers/string.helpers'
+import { notEmpty } from '@/utils/string.utils'
 
 library.add(faDollarSign)
 
@@ -67,6 +80,10 @@ const route = useRoute()
 let walletStore = useWalletStore()
 
 const wallet = computed(() => {
-  return walletStore.wallets.find((wallet) => wallet.address == route.query.wallet)
+  return walletStore.wallets.find((wallet) => wallet.address == route.params.walletAddr)
+})
+
+const isWalletFound = computed(() => {
+  return notEmpty(wallet.value?.name)
 })
 </script>

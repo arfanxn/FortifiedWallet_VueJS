@@ -21,12 +21,16 @@
         <li
           class="px-4 py-2 transition-colors duration-200 hover:bg-slate-600 md:px-4 md:py-2"
           v-for="menu in navigationStore.menus"
-          :key="menu.id"
+          :key="menu.name"
           :class="{
-            'border-r-6 border-slate-200 text-slate-200': $route.path === menu.path,
+            'border-r-6 border-slate-200 text-slate-200':
+              getRootRoute($route).name === menu.routeName,
           }"
         >
-          <router-link :to="menu.path" class="inline-flex w-full items-center gap-x-2">
+          <router-link
+            :to="{ name: menu.routeName }"
+            class="inline-flex w-full items-center gap-x-2"
+          >
             <FontAwesomeIcon :icon="menu.icon" class="text-xl" />
             <h2 class="text-lg">{{ menu.name }}</h2>
           </router-link>
@@ -45,6 +49,7 @@ import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 import { library } from '@fortawesome/fontawesome-svg-core'
 import { faWallet, faHouse, faCoins, faRightLeft, faXmark } from '@fortawesome/free-solid-svg-icons'
 import { useNavigationStore } from '@/stores/navigation.store.js'
+import { getRootRoute } from '@/helpers/route.helpers'
 
 library.add(faWallet, faHouse, faCoins, faRightLeft, faXmark)
 

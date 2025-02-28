@@ -226,7 +226,7 @@ async function handleCreateSubmission() {
     const walletAddr = await createWallet({ name, signers, minimumApprovals, passwordHash })
     const message = `Wallet created with address "${formatEthAddr(walletAddr)}".`
     showToast('success', message, 10 * 1000)
-    router.push({ path: '/', query: { menu: 'show', wallet: walletAddr } })
+    router.push({ name: 'wallet.show', params: { walletAddr } })
     fetchWallets()
   } catch {
     showToast('error', 'Wallet creation failed.')

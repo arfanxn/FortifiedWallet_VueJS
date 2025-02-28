@@ -1,29 +1,21 @@
 <template>
   <section class="flex w-full flex-col bg-slate-300 text-slate-700">
     <header class="flex w-full justify-between px-4 py-4">
-      <div class="flex gap-x-2" v-if="notEmpty(route.query.wallet)">
-        <ButtonC
-          :icon="faPlus"
-          text="Deposit"
-          @onClick="() => router.push({ path: '/', query: { ...route.query, menu: 'deposit' } })"
-        />
+      <div class="flex gap-x-2" v-if="notEmpty(route.params.walletAddr)">
+        <ButtonC :icon="faPlus" text="Deposit" @onClick="() => navigateTo('wallet.deposit')" />
         <ButtonC
           :icon="faRightLeft"
           text="Transfer"
-          @onClick="() => router.push({ path: '/', query: { ...route.query, menu: 'transfer' } })"
+          @onClick="() => navigateTo('wallet.transfer')"
         />
-        <ButtonC
-          :icon="faLock"
-          text="Lock"
-          @onClick="() => router.push({ path: '/', query: { ...route.query, menu: 'lock' } })"
-        />
+        <ButtonC :icon="faLock" text="Lock" @onClick="() => navigateTo('wallet.lock')" />
       </div>
 
       <ButtonC
         class="ml-auto hidden! bg-transparent text-slate-700 outline-slate-700 hover:bg-transparent hover:text-slate-700 md:inline-flex!"
         :icon="faPlus"
         text="Add a wallet"
-        @onClick="() => router.push({ path: '/', query: { menu: 'create' } })"
+        @onClick="() => navigateTo('wallet.create')"
       />
     </header>
   </section>
@@ -44,4 +36,21 @@ const route = useRoute()
 defineComponent({
   name: 'WalletMenu',
 })
+
+function navigateTo(name) {
+  switch (name) {
+    case 'wallet.deposit':
+    case 'wallet.transfer':
+    case 'wallet.lock':
+      router.push({
+        name: name,
+        params: { ...route.params },
+      })
+      break
+    case 'wallet.create':
+      router.push({
+        name: name,
+      })
+  }
+}
 </script>
