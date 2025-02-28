@@ -8,3 +8,7 @@ export function getParentRoute() {
 export function getParentRouteMeta() {
   return getParentRoute().meta
 }
+
+export function getParentRouteName() {
+  return getParentRoute().name
+}
