@@ -11,7 +11,7 @@ import { ethers } from "ethers";
  */
 
 export const connect = async () => {
-  if (!window.ethereum || !window.ethereum.isMetaMask) throw MetamaskNotInstalledError;
+  if (!window.ethereum || !window.ethereum.isMetaMask) throw MetamaskNotInstalledError();
   const provider = new ethers.BrowserProvider(window.ethereum);
   return provider
 }

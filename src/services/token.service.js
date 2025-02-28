@@ -49,6 +49,6 @@ export const approve = async (providerSigner, tokenAddr, { spender, value }) => 
     const contract = new ethers.Contract(tokenAddr, tokenAbis, providerSigner);
     const tx = await contract.approve(spender, value)
     const receipt = await tx.wait()
-    if (didTransactionFail(receipt)) throw TransactionFailedError;
+    if (didTransactionFail(receipt)) throw TransactionFailedError();
   })
 }
