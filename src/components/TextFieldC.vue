@@ -12,6 +12,7 @@
       @input="emit('onInput', $event)"
       @blur="emit('onBlur', $event)"
       @focus="emit('onFocus', $event)"
+      @keyup.enter="emit('onKeyupEnter', $event)"
       v-model="model"
       class="w-full rounded-lg border border-slate-600 px-4 py-2 transition-all focus:border-transparent focus:ring-2 focus:ring-slate-600 focus:outline-none"
     />
@@ -25,7 +26,7 @@ import { defineComponent, defineModel, defineEmits, computed } from 'vue'
 defineComponent({
   name: 'TextFieldC',
 })
-const emit = defineEmits(['onFocus', 'onBlur', 'onInput'])
+const emit = defineEmits(['onFocus', 'onBlur', 'onInput', 'onKeyupEnter'])
 
 const inputId = computed(() => Date.now() + props.name)
 const model = defineModel()
