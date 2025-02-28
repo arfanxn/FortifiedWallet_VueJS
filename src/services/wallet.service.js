@@ -12,6 +12,7 @@ const walletFactoryAbis = [
   'function getWalletAddressesBySigner(address, uint256, uint256) view returns (address[])',
   // getWalletsBySigner
   'function getWalletsBySigner(address, uint256, uint256) view returns (tuple(string name, address addr, address[] signers, uint256 minimumApprovals, uint256 totalBalanceInUsd)[])',
+  'function getWallet(address walletAddress) view returns(tuple(string name, address addr, address[] signers, uint256 minimumApprovals, uint256 totalBalanceInUsd))',
   // createWallet
   'function createWallet(string, address[], uint256, bytes32) returns (address)',
 
@@ -56,12 +57,33 @@ export const fetchWalletAddressesBySigner = async (provider, signerAddr, { offse
  *   - number minimumApprovals: The minimum number of approvals required for transactions.
  *   - number totalBalanceInUsd: The total balance of the wallet in USD (assuming 18 decimals).
  */
-export const fetchWalletsBySigner = async (provider, signerAddr, { offset, limit }) => {
+export const getWalletsBySigner = async (provider, { signerAddr, offset, limit }) => {
   const contract = new ethers.Contract(_walletFactoryContractAddr(), walletFactoryAbis, provider)
   const tuples = await contract.getWalletsBySigner(signerAddr, offset, limit)
   return tuples
 }
 
+/**
+ * Retrieves a specific wallet.
+ *
+ * @param {Object} provider - An ethers.js provider object for interacting with Ethereum.
+ * @param {Object} opts - An object containing the following properties:
+ *   - {string} walletAddr - The Ethereum address of the wallet to be retrieved.
+ * @returns {Promise<tuple>} A promise that resolves to a tuple containing:
+ *   - string name: The name of the wallet.
+ *   - address addr: The Ethereum address of the wallet.
+ *   - address[] signers: The list of signers for the wallet.
+ *   - number minimumApprovals: The minimum number of approvals required for transactions.
+ *   - number totalBalanceInUsd: The total balance of the wallet in USD (assuming 18 decimals).
+ * @throws {Error} If fails.
+ */
+export const getWallet = async (provider, { walletAddr }) => {
+  return await tryRethrow(async () => {
+    const contract = new ethers.Contract(_walletFactoryContractAddr(), walletFactoryAbis, provider)
+    const tuple = await contract.getWallet(walletAddr)
+    return tuple
+  })
+}
 
 /**
  * Creates a new wallet by interacting with the wallet factory contract.
@@ -81,7 +103,7 @@ export const createWallet = async (providerSigner, { name, signers, minimumAppro
     const tx = await contract.createWallet(name, signers, minimumApprovals, passwordHash)
     const receipt = await tx.wait()
     // Check if transaction was successful
-    if (didTransactionFail(receipt)) throw TransactionFailedError;
+    if (didTransactionFail(receipt)) throw new TransactionFailedError();
     const logs = receipt.logs
     const event = logs[0]
     const walletAddr = event.args[0]
@@ -110,7 +132,7 @@ export const deposit = async (signer, walletAddr, { token, value }) => {
       : await contract.deposit(token, value) // Deposit ERC-20 tokens
     const receipt = await tx.wait()
     // Check if transaction was successful
-    if (didTransactionFail(receipt)) throw TransactionFailedError;
+    if (didTransactionFail(receipt)) throw new TransactionFailedError();
   })
 }
 
