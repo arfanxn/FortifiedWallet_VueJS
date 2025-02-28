@@ -1,3 +1,17 @@
-export const MetamaskNotInstalledError = () => Error('Metamask is not installed.')
-export const TransactionFailedError = () => Error('Transaction Failed.')
-export const ContractRevertedError = () => Error('Contract Reverted.')
+export class MetamaskNotInstalledError extends Error {
+  constructor() {
+    super('Metamask is not installed.');
+  }
+}
+
+export class TransactionFailedError extends Error {
+  constructor() {
+    super('Transaction Failed.');
+  }
+}
+
+export class ContractRevertedError extends Error {
+  constructor() {
+    super('Contract Reverted.');
+  }
+}

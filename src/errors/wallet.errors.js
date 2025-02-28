@@ -1,1 +1,6 @@
-export const WalletDoesNotExistError = () => Error('Wallet does not exist.')
+export class WalletDoesNotExistError extends Error {
+  constructor() {
+    super('Wallet does not exist.');
+  }
+}
+
