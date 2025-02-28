@@ -3,6 +3,7 @@ import { useBlockchainStore } from "@/stores/blockchain.store";
 import { useWalletStore } from "@/stores/wallet.store";
 import * as walletService from "@/services/wallet.service.js";
 import * as tokenService from "@/services/token.service.js";
+import { WalletDoesNotExistError } from "@/errors/wallet.errors";
 
 export function useWallet() {
   const blockchainStore = useBlockchainStore()
@@ -21,9 +22,22 @@ export function useWallet() {
 
   const fetchWallets = async () => {
     const provider = blockchainStore.provider
-    const signerAddress = blockchainStore.activeAccount
-    const tuples = await walletService.fetchWalletsBySigner(provider, signerAddress, { offset: 0, limit: 10 })
+    const signerAddr = blockchainStore.activeAccount
+    const tuples = await walletService.getWalletsBySigner(provider, { signerAddr, offset: 0, limit: 10 })
     walletStore.wallets = tuples.map(tupleToWallet)
+    return walletStore.wallets
+  }
+
+  const fetchWallet = async (walletAddr) => {
+    try {
+      const provider = blockchainStore.provider
+      const tuple = await walletService.getWallet(provider, { walletAddr })
+      const wallet = tupleToWallet(tuple)
+      walletStore.wallets = [wallet]
+      return wallet
+    } catch {
+      throw new WalletDoesNotExistError()
+    }
   }
 
   const createWallet = async ({ name, signers, minimumApprovals, passwordHash }) => {
@@ -43,6 +57,7 @@ export function useWallet() {
     wallets,
     // ================================== Methods ==================================
     fetchWallets,
+    fetchWallet,
     createWallet,
     depositWallet,
   }
