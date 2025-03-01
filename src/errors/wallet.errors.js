@@ -4,3 +4,9 @@ export class WalletDoesNotExistError extends Error {
   }
 }
 
+
+export class WalletExceededMaximumError extends Error {
+  constructor() {
+    super('Wallet has exceeded the maximum.');
+  }
+}
