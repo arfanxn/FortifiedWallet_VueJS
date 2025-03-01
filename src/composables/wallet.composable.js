@@ -23,7 +23,7 @@ export function useWallet() {
   const fetchWallets = async () => {
     const provider = blockchainStore.provider
     const signerAddr = blockchainStore.activeAccount
-    const tuples = await walletService.getWalletsBySigner(provider, { signerAddr, offset: 0, limit: 10 })
+    const tuples = await walletService.getNewestWalletsBySigner(provider, { signerAddr, offset: 0, limit: 10 })
     walletStore.wallets = tuples.map(tupleToWallet)
     return walletStore.wallets
   }

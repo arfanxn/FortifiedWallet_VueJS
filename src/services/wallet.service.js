@@ -8,14 +8,21 @@ import { ethers } from "ethers";
 const _walletFactoryContractAddr = () => import.meta.env.VITE__WALLET_FACTORY_CONTRACT_ADDRESS
 
 const walletFactoryAbis = [
+  // Errors
+  // WalletDoesNotExist
+  'error WalletDoesNotExist()',
+  'error WalletExceededMaximum()',
+
+  // Functions
   // getWalletAddressesBySigner
   'function getWalletAddressesBySigner(address, uint256, uint256) view returns (address[])',
-  // getWalletsBySigner
-  'function getWalletsBySigner(address, uint256, uint256) view returns (tuple(string name, address addr, address[] signers, uint256 minimumApprovals, uint256 totalBalanceInUsd)[])',
+  // getNewestWalletsBySigner
+  'function getNewestWalletsBySigner(address, uint256, uint256) view returns (tuple(string name, address addr, address[] signers, uint256 minimumApprovals, uint256 totalBalanceInUsd)[])',
   'function getWallet(address walletAddress) view returns(tuple(string name, address addr, address[] signers, uint256 minimumApprovals, uint256 totalBalanceInUsd))',
   // createWallet
   'function createWallet(string, address[], uint256, bytes32) returns (address)',
 
+  // Events
   // WalletCreated event
   'event WalletCreated(address indexed wallet, address[] signers)',
 ]
@@ -57,9 +64,9 @@ export const fetchWalletAddressesBySigner = async (provider, signerAddr, { offse
  *   - number minimumApprovals: The minimum number of approvals required for transactions.
  *   - number totalBalanceInUsd: The total balance of the wallet in USD (assuming 18 decimals).
  */
-export const getWalletsBySigner = async (provider, { signerAddr, offset, limit }) => {
+export const getNewestWalletsBySigner = async (provider, { signerAddr, offset, limit }) => {
   const contract = new ethers.Contract(_walletFactoryContractAddr(), walletFactoryAbis, provider)
-  const tuples = await contract.getWalletsBySigner(signerAddr, offset, limit)
+  const tuples = await contract.getNewestWalletsBySigner(signerAddr, offset, limit)
   return tuples
 }
 
