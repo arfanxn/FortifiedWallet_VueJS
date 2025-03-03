@@ -27,7 +27,7 @@
     >
       <TextFieldC
         class="md:col-span-4"
-        v-model="form.wallet"
+        v-model="form.walletAddr"
         :disabled="true"
         label="Wallet"
         name="wallet"
@@ -98,7 +98,7 @@ defineComponent({
 const router = useRouter()
 const route = useRoute()
 
-const { depositWallet, fetchWallets } = useWallet()
+const { depositWallet, findWallet } = useWallet()
 const { fetchTokenMetadata } = useToken()
 const { units, selectedUnitValue, getTextByValue, resetSelectedUnitValue } = useEthereumUnit()
 
@@ -109,13 +109,13 @@ const isEtherDeposit = computed(() => depositType.value === 'eth')
 const isTokenDeposit = computed(() => depositType.value === 'token')
 
 const form = reactive({
-  wallet: route.params.walletAddr,
+  walletAddr: route.params.walletAddr,
   token: null,
   amount: null,
 })
 const rules = computed(() => {
   return {
-    wallet: {
+    walletAddr: {
       validAddr: helpers.withMessage('Wallet address must be valid Ethereum address.', (address) =>
         isValidAddr(address),
       ),
@@ -198,7 +198,7 @@ function resetForm() {
  * @returns {Promise<import('@/types').ProcessedForm>}
  */
 function processForm() {
-  let { wallet, token, amount } = toRaw(form)
+  let { walletAddr, token, amount } = toRaw(form)
   if (isEtherDeposit.value) {
     amount = ethers.parseUnits(form.amount.toString(), selectedUnitValue.value)
     /* Set the token address to the zero address when depositing ether.
@@ -208,7 +208,7 @@ function processForm() {
   } else if (isTokenDeposit.value && notEmpty(tokenMetadata.value?.decimals)) {
     amount = ethers.parseUnits(form.amount.toString(), tokenMetadata.value.decimals)
   }
-  return { wallet, token, amount }
+  return { walletAddr, token, amount }
 }
 
 /**
@@ -226,7 +226,7 @@ async function onSubmit() {
 async function handleDepositSubmission() {
   const processedForm = processForm()
   try {
-    await depositWallet(processedForm.wallet, {
+    await depositWallet(processedForm.walletAddr, {
       token: processedForm.token,
       value: processedForm.amount,
     })
@@ -234,10 +234,11 @@ async function handleDepositSubmission() {
     // Navigate to the "show" menu with the wallet as the active wallet
     // Refresh the wallets to display the updated balance
     showToast('success', formatDepositSuccessMessageForToast(), 10 * 1000)
-    router.push({ name: 'wallet.show', params: { walletAddr: form.wallet } })
-    fetchWallets()
-  } catch {
+    router.push({ name: 'wallet.show', params: { walletAddr: form.walletAddr } })
+    await findWallet(form.walletAddr)
+  } catch (error) {
     showToast('error', 'Deposit failed.')
+    console.log(error)
     return
   }
 }
@@ -255,9 +256,9 @@ async function handleDepositSubmission() {
 function formatDepositSuccessMessageForToast() {
   let message = null
   if (isEtherDeposit.value)
-    message = `Deposited ${form.amount} ${getTextByValue(selectedUnitValue.value).toLowerCase()} to ${formatEthAddr(form.wallet)}.`
+    message = `Deposited ${form.amount} ${getTextByValue(selectedUnitValue.value).toLowerCase()} to ${formatEthAddr(form.walletAddr)}.`
   else if (isTokenDeposit.value)
-    message = `Deposited ${form.amount} ${tokenMetadata.value.symbol} to ${formatEthAddr(form.wallet)}.`
+    message = `Deposited ${form.amount} ${tokenMetadata.value.symbol} to ${formatEthAddr(form.walletAddr)}.`
   return message
 }
 </script>

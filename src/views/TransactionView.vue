@@ -1,7 +1,7 @@
 <template>
   <AuthLayout>
     <main class="flex items-start">
-      <WalletList @walletOnClick="(wallet) => filterTransactionByWallet(wallet)" />
+      <WalletIndex @walletOnClick="(wallet) => filterTransactionByWallet(wallet)" />
       <div class="flex w-full flex-col">
         <TransactionList />
       </div>
@@ -16,7 +16,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { library } from '@fortawesome/fontawesome-svg-core'
 import { faLink } from '@fortawesome/free-solid-svg-icons'
 import { useBlockchainStore } from '@/stores/blockchain.store.js'
-import WalletList from '@/components/dashboards/WalletList.vue'
+import WalletIndex from '@/components/wallets/WalletIndex.vue'
 import TransactionList from '@/components/transactions/TransactionList.vue'
 
 library.add(faLink)
