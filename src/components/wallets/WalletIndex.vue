@@ -1,12 +1,16 @@
 <template>
   <section class="flex flex-col text-slate-700">
+    <!-- Header section with title and create wallet button -->
     <header class="inline-flex items-center justify-between bg-slate-300 px-4 py-4 md:px-4">
       <h2 class="text-lg font-bold">Wallets</h2>
       <button class="cursor-pointer" @click="navigateToWalletCreate()">
         <FontAwesomeIcon :icon="faPlus" class="text-xl" />
       </button>
     </header>
+
+    <!-- Main section for wallet management -->
     <main class="flex flex-col gap-y-4 bg-slate-300">
+      <!-- Input field for wallet address -->
       <TextFieldC
         class="px-2"
         name="walletAddr"
@@ -14,83 +18,53 @@
         v-model="form.walletAddr"
         @onKeyupEnter="textFieldOnKeyupEnter"
       />
+
+      <!-- Message displayed when no wallets are found -->
       <div
         v-if="walletStore.wallets.length === 0 && walletStore.wallet === null"
         class="flex items-center justify-center"
       >
         <span class="text-lg font-semibold">No Wallet(s) Found.</span>
       </div>
-      <!-- V SHOW OF `<li>` -->
+
+      <!-- List of wallet items -->
       <ul
         v-show="walletStore.wallets.length > 0 || walletStore.wallet !== null"
         class="flex flex-col gap-y-4"
       >
-        <li
+        <!-- Single wallet item if a specific wallet is selected -->
+        <WalletListItemC
           v-if="walletStore.wallet !== null"
-          class="inline-flex cursor-pointer items-center justify-start gap-x-4 px-4 py-2 hover:bg-slate-400 hover:text-slate-800"
-          :class="{
-            'bg-slate-700 text-slate-300 hover:bg-slate-700! hover:text-slate-300!':
-              route.params.walletAddr === walletStore.wallet.address,
-          }"
-          @click="
+          :wallet="walletStore.wallet"
+          @onItemClick="
             () =>
               isItemClicked ? onItemUnclick(walletStore.wallet) : onItemClick(walletStore.wallet)
           "
-        >
-          <FontAwesomeIcon :icon="faUser" class="text-xl" />
-          <div class="flex flex-col items-start overflow-hidden text-ellipsis">
-            <span class="font-mono">{{ formatEthAddr(walletStore.wallet.address) }}</span>
-            <span class="inline-flex items-center">
-              <FontAwesomeIcon :icon="faDollarSign" class="text-sm" />
-              <span>{{ formatUsd(walletStore.wallet.totalBalanceInUsd) }}</span>
-            </span>
-          </div>
-        </li>
-        <!-- FOR LOOP OF `<li>` -->
-        <li
+        />
+
+        <!-- Loop through and display all wallets -->
+        <WalletListItemC
           v-for="(wallet, index) in walletStore.wallets"
           :key="index"
           v-show="walletStore.wallet === null"
-          class="inline-flex cursor-pointer items-center justify-start gap-x-4 px-4 py-2 hover:bg-slate-400 hover:text-slate-800"
-          :class="{
-            'bg-slate-700 text-slate-300 hover:bg-slate-700! hover:text-slate-300!':
-              route.params.walletAddr === wallet.address,
-          }"
-          @click="() => onItemClick(wallet)"
-        >
-          <FontAwesomeIcon :icon="faUser" class="text-xl" />
-          <div class="flex flex-col items-start overflow-hidden text-ellipsis">
-            <span class="font-mono">{{ formatEthAddr(wallet.address) }}</span>
-            <span class="inline-flex items-center">
-              <FontAwesomeIcon :icon="faDollarSign" class="text-sm" />
-              <span>{{ formatUsd(wallet.totalBalanceInUsd) }}</span>
-            </span>
-          </div>
-        </li>
+          :wallet="wallet"
+          @onItemClick="onItemClick"
+        />
       </ul>
+
+      <!-- Pagination controls -->
       <div v-if="empty(route.params.walletAddr)" class="flex items-center justify-end gap-x-2 px-4">
         <span class="mr-auto text-sm font-semibold">Page: {{ page }}</span>
-
-        <button
-          @click="() => navigateToPage(page - 1)"
-          :class="{
-            'cursor-not-allowed opacity-75': page === 1,
-            'cursor-pointer': page > 1,
-          }"
+        <PaginationButtonC
+          direction="prev"
           :disabled="page === 1"
-        >
-          <FontAwesomeIcon :icon="faSquareCaretLeft" class="text-xl" />
-        </button>
-        <button
-          @click="() => navigateToPage(page + 1)"
-          :class="{
-            'cursor-not-allowed opacity-75': walletStore.wallets.length === 0,
-            'cursor-pointer': walletStore.wallets.length > 0,
-          }"
+          @onClick="() => navigateToPage(page - 1)"
+        />
+        <PaginationButtonC
+          direction="next"
           :disabled="walletStore.wallets.length === 0"
-        >
-          <FontAwesomeIcon :icon="faSquareCaretRight" class="text-xl" />
-        </button>
+          @onClick="() => navigateToPage(page + 1)"
+        />
       </div>
     </main>
   </section>
@@ -109,8 +83,9 @@ import {
 } from '@fortawesome/free-solid-svg-icons'
 import { useWallet } from '@/composables/wallet.composable'
 import { useRouter, useRoute } from 'vue-router'
-import { formatEthAddr, formatUsd } from '@/helpers/string.helpers'
 import TextFieldC from '../TextFieldC.vue'
+import WalletListItemC from './WalletListItemC.vue'
+import PaginationButtonC from '../PaginationButtonC.vue'
 import { helpers } from '@vuelidate/validators'
 import { isValidAddr, validateAndToast } from '@/helpers/validator.helpers'
 import useVuelidate from '@vuelidate/core'
@@ -132,16 +107,20 @@ defineComponent({
 })
 
 onMounted(async () => {
+  // Initialize form with wallet address from route params
   form.walletAddr = route.params.walletAddr
+  // Set item clicked state based on wallet existence
   isItemClicked.value = walletStore.wallet !== null
+  // Initialize page number from route query, default to 1
   page.value = toBase10Number(route.query.page, 1)
 
+  // Fetch wallet or wallets based on the presence of a wallet address
   notEmpty(form.walletAddr) ? await findWallet(form.walletAddr) : await fetchWallets(page.value)
 })
 
 const emit = defineEmits(['onItemClick', 'onItemUnclick'])
 
-// `defaultRouteName` prop is used to navigate to the default route when an item is unclicked or the page is changed.
+// Prop for default route navigation when an item is unclicked or page changes
 const props = defineProps({
   defaultRouteName: {
     type: String,
@@ -149,33 +128,38 @@ const props = defineProps({
   },
 })
 
-// reactive form for wallet address input
+// Reactive form for wallet address input
 const form = reactive({ walletAddr: null })
-// Watch for changes in the route param `walletAddr` and update the form with it.
-// If the `walletAddr` is valid, fetch the wallet with it, otherwise set the wallet to null.
+
+// Watch for changes in wallet address in route params
 watch(
   () => route.params.walletAddr,
   (walletAddr) => {
     form.walletAddr = walletAddr
+    // Fetch wallet if address is valid, otherwise set wallet to null
     if (isValidAddr(walletAddr)) findWallet(walletAddr)
     else walletStore.wallet = null
   },
 )
+
+// Validation rules for wallet address
 const rules = {
-  // Validate the address only if it is not empty, otherwise pass validation
-  // The rule is created with `helpers.withMessage` to provide a custom error message
   walletAddr: {
+    // Custom error message for invalid wallet address
     validAddrIf: helpers.withMessage(
-      'Wallet address is not valid.', // error message
-      (addr) => empty(addr) || isValidAddr(addr), // validation rule
+      'Wallet address is not valid.',
+      (addr) => empty(addr) || isValidAddr(addr),
     ),
   },
 }
 const v$ = useVuelidate(rules, form)
 
+// State to track if an item is clicked
 const isItemClicked = ref()
+// State for current page number
 const page = ref()
 
+// Function to navigate to a specific page
 function navigateToPage(_page) {
   page.value = _page
   router.push({ query: { page: page.value } })
@@ -186,29 +170,25 @@ function navigateToPage(_page) {
   })
 }
 
+// Function to handle item click
 function onItemClick(wallet) {
   isItemClicked.value = true
   emit('onItemClick', wallet)
 }
 
-/**
- * Handles the unclick event for an item.
- * Navigates to the default route specified in the component's props
- * while maintaining the current page number in the query parameters.
- * Emits the 'onItemUnclick' event with the provided wallet object.
- *
- * @param {Object} wallet - The wallet object associated with the unclicked item.
- */
+// Function to handle item unclick
 function onItemUnclick(wallet) {
   isItemClicked.value = false
   router.push({ name: props.defaultRouteName, query: { page: page.value } })
   emit('onItemUnclick', wallet)
 }
 
+// Function to navigate to wallet creation page
 async function navigateToWalletCreate() {
   router.push({ name: 'wallet.create' })
 }
 
+// Function to handle enter key press in text field
 async function textFieldOnKeyupEnter() {
   if (!(await validateAndToast(v$))) return
 
@@ -222,7 +202,11 @@ async function textFieldOnKeyupEnter() {
     await findWallet(form.walletAddr)
     onItemClick(walletStore.wallet)
   } catch (error) {
-    if (error instanceof WalletDoesNotExistError) showToast('error', error.message)
+    if (error instanceof WalletDoesNotExistError) {
+      // TODO: fix bug here
+      showToast('error', error.message)
+      return
+    }
     throw error
   }
 }
