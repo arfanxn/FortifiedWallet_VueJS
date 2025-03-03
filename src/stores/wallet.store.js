@@ -10,6 +10,7 @@ export const useWalletStore = defineStore('wallet', () => {
   // ==========================================================================
   //                                State
   // ==========================================================================
+  const wallet = ref(null)
   const wallets = ref([])
 
   // ==========================================================================
@@ -23,5 +24,5 @@ export const useWalletStore = defineStore('wallet', () => {
   // const getWallets = () => {
   // }
 
-  return { wallets }
+  return { wallet, wallets }
 })
