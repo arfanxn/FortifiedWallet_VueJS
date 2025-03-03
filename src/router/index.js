@@ -7,7 +7,7 @@ const router = createRouter({
     // Dashboard pages
     {
       path: '/',
-      alias: '/dashboard',
+      alias: ['/dashboard', '/wallets'],
       name: 'dashboard',
       component: () => import('../views/DashboardView.vue'),
       meta: {
@@ -17,22 +17,22 @@ const router = createRouter({
         {
           path: '/wallets/create',
           name: 'wallet.create',
-          component: () => import('../components/dashboards/WalletCreate.vue'),
+          component: () => import('../components/wallets/WalletCreate.vue'),
         },
         {
           path: '/wallets/:walletAddr',
           name: 'wallet.show',
-          component: () => import('../components/dashboards/WalletShow.vue'),
+          component: () => import('../components/wallets/WalletShow.vue'),
         },
         {
           path: '/wallets/:walletAddr/deposit/:depositType?',
           name: 'wallet.deposit',
-          component: () => import('../components/dashboards/WalletDeposit.vue'),
+          component: () => import('../components/wallets/WalletDeposit.vue'),
         },
         {
           path: '/wallets/:walletAddr/transfer',
           name: 'wallet.transfer',
-          component: () => import('../components/dashboards/WalletTransfer.vue'),
+          component: () => import('../components/wallets/WalletTransfer.vue'),
         },
       ]
     },
