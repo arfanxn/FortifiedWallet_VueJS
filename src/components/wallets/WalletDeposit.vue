@@ -69,7 +69,7 @@
   </section>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { computed, defineComponent, reactive, toRaw } from 'vue'
 import { faPlus, faRotateLeft } from '@fortawesome/free-solid-svg-icons'
 import { library } from '@fortawesome/fontawesome-svg-core'
@@ -88,6 +88,11 @@ import { showToast } from '@/helpers/toast.helpers'
 import { formatEthAddr } from '@/helpers/string.helpers'
 import { useEthereumUnit } from '@/composables/ethereumUnit.composable'
 import { computedAsync } from '@vueuse/core'
+import { ToastType } from '@/enums/toast.enums'
+import { EthereumAddress } from '@/interfaces/ethereum.interfaces'
+import type { StringOrNull } from '@/interfaces/interfaces'
+import { TokenMetadata } from '@/interfaces/token.interfaces'
+import BigNumber from 'bignumber.js'
 
 library.add(faPlus, faRotateLeft)
 
@@ -103,21 +108,35 @@ const { fetchTokenMetadata } = useToken()
 const { units, selectedUnitValue, getTextByValue, resetSelectedUnitValue } = useEthereumUnit()
 
 const depositType = computed(() =>
-  ['erc20', 'token'].includes(route.params?.depositType?.toLowerCase()) ? 'token' : 'eth',
+  ['erc20', 'token'].includes(route.params?.depositType?.toString().toLowerCase())
+    ? 'token'
+    : 'eth',
 )
 const isEtherDeposit = computed(() => depositType.value === 'eth')
 const isTokenDeposit = computed(() => depositType.value === 'token')
 
-const form = reactive({
-  walletAddr: route.params.walletAddr,
+interface Form {
+  walletAddr: StringOrNull
+  token: StringOrNull
+  amount: StringOrNull
+}
+interface ProcessedForm {
+  walletAddr: EthereumAddress
+  token: EthereumAddress
+  amount: BigNumber
+}
+
+const form = reactive<Form>({
+  walletAddr: route.params?.walletAddr?.toString(),
   token: null,
   amount: null,
 })
 const rules = computed(() => {
   return {
     walletAddr: {
-      validAddr: helpers.withMessage('Wallet address must be valid Ethereum address.', (address) =>
-        isValidAddr(address),
+      validAddr: helpers.withMessage(
+        'Wallet address must be valid Ethereum address.',
+        (address: StringOrNull) => isValidAddr(address),
       ),
     },
     token: {
@@ -125,10 +144,12 @@ const rules = computed(() => {
         'Token address is required.',
         requiredIf(isTokenDeposit.value),
       ),
-      validAddr: helpers.withMessage('Token address must be valid ERC20 address.', (address) =>
-        // If this is a token deposit, the token address must be a valid Ethereum address.
-        // If it's an ether deposit, the token address is not required.
-        isTokenDeposit.value ? isValidAddr(address) : true,
+      validAddr: helpers.withMessage(
+        'Token address must be valid ERC20 address.',
+        (address: StringOrNull) =>
+          // If this is a token deposit, the token address must be a valid Ethereum address.
+          // If it's an ether deposit, the token address is not required.
+          isTokenDeposit.value ? isValidAddr(address) : true,
       ),
       tokenExists: helpers.withMessage('Token does not exist.', () =>
         // If this is a token deposit, the token address must exist and be a valid Ethereum address.
@@ -153,10 +174,10 @@ const v$ = useVuelidate(rules, form)
  *
  * @returns {Promise<TokenMetadata | null>} A promise that resolves to the token metadata if the token address is valid, or null otherwise.
  */
-const tokenMetadata = computedAsync(
+const tokenMetadata = computedAsync<TokenMetadata | null>(
   async () => {
     const isTokenValid = isTokenDeposit.value && isValidAddr(form.token)
-    return isTokenValid ? await fetchTokenMetadata(form.token) : null
+    return isTokenValid ? await fetchTokenMetadata(form.token as EthereumAddress) : null
   },
   null,
   { lazy: true },
@@ -167,15 +188,15 @@ If the token address is valid and the token metadata is available,
 it shows the name and symbol of the token, e.g., "USDT (Tether)".
 Otherwise, it shows nothing. */
 const tokenLabel = computed(() =>
-  isTokenDeposit.value && notEmpty(tokenMetadata.value?.name)
+  isTokenDeposit.value && tokenMetadata.value !== null
     ? `Token: ${tokenMetadata.value.name} (${tokenMetadata.value.symbol})`
     : `Token: -`,
 )
 
 const amountLabel = computed(() => {
   if (isEtherDeposit.value)
-    return `Amount (in ${getTextByValue(selectedUnitValue.value).toLowerCase()})`
-  else if (isTokenDeposit.value && notEmpty(tokenMetadata.value?.decimals))
+    return `Amount (in ${getTextByValue(selectedUnitValue.value)!.toLowerCase()})`
+  else if (isTokenDeposit.value && tokenMetadata.value !== null)
     return `Amount (in ${tokenMetadata.value.decimals} decimals)`
   else return `Amount`
 })
@@ -190,25 +211,42 @@ function resetForm() {
 }
 
 /**
- * Processes the form data by converting the amount field to the correct unit.
+ * Processes the input form data into a format that can be used for
+ * making a deposit transaction.
  *
- * If the form is an ether deposit, it converts the amount to the selected unit.
- * If the form is a token deposit, it converts the amount to the decimals of the token.
+ * If the deposit is for ether, it converts the amount to the specified
+ * unit, e.g., ether, gwei, etc., and sets the token address to the
+ * zero address.
  *
- * @returns {Promise<import('@/types').ProcessedForm>}
+ * If the deposit is for a token, it converts the amount to the token's
+ * decimals and sets the token address to the specified token address.
+ *
+ * @returns {ProcessedForm} An object containing the wallet address,
+ * token address, and amount in the format expected by the deposit
+ * transaction.
  */
-function processForm() {
+function processForm(): ProcessedForm {
   let { walletAddr, token, amount } = toRaw(form)
+  const processedForm: ProcessedForm = {
+    walletAddr: walletAddr as EthereumAddress,
+    token: token as EthereumAddress,
+    amount: BigNumber(0),
+  }
   if (isEtherDeposit.value) {
-    amount = ethers.parseUnits(form.amount.toString(), selectedUnitValue.value)
+    processedForm.amount = BigNumber(
+      ethers.parseUnits(amount!.toString(), selectedUnitValue.value).toString(),
+    )
+
     /* Set the token address to the zero address when depositing ether.
     This is because the deposit transaction is always an ether transaction.
     The token address is only used when depositing a token. */
     token = ethers.ZeroAddress
-  } else if (isTokenDeposit.value && notEmpty(tokenMetadata.value?.decimals)) {
-    amount = ethers.parseUnits(form.amount.toString(), tokenMetadata.value.decimals)
+  } else if (isTokenDeposit.value && tokenMetadata.value !== null) {
+    processedForm.amount = BigNumber(
+      ethers.parseUnits(amount!.toString(), tokenMetadata.value.decimals).toString(),
+    )
   }
-  return { walletAddr, token, amount }
+  return processedForm
 }
 
 /**
@@ -224,7 +262,7 @@ async function onSubmit() {
 }
 
 async function handleDepositSubmission() {
-  const processedForm = processForm()
+  const processedForm: ProcessedForm = processForm()
   try {
     await depositWallet(processedForm.walletAddr, {
       token: processedForm.token,
@@ -233,11 +271,11 @@ async function handleDepositSubmission() {
     // Show a success toast with the deposit information
     // Navigate to the "show" menu with the wallet as the active wallet
     // Refresh the wallets to display the updated balance
-    showToast('success', formatDepositSuccessMessageForToast(), 10 * 1000)
+    showToast(ToastType.SUCCESS, formatDepositSuccessMessageForToast(), 10 * 1000)
     router.push({ name: 'wallet.show', params: { walletAddr: form.walletAddr } })
-    await findWallet(form.walletAddr)
+    await findWallet(form.walletAddr!)
   } catch (error) {
-    showToast('error', 'Deposit failed.')
+    showToast(ToastType.ERROR, 'Deposit failed.')
     console.log(error)
     return
   }
@@ -253,12 +291,12 @@ async function handleDepositSubmission() {
  *
  * @returns {string} The formatted success message.
  */
-function formatDepositSuccessMessageForToast() {
-  let message = null
+function formatDepositSuccessMessageForToast(): string {
+  let message: string
   if (isEtherDeposit.value)
-    message = `Deposited ${form.amount} ${getTextByValue(selectedUnitValue.value).toLowerCase()} to ${formatEthAddr(form.walletAddr)}.`
+    message = `Deposited ${form.amount} ${getTextByValue(selectedUnitValue.value)!.toLowerCase()} to ${formatEthAddr(form.walletAddr as string)}.`
   else if (isTokenDeposit.value)
-    message = `Deposited ${form.amount} ${tokenMetadata.value.symbol} to ${formatEthAddr(form.walletAddr)}.`
-  return message
+    message = `Deposited ${form.amount} ${tokenMetadata.value!.symbol} to ${formatEthAddr(form.walletAddr as string)}.`
+  return message!
 }
 </script>

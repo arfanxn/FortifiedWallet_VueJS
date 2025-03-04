@@ -15,7 +15,7 @@ import AuthLayout from '@/layouts/AuthLayout.vue'
 import { useRoute, useRouter } from 'vue-router'
 import { library } from '@fortawesome/fontawesome-svg-core'
 import { faLink } from '@fortawesome/free-solid-svg-icons'
-import { useBlockchainStore } from '@/stores/blockchain.store.js'
+import { useBlockchainStore } from '@/stores/blockchain.store'
 import WalletIndex from '@/components/wallets/WalletIndex.vue'
 import TransactionList from '@/components/transactions/TransactionList.vue'
 

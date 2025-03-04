@@ -6,7 +6,7 @@
   </Layout>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { defineComponent, onMounted, onUnmounted } from 'vue'
 import SidebarC from '@/components/SidebarC.vue'
 import NavbarC from '@/components/NavbarC.vue'

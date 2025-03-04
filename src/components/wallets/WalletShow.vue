@@ -11,20 +11,20 @@
       <div class="flex basis-1/3 flex-col gap-y-2">
         <div class="flex flex-col gap-y-0.5">
           <h2>Name</h2>
-          <span>{{ walletStore.wallet.name }}</span>
+          <span>{{ walletStore.wallet!.name }}</span>
         </div>
 
         <div class="flex flex-col gap-y-0.5">
           <h2>Total balance</h2>
           <span class="inline-flex items-center">
             <FontAwesomeIcon :icon="faDollarSign" class="text-sm" />
-            <span>{{ formatUsd(walletStore.wallet.totalBalanceInUsd ?? 0) }}</span>
+            <span>{{ formatUsd(walletStore.wallet!.totalBalanceInUsd) }}</span>
           </span>
         </div>
 
         <div class="flex flex-col gap-y-0.5">
           <h2>Min approvals</h2>
-          <span>{{ walletStore.wallet.minimumApprovals ?? 0 }}</span>
+          <span>{{ walletStore.wallet!.minimumApprovals }}</span>
         </div>
       </div>
 
@@ -32,7 +32,7 @@
         <div class="flex flex-col gap-y-0.5">
           <h2>Address</h2>
           <span class="font-mono break-all whitespace-pre-wrap">{{
-            walletStore.wallet.address
+            walletStore.wallet!.address
           }}</span>
         </div>
 
@@ -40,7 +40,7 @@
           <h2>Signers</h2>
           <li
             class="flex gap-x-2 font-mono"
-            v-for="(signer, index) in walletStore.wallet.signers"
+            v-for="(signer, index) in walletStore.wallet!.signers"
             :key="index"
           >
             <span class="min-w-[1rem]">{{ index + 1 }}.</span>
@@ -59,7 +59,7 @@
   </section>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { computed, defineComponent } from 'vue'
 import { faDollarSign } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'

@@ -27,10 +27,13 @@
   </button>
 </template>
 
-<script setup>
+<script setup lang="ts">
+// TODO: rename this into NavbarDropdownC.vue
 import { defineComponent, defineProps, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
+import type { IconDefinition } from '@fortawesome/fontawesome-svg-core'
+import type { StringOrNull } from '@/interfaces/interfaces'
 
 defineComponent({
   name: 'DropdownMenuC',
@@ -40,23 +43,21 @@ let router = useRouter()
 
 const isDropdownOpened = ref(false)
 
-const props = defineProps({
-  menus: {
-    type: Array,
-    default: () => [
-      /*
-      {
-        icon: null | faIcon,
-        name: 'Profile',
-        handler: () => {} | null, // triggered when menu is clicked
-      },
-      */
-    ],
-  },
+interface Menu {
+  icon: IconDefinition
+  name: string
+  path: StringOrNull
+  handler: (() => Promise<void>) | (() => void) | null
+}
+interface Props {
+  menus: Array<Menu>
+}
+const props = withDefaults(defineProps<Props>(), {
+  menus: () => [],
 })
 
-function menuOnClick(menu) {
-  if (menu.path != null) router.push(menu.path)
-  else menu.handler()
+function menuOnClick(menu: Menu) {
+  if (menu.path !== null) router.push(menu.path)
+  else if (menu.handler !== null) menu.handler()
 }
 </script>

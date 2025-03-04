@@ -19,8 +19,8 @@
   </div>
 </template>
 
-<script setup>
-import { notEmpty } from '@/utils/string.utils'
+<script setup lang="ts">
+import { notEmpty } from '../utils/string.utils'
 import { defineComponent, defineModel, defineEmits, computed } from 'vue'
 
 defineComponent({

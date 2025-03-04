@@ -49,10 +49,8 @@
   </section>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { defineComponent, reactive, computed, toRaw } from 'vue'
-import TextFieldC from '@/components/TextFieldC.vue'
-import ButtonC from '@/components/ButtonC.vue'
 import { useVuelidate } from '@vuelidate/core'
 import {
   required,
@@ -73,6 +71,10 @@ import { ethers } from 'ethers'
 import { showToast } from '@/helpers/toast.helpers'
 import { useRouter } from 'vue-router'
 import { formatEthAddr } from '@/helpers/string.helpers'
+import { ToastType } from '@/enums/toast.enums'
+import TextFieldC from '@/components/TextFieldC.vue'
+import ButtonC from '@/components/ButtonC.vue'
+import type { StringOrNull } from '@/interfaces/interfaces'
 
 library.add(faPlus, faRotateLeft)
 
@@ -88,7 +90,14 @@ defineComponent({
 // Define constants for wallet creation constraints
 const [minimumApprovalsRequired, minumumSigners, maximumSigners] = [2, 2, 10]
 
-const form = reactive({
+interface Form {
+  name: StringOrNull
+  signers: StringOrNull[]
+  minimumApprovals: number
+  password: StringOrNull
+  salt: StringOrNull
+}
+const form = reactive<Form>({
   name: null,
   signers: [blockchainStore.activeAccount, null],
   minimumApprovals: minimumApprovalsRequired,
@@ -119,7 +128,8 @@ const rules = computed(() => ({
     // Ensure that there are at least 2 signers
     minLength: helpers.withMessage(
       `Signers must be at least ${minumumSigners} provided.`,
-      (signers) => signersLength.value >= minumumSigners && notEmpty(signers[minumumSigners - 1]),
+      (signers: StringOrNull[]) =>
+        signersLength.value >= minumumSigners && notEmpty(signers[minumumSigners - 1]),
     ),
     // Ensure that there are no more than 10 signers
     maxLength: helpers.withMessage(
@@ -130,21 +140,24 @@ const rules = computed(() => ({
     // Validate each signer in the signers array by checking if it's in the correct Ethereum address format.
     // If it's the last signer and the signers array length is not at the minimum or maximum, return true to allow adding a new row.
     // Otherwise, check if the signer is not empty and matches the Ethereum address regex pattern.
-    validAddr: helpers.withMessage('Signers must be valid Ethereum addresses.', (signers) => {
-      return signers.every((signer, index) => {
-        // If it's the last signer and the signers array length is not at the minimum or maximum, return true to allow adding a new row.
-        const [isLastIndex, notMinLength, notMaxLength] = [
-          index == signersLastIndex.value,
-          signersLength.value != minumumSigners,
-          signersLength.value != maximumSigners,
-        ]
-        if (isLastIndex && notMinLength && notMaxLength) return true
+    validAddr: helpers.withMessage(
+      'Signers must be valid Ethereum addresses.',
+      (signers: StringOrNull[]) => {
+        return signers.every((signer: StringOrNull, index: number) => {
+          // If it's the last signer and the signers array length is not at the minimum or maximum, return true to allow adding a new row.
+          const [isLastIndex, notMinLength, notMaxLength] = [
+            index == signersLastIndex.value,
+            signersLength.value != minumumSigners,
+            signersLength.value != maximumSigners,
+          ]
+          if (isLastIndex && notMinLength && notMaxLength) return true
 
-        // Validate the signer
-        return isValidAddr(signer)
-      })
-    }),
-    unique: helpers.withMessage('Signers must be unique.', (signers) =>
+          // Validate the signer
+          return isValidAddr(signer)
+        })
+      },
+    ),
+    unique: helpers.withMessage('Signers must be unique.', (signers: StringOrNull[]) =>
       signers.every((signer, index) => !signers.slice(0, index).includes(signer)),
     ),
   },
@@ -167,7 +180,7 @@ const v$ = useVuelidate(rules, form)
  * This ensures that the form always has at least 2 signers, and never more than 10.
  * @param {number} index The index of the input field in the signers array.
  */
-function signerOnInput(index) {
+function signerOnInput(index: number) {
   const signer = form.signers[index]
 
   const indexIsLastSignersIndex = index == signersLastIndex.value
@@ -225,11 +238,11 @@ async function handleCreateSubmission() {
     const { name, signers, minimumApprovals, passwordHash } = processForm()
     const walletAddr = await createWallet({ name, signers, minimumApprovals, passwordHash })
     const message = `Wallet created with address "${formatEthAddr(walletAddr)}".`
-    showToast('success', message, 10 * 1000)
+    showToast(ToastType.SUCCESS, message, 10 * 1000)
     router.push({ name: 'wallet.show', params: { walletAddr } })
     fetchWallets()
   } catch {
-    showToast('error', 'Wallet creation failed.')
+    showToast(ToastType.ERROR, 'Wallet creation failed.')
   }
 }
 </script>

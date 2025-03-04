@@ -8,9 +8,10 @@
   </button>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { defineComponent, defineProps, defineEmits } from 'vue'
-import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
+import { FontAwesomeIcon, FontAwesomeIconProps } from '@fortawesome/vue-fontawesome'
+import type { IconDefinition } from '@fortawesome/fontawesome-svg-core'
 
 defineComponent({
   name: 'ButtonC',
@@ -18,10 +19,11 @@ defineComponent({
 
 const emit = defineEmits(['onClick'])
 
-let props = defineProps({
-  text: String,
-  icon: Object,
-})
+interface Props {
+  text: string
+  icon: Object
+}
+let props = defineProps<Props>()
 
 const onClick = () => {
   emit('onClick')

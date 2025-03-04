@@ -20,7 +20,7 @@
   </teleport>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { defineComponent } from 'vue'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 import {
@@ -30,7 +30,8 @@ import {
   faCircleExclamation,
 } from '@fortawesome/free-solid-svg-icons'
 import { library } from '@fortawesome/fontawesome-svg-core'
-import { useToastStore } from '@/stores/toast.store.js'
+import { useToastStore } from '@/stores/toast.store'
+import { ToastType } from '@/enums/toast.enums'
 
 defineComponent({
   name: 'ToastC',
@@ -39,27 +40,27 @@ defineComponent({
 library.add(faXmark, faCircleCheck, faCircleInfo, faCircleExclamation)
 let toastStore = useToastStore()
 
-function getIconByType(type) {
+function getIconByType(type: ToastType) {
   switch (type) {
-    case 'success':
+    case ToastType.SUCCESS:
       return 'circle-check'
-    case 'warning':
-    case 'error':
+    case ToastType.WARNING:
+    case ToastType.ERROR:
       return 'circle-exclamation'
-    case 'info':
+    case ToastType.INFO:
     default:
       return 'circle-info'
   }
 }
 
-function getBorderByType(type) {
+function getBorderByType(type: ToastType) {
   switch (type) {
-    case 'success':
+    case ToastType.SUCCESS:
       return 'border-green-700'
-    case 'warning':
-    case 'error':
+    case ToastType.WARNING:
+    case ToastType.ERROR:
       return 'border-red-700'
-    case 'info':
+    case ToastType.INFO:
     default:
       return 'border-blue-700'
   }

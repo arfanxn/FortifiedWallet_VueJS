@@ -90,7 +90,7 @@
   </section>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { defineComponent, ref } from 'vue'
 import { formatEthAddr } from '@/helpers/string.helpers'
 import TextFieldC from '@/components/TextFieldC.vue'
@@ -109,7 +109,7 @@ import {
 } from '@fortawesome/free-solid-svg-icons'
 import { library } from '@fortawesome/fontawesome-svg-core'
 
-const hoveredTransactionIndex = ref(null)
+const hoveredTransactionIndex = ref<Number | null>(null)
 
 library.add(
   faArrowRightLong,

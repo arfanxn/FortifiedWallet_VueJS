@@ -14,7 +14,7 @@
   </button>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { defineProps, defineEmits, computed } from 'vue'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 import { faSquareCaretLeft, faSquareCaretRight } from '@fortawesome/free-solid-svg-icons'
@@ -30,6 +30,7 @@ const props = defineProps({
   disabled: { type: Boolean, required: true },
 })
 
+// TODO: use enum instead of raw string
 const isLeftDirection = computed(() => {
   switch (props.direction) {
     case 'prev':

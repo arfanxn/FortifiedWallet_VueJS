@@ -9,7 +9,7 @@
   </main>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { defineComponent } from 'vue'
 import ToastC from '@/components/ToastC.vue'
 

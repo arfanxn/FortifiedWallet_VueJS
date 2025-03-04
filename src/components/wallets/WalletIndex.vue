@@ -38,7 +38,9 @@
           :wallet="walletStore.wallet"
           @onItemClick="
             () =>
-              isItemClicked ? onItemUnclick(walletStore.wallet) : onItemClick(walletStore.wallet)
+              isItemClicked
+                ? onItemUnclick(walletStore.wallet as Wallet)
+                : onItemClick(walletStore.wallet as Wallet)
           "
         />
 
@@ -53,7 +55,10 @@
       </ul>
 
       <!-- Pagination controls -->
-      <div v-if="empty(route.params.walletAddr)" class="flex items-center justify-end gap-x-2 px-4">
+      <div
+        v-if="empty(route.params?.walletAddr)"
+        class="flex items-center justify-end gap-x-2 px-4"
+      >
         <span class="mr-auto text-sm font-semibold">Page: {{ page }}</span>
         <PaginationButtonC
           direction="prev"
@@ -70,7 +75,7 @@
   </section>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { defineComponent, defineEmits, onMounted, reactive, ref, watch } from 'vue'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 import { library } from '@fortawesome/fontawesome-svg-core'
@@ -94,6 +99,10 @@ import { WalletDoesNotExistError } from '@/errors/wallet.errors'
 import { showToast } from '@/helpers/toast.helpers'
 import { toBase10Number } from '@/utils/number.utils'
 import { useWalletStore } from '@/stores/wallet.store'
+import { ToastType } from '@/enums/toast.enums'
+import type { StringOrNull } from '@/interfaces/interfaces'
+import type { EthereumAddress } from '@/interfaces/ethereum.interfaces'
+import type { Wallet } from '@/interfaces/wallet.interfaces'
 library.add(faSquareCaretLeft, faSquareCaretRight, faDollarSign, faPlus, faUser)
 
 const route = useRoute()
@@ -108,36 +117,39 @@ defineComponent({
 
 onMounted(async () => {
   // Initialize form with wallet address from route params
-  form.walletAddr = route.params.walletAddr
+  form.walletAddr = route.params?.walletAddr as StringOrNull
   // Set item clicked state based on wallet existence
   isItemClicked.value = walletStore.wallet !== null
   // Initialize page number from route query, default to 1
-  page.value = toBase10Number(route.query.page, 1)
+  page.value = toBase10Number(route.query.page as string, 1)
 
   // Fetch wallet or wallets based on the presence of a wallet address
-  notEmpty(form.walletAddr) ? await findWallet(form.walletAddr) : await fetchWallets(page.value)
+  notEmpty(form.walletAddr)
+    ? await findWallet(form.walletAddr as EthereumAddress)
+    : await fetchWallets(page.value)
 })
 
 const emit = defineEmits(['onItemClick', 'onItemUnclick'])
 
 // Prop for default route navigation when an item is unclicked or page changes
-const props = defineProps({
-  defaultRouteName: {
-    type: String,
-    required: true,
-  },
-})
+interface Props {
+  defaultRouteName: string
+}
+const props = defineProps<Props>()
 
+interface Form {
+  walletAddr: StringOrNull
+}
 // Reactive form for wallet address input
-const form = reactive({ walletAddr: null })
+const form = reactive<Form>({ walletAddr: null })
 
 // Watch for changes in wallet address in route params
 watch(
   () => route.params.walletAddr,
   (walletAddr) => {
-    form.walletAddr = walletAddr
+    form.walletAddr = walletAddr as StringOrNull
     // Fetch wallet if address is valid, otherwise set wallet to null
-    if (isValidAddr(walletAddr)) findWallet(walletAddr)
+    if (isValidAddr(walletAddr as StringOrNull)) findWallet(walletAddr as EthereumAddress)
     else walletStore.wallet = null
   },
 )
@@ -148,7 +160,7 @@ const rules = {
     // Custom error message for invalid wallet address
     validAddrIf: helpers.withMessage(
       'Wallet address is not valid.',
-      (addr) => empty(addr) || isValidAddr(addr),
+      (addr) => empty(addr) || isValidAddr(addr as StringOrNull),
     ),
   },
 }
@@ -160,7 +172,7 @@ const isItemClicked = ref()
 const page = ref()
 
 // Function to navigate to a specific page
-function navigateToPage(_page) {
+function navigateToPage(_page: number) {
   page.value = _page
   router.push({ query: { page: page.value } })
   fetchWallets(_page)
@@ -171,13 +183,13 @@ function navigateToPage(_page) {
 }
 
 // Function to handle item click
-function onItemClick(wallet) {
+function onItemClick(wallet: Wallet) {
   isItemClicked.value = true
   emit('onItemClick', wallet)
 }
 
 // Function to handle item unclick
-function onItemUnclick(wallet) {
+function onItemUnclick(wallet: Wallet) {
   isItemClicked.value = false
   router.push({ name: props.defaultRouteName, query: { page: page.value } })
   emit('onItemUnclick', wallet)
@@ -199,12 +211,12 @@ async function textFieldOnKeyupEnter() {
   }
 
   try {
-    await findWallet(form.walletAddr)
-    onItemClick(walletStore.wallet)
+    await findWallet(form.walletAddr as EthereumAddress)
+    onItemClick(walletStore.wallet as Wallet)
   } catch (error) {
     if (error instanceof WalletDoesNotExistError) {
       // TODO: fix bug here
-      showToast('error', error.message)
+      showToast(ToastType.ERROR, error.message)
       return
     }
     throw error

@@ -13,44 +13,58 @@
       @blur="emit('onBlur', $event)"
       @focus="emit('onFocus', $event)"
     >
-      <option v-for="option in props.options" :key="option.value" :value="option.value">
-        {{ option.text }}
+      <option v-for="option in props.options" :key="option.key" :value="option.value">
+        {{ option.key }}
       </option>
     </select>
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { notEmpty } from '@/utils/string.utils'
-import { defineComponent, defineModel, defineEmits, computed } from 'vue'
+import { defineComponent, defineModel, defineEmits, computed, onMounted, Ref, ref } from 'vue'
+import type { ObjectKeyValue } from '@/interfaces/interfaces'
+import { SelectFieldProps } from '@/interfaces/component.interfaces'
 
 defineComponent({
   name: 'SelectFieldC',
 })
 const emit = defineEmits(['onChange', 'onBlur', 'onFocus'])
 
-const inputId = computed(() => Date.now() + props.name)
+onMounted(() => {
+  inputId.value = Date.now() + props.name
+})
+
+const inputId: Ref<string> = ref('')
 const model = defineModel()
-const props = defineProps({
-  name: {
-    type: String,
-    required: true,
-  },
-  options: {
-    type: Array,
-    required: true,
-  },
-  label: {
-    type: String,
-    default: null,
-  },
-  disabled: {
-    type: Boolean,
-    default: false,
-  },
-  value: {
-    type: String,
-    default: null,
-  },
+
+// const props = defineProps({
+//   name: {
+//     type: String,
+//     required: true,
+//   },
+//   options: {
+//     type: ObjectKeyValue[],
+//     required: true,
+//   },
+//   label: {
+//     type: String,
+//     default: null,
+//   },
+//   disabled: {
+//     type: Boolean,
+//     default: false,
+//   },
+//   value: {
+//     type: String,
+//     default: null,
+//   },
+// })
+
+const props = withDefaults(defineProps<SelectFieldProps<number>>(), {
+  label: null,
+  disabled: false,
+  value: null,
+  options: () => [],
 })
 </script>

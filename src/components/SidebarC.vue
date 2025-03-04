@@ -24,7 +24,7 @@
           :key="menu.name"
           :class="{
             'border-r-6 border-slate-200 text-slate-200':
-              getRootRoute($route).name === menu.routeName,
+              getRootRoute()!.name === menu.routeName,
           }"
         >
           <router-link
@@ -43,12 +43,12 @@
   </teleport>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { defineComponent } from 'vue'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 import { library } from '@fortawesome/fontawesome-svg-core'
 import { faWallet, faHouse, faCoins, faRightLeft, faXmark } from '@fortawesome/free-solid-svg-icons'
-import { useNavigationStore } from '@/stores/navigation.store.js'
+import { useNavigationStore } from '@/stores/navigation.store'
 import { getRootRoute } from '@/helpers/route.helpers'
 
 library.add(faWallet, faHouse, faCoins, faRightLeft, faXmark)

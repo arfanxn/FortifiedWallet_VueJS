@@ -24,7 +24,7 @@ import GuestLayout from '@/layouts/GuestLayout.vue'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 import { library } from '@fortawesome/fontawesome-svg-core'
 import { faLink } from '@fortawesome/free-solid-svg-icons'
-import { useBlockchainStore } from '@/stores/blockchain.store.js'
+import { useBlockchainStore } from '@/stores/blockchain.store'
 import { showToast } from '@/helpers/toast.helpers'
 
 library.add(faLink)

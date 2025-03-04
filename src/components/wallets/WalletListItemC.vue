@@ -18,13 +18,14 @@
   </li>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { defineProps } from 'vue'
 import { useRoute } from 'vue-router'
 import { formatEthAddr, formatUsd } from '@/helpers/string.helpers'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 import { faDollarSign, faUser } from '@fortawesome/free-solid-svg-icons'
 import { library } from '@fortawesome/fontawesome-svg-core'
+import type { Wallet } from '@/interfaces/wallet.interfaces'
 
 library.add(faDollarSign, faUser)
 
@@ -32,14 +33,12 @@ const route = useRoute()
 
 const emit = defineEmits(['onItemClick'])
 
-const props = defineProps({
-  wallet: {
-    type: Object,
-    required: true,
-  },
-})
+interface Props {
+  wallet: Wallet
+}
+const props = defineProps<Props>()
 
-function onItemClick(wallet) {
+function onItemClick(wallet: Wallet) {
   emit('onItemClick', wallet)
 }
 </script>

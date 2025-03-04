@@ -52,16 +52,16 @@
   </section>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { defineComponent, reactive, computed } from 'vue'
-import TextFieldC from '@/components/TextFieldC.vue'
-import ButtonC from '@/components/ButtonC.vue'
 import { useVuelidate } from '@vuelidate/core'
 import { numeric, helpers } from '@vuelidate/validators'
 import { isValidAddr, validateAndToast } from '@/helpers/validator.helpers'
-import { notEmpty } from '@/utils/string.utils'
 import { faPlus, faRotateLeft } from '@fortawesome/free-solid-svg-icons'
 import { library } from '@fortawesome/fontawesome-svg-core'
+import TextFieldC from '@/components/TextFieldC.vue'
+import ButtonC from '@/components/ButtonC.vue'
+import { StringOrNull } from '@/interfaces/interfaces'
 
 library.add(faPlus, faRotateLeft)
 
@@ -69,7 +69,13 @@ defineComponent({
   name: 'WalletCreate',
 })
 
-const form = reactive({
+interface Form {
+  sender: StringOrNull
+  receiver: StringOrNull
+  token: StringOrNull
+  amount: number
+}
+const form = reactive<Form>({
   sender: '0x111',
   receiver: '0x222',
   token: '0x333',
@@ -78,18 +84,21 @@ const form = reactive({
 
 const rules = computed(() => ({
   sender: {
-    validAddr: helpers.withMessage('Sender address must be valid Ethereum address.', (address) =>
-      isValidAddr(address),
+    validAddr: helpers.withMessage(
+      'Sender address must be valid Ethereum address.',
+      (addr: StringOrNull) => isValidAddr(addr),
     ),
   },
   receiver: {
-    validAddr: helpers.withMessage('Receiver address must be valid Ethereum address.', (address) =>
-      isValidAddr(address),
+    validAddr: helpers.withMessage(
+      'Receiver address must be valid Ethereum address.',
+      (addr: StringOrNull) => isValidAddr(addr),
     ),
   },
   token: {
-    validAddr: helpers.withMessage('Token address must be valid ERC20 address.', (address) =>
-      isValidAddr(address),
+    validAddr: helpers.withMessage(
+      'Token address must be valid ERC20 address.',
+      (addr: StringOrNull) => isValidAddr(addr),
     ),
   },
   amount: {
@@ -102,6 +111,8 @@ const rules = computed(() => ({
 }))
 
 const v$ = useVuelidate(rules, form)
+
+function resetForm(): void {}
 
 async function onSubmit() {
   const isValid = await validateAndToast(v$)
