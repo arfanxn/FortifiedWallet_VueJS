@@ -7,13 +7,17 @@ import { ethers } from 'ethers'
 export function useToken() {
   const blockchainStore = useBlockchainStore()
 
-  const fetchTokenMetadata = async (token: EthereumAddress): Promise<TokenMetadata | null> => {
-    // TODO: complete this
+  const fetchTokenMetadata = async (token: EthereumAddress): Promise<TokenMetadata | undefined> => {
     const provider = blockchainStore.provider
     const name = await tokenService.name(provider as ethers.BrowserProvider, token)
     const symbol = await tokenService.symbol(provider as ethers.BrowserProvider, token)
     const decimals = await tokenService.decimals(provider as ethers.BrowserProvider, token)
-    return name && symbol && decimals ? { name, symbol, decimals } : null
+    const tokenMetadata: TokenMetadata = {
+      name,
+      symbol,
+      decimals,
+    }
+    if (name && symbol && decimals) return tokenMetadata
   }
 
   return {
