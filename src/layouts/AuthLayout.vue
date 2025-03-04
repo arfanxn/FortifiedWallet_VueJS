@@ -1,6 +1,6 @@
 <template>
   <Layout>
-    <SidebarC />
+    <Sidebar />
     <NavbarC />
     <main id="auth-layout-slot"><slot /></main>
   </Layout>
@@ -8,7 +8,7 @@
 
 <script setup lang="ts">
 import { defineComponent, onMounted, onUnmounted } from 'vue'
-import SidebarC from '@/components/SidebarC.vue'
+import Sidebar from '@/components/Sidebar.vue'
 import NavbarC from '@/components/NavbarC.vue'
 import Layout from '@/layouts/Layout.vue'
 
