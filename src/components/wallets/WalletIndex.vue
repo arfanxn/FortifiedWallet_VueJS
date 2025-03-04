@@ -61,12 +61,12 @@
       >
         <span class="mr-auto text-sm font-semibold">Page: {{ page }}</span>
         <PaginationButtonC
-          direction="prev"
+          :direction="PaginationButtonDirection.Prev"
           :disabled="page === 1"
           @onClick="() => navigateToPage(page - 1)"
         />
         <PaginationButtonC
-          direction="next"
+          :direction="PaginationButtonDirection.Next"
           :disabled="walletStore.wallets.length === 0"
           @onClick="() => navigateToPage(page + 1)"
         />
@@ -103,6 +103,7 @@ import { ToastType } from '@/enums/toast.enums'
 import type { StringOrNull } from '@/interfaces/interfaces'
 import type { EthereumAddress } from '@/interfaces/ethereum.interfaces'
 import type { Wallet } from '@/interfaces/wallet.interfaces'
+import { PaginationButtonDirection } from '@/enums/component.enums'
 library.add(faSquareCaretLeft, faSquareCaretRight, faDollarSign, faPlus, faUser)
 
 const route = useRoute()

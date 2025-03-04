@@ -8,16 +8,19 @@
     @click="onClick"
   >
     <FontAwesomeIcon
-      :icon="isLeftDirection ? faSquareCaretLeft : faSquareCaretRight"
+      :icon="
+        props.direction === PaginationButtonDirection.Prev ? faSquareCaretLeft : faSquareCaretRight
+      "
       class="text-xl"
     />
   </button>
 </template>
 
 <script setup lang="ts">
-import { defineProps, defineEmits, computed } from 'vue'
+import { defineProps, defineEmits, computed, withDefaults } from 'vue'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 import { faSquareCaretLeft, faSquareCaretRight } from '@fortawesome/free-solid-svg-icons'
+import { PaginationButtonDirection } from '@/enums/component.enums'
 
 const emit = defineEmits(['onClick'])
 
@@ -25,22 +28,13 @@ function onClick() {
   emit('onClick')
 }
 
-const props = defineProps({
-  direction: { type: String, required: true }, // direction can be 'prev' or 'next'
-  disabled: { type: Boolean, required: true },
-})
-
-// TODO: use enum instead of raw string
-const isLeftDirection = computed(() => {
-  switch (props.direction) {
-    case 'prev':
-    case 'previous':
-    case 'left':
-      return true
-    case 'next':
-    case 'right':
-    default:
-      return false
-  }
-})
+const props = withDefaults(
+  defineProps<{
+    direction: PaginationButtonDirection
+    disabled: boolean
+  }>(),
+  {
+    disabled: false,
+  },
+)
 </script>
