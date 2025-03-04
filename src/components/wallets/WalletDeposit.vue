@@ -63,7 +63,7 @@
           :icon="faRotateLeft"
           class="bg-red-700! text-slate-200! hover:bg-red-600! hover:text-slate-100!"
         />
-        <ButtonC :text="'Deposit'" class="" />
+        <ButtonC :text="'Deposit'" />
       </div>
     </form>
   </section>
@@ -172,14 +172,14 @@ const v$ = useVuelidate(rules, form)
 /**
  * Retrieves the metadata for the token address provided in the form.
  *
- * @returns {Promise<TokenMetadata | null>} A promise that resolves to the token metadata if the token address is valid, or null otherwise.
+ * @returns {Promise<TokenMetadata | undefined>} A promise that resolves to the token metadata if the token address is valid, or undefined otherwise.
  */
-const tokenMetadata = computedAsync<TokenMetadata | null>(
+const tokenMetadata = computedAsync<TokenMetadata | undefined>(
   async () => {
     const isTokenValid = isTokenDeposit.value && isValidAddr(form.token)
-    return isTokenValid ? await fetchTokenMetadata(form.token as EthereumAddress) : null
+    return isTokenValid ? await fetchTokenMetadata(form.token as EthereumAddress) : undefined
   },
-  null,
+  undefined,
   { lazy: true },
 )
 
@@ -188,7 +188,7 @@ If the token address is valid and the token metadata is available,
 it shows the name and symbol of the token, e.g., "USDT (Tether)".
 Otherwise, it shows nothing. */
 const tokenLabel = computed(() =>
-  isTokenDeposit.value && tokenMetadata.value !== null
+  isTokenDeposit.value && tokenMetadata.value
     ? `Token: ${tokenMetadata.value.name} (${tokenMetadata.value.symbol})`
     : `Token: -`,
 )
@@ -196,7 +196,7 @@ const tokenLabel = computed(() =>
 const amountLabel = computed(() => {
   if (isEtherDeposit.value)
     return `Amount (in ${getTextByValue(selectedUnitValue.value)!.toLowerCase()})`
-  else if (isTokenDeposit.value && tokenMetadata.value !== null)
+  else if (isTokenDeposit.value && tokenMetadata.value)
     return `Amount (in ${tokenMetadata.value.decimals} decimals)`
   else return `Amount`
 })
@@ -241,7 +241,7 @@ function processForm(): ProcessedForm {
     This is because the deposit transaction is always an ether transaction.
     The token address is only used when depositing a token. */
     token = ethers.ZeroAddress
-  } else if (isTokenDeposit.value && tokenMetadata.value !== null) {
+  } else if (isTokenDeposit.value && tokenMetadata.value) {
     processedForm.amount = BigNumber(
       ethers.parseUnits(amount!.toString(), tokenMetadata.value.decimals).toString(),
     )
