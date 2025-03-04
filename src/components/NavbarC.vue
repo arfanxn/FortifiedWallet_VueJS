@@ -2,7 +2,7 @@
   <teleport to="#navbars">
     <nav
       id="navbar"
-      class="fixed top-0 right-0 left-0 flex items-center justify-between border-b-2 border-slate-700 bg-slate-300 px-4 py-6 text-slate-700 md:px-8"
+      class="fixed left-0 right-0 top-0 flex items-center justify-between border-b-2 border-slate-700 bg-slate-300 px-4 py-6 text-slate-700 md:px-8"
     >
       <div>
         <span class="md:hidden"><FontAwesomeIcon icon="wallet" class="text-2xl" /></span>
@@ -17,7 +17,7 @@
         <router-link to="/notifications">
           <FontAwesomeIcon icon="bell" class="text-xl" />
         </router-link>
-        <NavbarDropdownC :menus="state.menus as Menu[]" />
+        <NavbarDropdown :menus="state.menus as Menu[]" />
         <button class="md:hidden" @click="navigationStore.toggleSidebar">
           <FontAwesomeIcon :icon="faBars" class="text-xl" />
         </button>
@@ -30,7 +30,7 @@
 import { defineComponent, reactive } from 'vue'
 import { useRouter } from 'vue-router'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
-import NavbarDropdownC from './NavbarDropdownC.vue'
+import NavbarDropdown from './NavbarDropdown.vue'
 import { IconDefinition, library } from '@fortawesome/fontawesome-svg-core'
 import { faBell, faUser, faGear, faLinkSlash, faBars } from '@fortawesome/free-solid-svg-icons'
 import { useNavigationStore } from '@/stores/navigation.store'
