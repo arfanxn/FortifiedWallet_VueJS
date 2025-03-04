@@ -1,0 +1,17 @@
+
+{
+  "ignores": [
+    "vite",
+    "@vitejs/plugin-vue",
+    "@vue/*",
+    "vue",
+    "typescript",
+    "eslint",
+    "prettier",
+    "postcss"
+  ],
+  "parsers": {
+    "*.vue": ["vue"],
+    "*.ts": ["typescript"]
+  }
+}
