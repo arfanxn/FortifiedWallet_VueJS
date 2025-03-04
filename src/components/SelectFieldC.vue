@@ -23,7 +23,7 @@
 </template>
 
 <script setup lang="ts">
-import { notEmpty } from '@/utils/string.utils'
+import { notEmpty } from '@/utils/boolean.utils'
 import { defineComponent, defineModel, defineEmits, computed, onMounted, Ref, ref } from 'vue'
 import type { ObjectKeyValue } from '@/interfaces/interfaces'
 import { SelectFieldComponent } from '@/interfaces/component.interfaces'

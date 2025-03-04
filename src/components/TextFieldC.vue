@@ -1,6 +1,6 @@
 <template>
   <div class="flex flex-col gap-y-1 text-slate-700">
-    <label class="font-semibold" :for="inputId" v-if="notEmpty(props.label)">{{
+    <label class="font-semibold" :for="inputId" v-if="isNotEmpty(props.label)">{{
       props.label
     }}</label>
     <input
@@ -20,7 +20,7 @@
 </template>
 
 <script setup lang="ts">
-import { notEmpty } from '../utils/string.utils'
+import { notEmpty } from '../utils/boolean.utils'
 import { defineComponent, defineModel, defineEmits, computed } from 'vue'
 
 defineComponent({

@@ -63,7 +63,7 @@ import {
 } from '@vuelidate/validators'
 import { useBlockchainStore } from '@/stores/blockchain.store'
 import { isValidAddr, validateAndToast } from '@/helpers/validator.helpers'
-import { empty, notEmpty } from '@/utils/string.utils'
+import { empty, notEmpty } from '@/utils/boolean.utils'
 import { faPlus, faRotateLeft } from '@fortawesome/free-solid-svg-icons'
 import { library } from '@fortawesome/fontawesome-svg-core'
 import { useWallet } from '@/composables/wallet.composable'
@@ -129,7 +129,7 @@ const rules = computed(() => ({
     minLength: helpers.withMessage(
       `Signers must be at least ${minumumSigners} provided.`,
       (signers: StringOrNull[]) =>
-        signersLength.value >= minumumSigners && notEmpty(signers[minumumSigners - 1]),
+        signersLength.value >= minumumSigners && isNotEmpty(signers[minumumSigners - 1]),
     ),
     // Ensure that there are no more than 10 signers
     maxLength: helpers.withMessage(
@@ -184,11 +184,11 @@ function signerOnInput(index: number) {
   const signer = form.signers[index]
 
   const indexIsLastSignersIndex = index == signersLastIndex.value
-  const signerNotEmpty = notEmpty(signer)
+  const signerNotEmpty = isNotEmpty(signer)
   const signersLengthBelowMax = signersLength.value < maximumSigners
 
   const indexIsSecondLastSignersIndex = index == signersSecondLastIndex.value
-  const signerIsEmpty = empty(signer)
+  const signerIsEmpty = isEmpty(signer)
   const signersLengthAboveMin = signersLength.value > minumumSigners
 
   if (indexIsLastSignersIndex && signerNotEmpty && signersLengthBelowMax) form.signers.push('')
@@ -212,7 +212,7 @@ function processForm() {
   let { name, signers, minimumApprovals, password, salt } = toRaw(form)
 
   signers = signers.filter((signer, index) => {
-    if (index == signersLastIndex.value && empty(signer)) return false
+    if (index == signersLastIndex.value && isEmpty(signer)) return false
     return true
   })
 

@@ -1,7 +1,7 @@
 <template>
   <section class="flex w-full flex-col bg-slate-300 text-slate-700">
     <header class="flex w-full justify-between px-4 py-4">
-      <div class="flex gap-x-2" v-if="notEmpty(route.params.walletAddr)">
+      <div class="flex gap-x-2" v-if="isNotEmpty(route.params.walletAddr)">
         <ButtonC
           :icon="faPlus"
           text="Deposit"
@@ -31,7 +31,7 @@ import ButtonC from '@/components/ButtonC.vue'
 import { useRouter, useRoute } from 'vue-router'
 import { faPlus, faRightLeft, faLock } from '@fortawesome/free-solid-svg-icons'
 import { library } from '@fortawesome/fontawesome-svg-core'
-import { notEmpty } from '@/utils/string.utils'
+import { notEmpty } from '@/utils/boolean.utils'
 import { WalletRouteName } from '@/enums/wallet.enums'
 
 library.add(faPlus, faRightLeft, faLock)

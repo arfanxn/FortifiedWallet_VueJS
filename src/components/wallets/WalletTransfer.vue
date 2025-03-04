@@ -105,7 +105,7 @@ const rules = computed(() => ({
     numeric,
     //   helpers.withMessage(
     //   'Amount must be a positive number.',
-    //   (amount) => notEmpty(amount) && amount > 0,
+    //   (amount) => isNotEmpty(amount) && amount > 0,
     // )
   },
 }))

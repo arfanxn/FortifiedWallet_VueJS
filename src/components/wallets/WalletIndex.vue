@@ -56,7 +56,7 @@
 
       <!-- Pagination controls -->
       <div
-        v-if="empty(route.params?.walletAddr)"
+        v-if="isEmpty(route.params?.walletAddr)"
         class="flex items-center justify-end gap-x-2 px-4"
       >
         <span class="mr-auto text-sm font-semibold">Page: {{ page }}</span>
@@ -94,7 +94,7 @@ import PaginationButtonC from '../PaginationButtonC.vue'
 import { helpers } from '@vuelidate/validators'
 import { isValidAddr, validateAndToast } from '@/helpers/validator.helpers'
 import useVuelidate from '@vuelidate/core'
-import { empty, notEmpty } from '@/utils/string.utils'
+import { empty, notEmpty } from '@/utils/boolean.utils'
 import { WalletDoesNotExistError } from '@/errors/wallet.errors'
 import { showToast } from '@/helpers/toast.helpers'
 import { toBase10Number } from '@/utils/number.utils'
@@ -125,7 +125,7 @@ onMounted(async () => {
   page.value = toBase10Number(route.query.page as string, 1)
 
   // Fetch wallet or wallets based on the presence of a wallet address
-  notEmpty(form.walletAddr)
+  isNotEmpty(form.walletAddr)
     ? await findWallet(form.walletAddr as EthereumAddress)
     : await fetchWallets(page.value)
 })
@@ -161,7 +161,7 @@ const rules = {
     // Custom error message for invalid wallet address
     validAddrIf: helpers.withMessage(
       'Wallet address is not valid.',
-      (addr) => empty(addr) || isValidAddr(addr as StringOrNull),
+      (addr) => isEmpty(addr) || isValidAddr(addr as StringOrNull),
     ),
   },
 }
@@ -205,7 +205,7 @@ async function navigateToWalletCreate() {
 async function textFieldOnKeyupEnter() {
   if (!(await validateAndToast(v$))) return
 
-  if (empty(form.walletAddr)) {
+  if (isEmpty(form.walletAddr)) {
     await fetchWallets()
     router.push({ name: props.defaultRouteName, params: {}, query: { page: page.value } })
     return

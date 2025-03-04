@@ -79,7 +79,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { useVuelidate } from '@vuelidate/core'
 import { useWallet } from '@/composables/wallet.composable'
 import { useToken } from '@/composables/token.composable'
-import { notEmpty } from '@/utils/string.utils'
+import { notEmpty } from '@/utils/boolean.utils'
 import { isValidAddr, validateAndToast } from '@/helpers/validator.helpers'
 import ButtonC from '@/components/ButtonC.vue'
 import SelectFieldC from '@/components/SelectFieldC.vue'
@@ -154,7 +154,7 @@ const rules = computed(() => {
       tokenExists: helpers.withMessage('Token does not exist.', () =>
         // If this is a token deposit, the token address must exist and be a valid Ethereum address.
         // If it's an ether deposit, the token address is not required.
-        isTokenDeposit.value ? notEmpty(tokenMetadata.value?.name) : true,
+        isTokenDeposit.value ? isNotEmpty(tokenMetadata.value?.name) : true,
       ),
     },
     amount: {
