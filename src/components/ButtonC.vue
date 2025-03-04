@@ -3,7 +3,7 @@
     class="inline-flex cursor-pointer items-center gap-x-2 rounded-full bg-slate-700 px-4 text-slate-300 outline-2 outline-slate-200 hover:bg-slate-600 hover:text-slate-200"
     @click="onClick()"
   >
-    <FontAwesomeIcon :icon="props.icon" class="text-sm" v-if="props.icon" />
+    <FontAwesomeIcon v-if="props.icon" :icon="props.icon" class="text-sm" />
     <span>{{ props.text }}</span>
   </button>
 </template>
@@ -21,7 +21,7 @@ const emit = defineEmits(['onClick'])
 
 interface Props {
   text: string
-  icon: Object
+  icon?: IconDefinition
 }
 let props = defineProps<Props>()
 
