@@ -14,7 +14,7 @@ export function contains(str?: string, substr?: string): boolean {
  * @param {T} value - The value to check
  * @returns {boolean} True if the value is not empty/zero/falsy
  */
-function isNotEmpty<T>(value: T): boolean {
+export function isNotEmpty<T>(value: T): boolean {
   // Check for undefined/null
   if (value === undefined || value === null) return false
 
