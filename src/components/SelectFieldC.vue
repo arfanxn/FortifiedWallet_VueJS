@@ -24,7 +24,7 @@
 import { notEmpty } from '@/utils/string.utils'
 import { defineComponent, defineModel, defineEmits, computed, onMounted, Ref, ref } from 'vue'
 import type { ObjectKeyValue } from '@/interfaces/interfaces'
-import { SelectFieldProps } from '@/interfaces/component.interfaces'
+import { SelectFieldProps } from '@/interfaces/componentProps.interfaces'
 
 defineComponent({
   name: 'SelectFieldC',
