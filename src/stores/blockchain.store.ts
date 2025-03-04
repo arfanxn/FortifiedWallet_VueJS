@@ -71,10 +71,9 @@ export const useBlockchainStore = defineStore('blockchain', () => {
    * @returns {Promise<void>}
    * @throws {Error}
    */
-  const disconnect = async () => {
+  const disconnect = async (): Promise<void> => {
     await provider?.value?.removeAllListeners()
-    // TODO: fix removeAllListeners error
-    // await window.ethereum?.removeAllListeners()
+    await window.ethereum?.removeAllListeners?.()
     provider.value = null
     accounts.value = []
     persistState()
