@@ -9,7 +9,6 @@
     "preview": "vite preview",
     "lint": "eslint --ext .ts,vue --ignore-path .gitignore . --fix",
     "format": "prettier --write src/",
-    "clean:unused": "depcheck --json | jq -r '.dependencies[]' | xargs npm uninstall"
   },
   "dependencies": {
     "@fortawesome/fontawesome-svg-core": "^6.7.2",
@@ -18,7 +17,6 @@
     "@fortawesome/free-solid-svg-icons": "^6.7.2",
     "@fortawesome/vue-fontawesome": "^3.0.8",
     "@tailwindcss/vite": "^4.0.3",
-    "@vee-validate/rules": "^4.15.0",
     "@vuelidate/core": "^2.0.3",
     "@vuelidate/validators": "^2.0.4",
     "@vueuse/core": "^12.5.0",
