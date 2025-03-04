@@ -28,7 +28,6 @@
 </template>
 
 <script setup lang="ts">
-// TODO: rename this into NavbarDropdownC.vue
 import { defineComponent, defineProps, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'

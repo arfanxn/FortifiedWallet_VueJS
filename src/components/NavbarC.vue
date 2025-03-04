@@ -17,7 +17,7 @@
         <router-link to="/notifications">
           <FontAwesomeIcon icon="bell" class="text-xl" />
         </router-link>
-        <DropdownMenuC :menus="state.menus as Menu[]" />
+        <NavbarDropdownC :menus="state.menus as Menu[]" />
         <button class="md:hidden" @click="navigationStore.toggleSidebar">
           <FontAwesomeIcon :icon="faBars" class="text-xl" />
         </button>
@@ -30,7 +30,7 @@
 import { defineComponent, reactive } from 'vue'
 import { useRouter } from 'vue-router'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
-import DropdownMenuC from './DropdownMenuC.vue'
+import NavbarDropdownC from './NavbarDropdownC.vue'
 import { IconDefinition, library } from '@fortawesome/fontawesome-svg-core'
 import { faBell, faUser, faGear, faLinkSlash, faBars } from '@fortawesome/free-solid-svg-icons'
 import { useNavigationStore } from '@/stores/navigation.store'
