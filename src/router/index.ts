@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { useBlockchainStore } from '@/stores/blockchain.store'
+import { RouteName } from '@/enums/route.enums'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -8,7 +9,7 @@ const router = createRouter({
     {
       path: '/',
       alias: ['/dashboard', '/wallets'],
-      name: 'dashboard',
+      name: RouteName.Dashboard,
       component: () => import('../views/DashboardView.vue'),
       meta: {
         requiresWallet: true,
@@ -16,22 +17,22 @@ const router = createRouter({
       children: [
         {
           path: '/wallets/create',
-          name: 'wallet.create',
+          name: RouteName.WalletCreate,
           component: () => import('../components/wallets/WalletCreate.vue'),
         },
         {
           path: '/wallets/:walletAddr',
-          name: 'wallet.show',
+          name: RouteName.WalletShow,
           component: () => import('../components/wallets/WalletShow.vue'),
         },
         {
           path: '/wallets/:walletAddr/deposit/:depositType?',
-          name: 'wallet.deposit',
+          name: RouteName.WalletDeposit,
           component: () => import('../components/wallets/WalletDeposit.vue'),
         },
         {
           path: '/wallets/:walletAddr/transfer',
-          name: 'wallet.transfer',
+          name: RouteName.WalletTransfer,
           component: () => import('../components/wallets/WalletTransfer.vue'),
         },
       ],
@@ -40,7 +41,7 @@ const router = createRouter({
     // Token page
     {
       path: '/tokens',
-      name: 'token.index',
+      name: RouteName.TokenIndex,
       component: () => import('../views/TokensView.vue'),
       meta: {
         requiresWallet: true,
@@ -50,7 +51,7 @@ const router = createRouter({
     // Transaction page
     {
       path: '/transactions',
-      name: 'transaction.index',
+      name: RouteName.TransactionIndex,
       component: () => import('../views/TransactionView.vue'),
       meta: {
         requiresWallet: true,
@@ -60,7 +61,7 @@ const router = createRouter({
     // Connect page
     {
       path: '/connect',
-      name: 'connect',
+      name: RouteName.WalletConnect,
       component: () => import('../views/ConnectView.vue'),
     },
   ],
