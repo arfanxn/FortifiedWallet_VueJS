@@ -8,31 +8,37 @@
         'hidden opacity-0': !isDropdownOpened,
       }"
     >
-      <li v-for="(menu, index) in props.menus" :key="index" class="w-full">
-        <button
-          @click="menuOnClick(menu)"
-          class="inline-flex w-full items-center justify-between gap-x-2 px-2 py-1 text-slate-300 hover:bg-slate-600 hover:text-slate-200"
-        >
-          <FontAwesomeIcon
-            v-if="menu.icon"
-            :icon="menu.icon"
-            class="w-4 text-center text-xl md:w-6"
-          />
-          <span class="grow text-left">
-            {{ menu.name }}
-          </span>
-        </button>
-      </li>
+      <NavbarDropdownItem
+        @onClick="() => router.push({ name: 'account.profile.edit' })"
+        :icon="faUser"
+        text="Accounts"
+      />
+      <NavbarDropdownItem
+        @onClick="() => router.push({ name: 'account.setting.edit' })"
+        :icon="faGear"
+        text="Settings"
+      />
+      <NavbarDropdownItem
+        @onClick="async () => await handleDisconnect()"
+        :icon="faLinkSlash"
+        text="Disconnect"
+      />
     </ul>
   </button>
 </template>
 
 <script setup lang="ts">
-import { defineComponent, defineProps, ref } from 'vue'
+import { defineComponent, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
-import type { IconDefinition } from '@fortawesome/fontawesome-svg-core'
-import type { StringOrNull } from '@/interfaces/interfaces'
+import NavbarDropdownItem from '@/components/NavbarDropdownItem.vue'
+import { library } from '@fortawesome/fontawesome-svg-core'
+import { faBell, faGear, faLinkSlash, faUser, faBars } from '@fortawesome/free-solid-svg-icons'
+import { useBlockchainStore } from '@/stores/blockchain.store'
+import { showToast } from '@/helpers/toast.helpers'
+import { ToastType } from '@/enums/toast.enums'
+
+library.add(faBell, faUser, faGear, faLinkSlash, faBars)
 
 defineComponent({
   name: 'DropdownMenuC',
@@ -40,23 +46,13 @@ defineComponent({
 
 let router = useRouter()
 
+const blockchainStore = useBlockchainStore()
+
 const isDropdownOpened = ref(false)
 
-interface Menu {
-  icon: IconDefinition
-  name: string
-  path: StringOrNull
-  handler: (() => Promise<void>) | (() => void) | null
-}
-interface Props {
-  menus: Array<Menu>
-}
-const props = withDefaults(defineProps<Props>(), {
-  menus: () => [],
-})
-
-function menuOnClick(menu: Menu) {
-  if (menu.path !== null) router.push(menu.path)
-  else if (menu.handler !== null) menu.handler()
+async function handleDisconnect() {
+  await blockchainStore.disconnect()
+  router.push({ name: 'connect' })
+  showToast(ToastType.SUCCESS, 'Successfully disconnected from wallet.', 5000)
 }
 </script>
