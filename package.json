@@ -7,8 +7,9 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "lint": "eslint . --fix",
-    "format": "prettier --write src/"
+    "lint": "eslint --ext .ts,vue --ignore-path .gitignore . --fix",
+    "format": "prettier --write src/",
+    "clean:unused": "depcheck --json | jq -r '.dependencies[]' | xargs npm uninstall"
   },
   "dependencies": {
     "@fortawesome/fontawesome-svg-core": "^6.7.2",
@@ -33,17 +34,21 @@
   "devDependencies": {
     "@eslint/js": "^9.18.0",
     "@types/node": "^22.13.9",
+    "@typescript-eslint/eslint-plugin": "^8.26.0",
+    "@typescript-eslint/parser": "^8.26.0",
     "@vitejs/plugin-vue": "^5.2.1",
     "@vitejs/plugin-vue-jsx": "^4.1.1",
-    "@vue/eslint-config-prettier": "^10.1.0",
+    "@vue/eslint-config-prettier": "^10.2.0",
     "@vue/tsconfig": "^0.7.0",
-    "eslint": "^9.18.0",
+    "eslint": "^9.21.0",
     "eslint-plugin-vue": "^9.32.0",
     "prettier": "^3.4.2",
     "prettier-plugin-tailwindcss": "^0.6.11",
     "sass": "^1.83.4",
+    "tsx": "^4.19.3",
     "typescript": "^5.8.2",
     "vite": "^6.0.11",
-    "vite-plugin-vue-devtools": "^7.7.0"
+    "vite-plugin-vue-devtools": "^7.7.0",
+    "vue-tsc": "^2.2.8"
   }
 }
