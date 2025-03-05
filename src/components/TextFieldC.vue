@@ -20,7 +20,7 @@
 </template>
 
 <script setup lang="ts">
-import { notEmpty } from '../utils/boolean.utils'
+import { isNotEmpty } from '../utils/boolean.utils'
 import { defineComponent, defineModel, defineEmits, computed } from 'vue'
 
 defineComponent({
@@ -30,26 +30,15 @@ const emit = defineEmits(['onFocus', 'onBlur', 'onInput', 'onKeyupEnter'])
 
 const inputId = computed(() => Date.now() + props.name)
 const model = defineModel()
-const props = defineProps({
-  name: {
-    type: String,
-    required: true,
-  },
-  placeholder: {
-    type: String,
-    default: null,
-  },
-  label: {
-    type: String,
-    default: null,
-  },
-  disabled: {
-    type: Boolean,
-    default: false,
-  },
-  value: {
-    type: String,
-    default: null,
-  },
+
+interface Props {
+  name: string
+  disabled?: boolean
+  placeholder?: string
+  label?: string
+  value?: string
+}
+const props = withDefaults(defineProps<Props>(), {
+  disabled: false,
 })
 </script>
