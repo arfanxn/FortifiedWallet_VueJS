@@ -32,7 +32,7 @@ export async function validateAndToast(v$: Ref<Validation>): Promise<boolean> {
  * @returns {boolean} True if the address is valid, false otherwise
  */
 export function isValidAddr(address: StringOrNullOrUndefined): boolean {
-  if (address !== null || address !== undefined) return false
+  if (address === null || address === undefined) return false
   // Quick format check first
   if (!/^0x[a-fA-F0-9]{40}$/.test(address)) return false
 
