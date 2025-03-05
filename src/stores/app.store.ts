@@ -6,6 +6,7 @@ export const useAppStore = defineStore('app', () => {
   //                                State
   // ==========================================================================
   const isSidebarOpened = ref(false)
+  const isLoading = ref(false)
 
   // ==========================================================================
   //                                Getters
@@ -19,5 +20,12 @@ export const useAppStore = defineStore('app', () => {
     isSidebarOpened.value = !isSidebarOpened.value
   }
 
-  return { isSidebarOpened, toggleSidebar }
+  const startLoading = (): void => {
+    isLoading.value = true
+  }
+  const stopLoading = (): void => {
+    isLoading.value = false
+  }
+
+  return { isSidebarOpened, toggleSidebar, isLoading, startLoading, stopLoading }
 })
