@@ -94,13 +94,12 @@ import PaginationButtonC from '../PaginationButtonC.vue'
 import { helpers } from '@vuelidate/validators'
 import { isValidAddr, validateAndToast } from '@/helpers/validator.helpers'
 import useVuelidate from '@vuelidate/core'
-import { empty, notEmpty } from '@/utils/boolean.utils'
+import { isEmpty, isNotEmpty } from '@/utils/boolean.utils'
 import { WalletDoesNotExistError } from '@/errors/wallet.errors'
 import { showToast } from '@/helpers/toast.helpers'
 import { toBase10Number } from '@/utils/number.utils'
 import { useWalletStore } from '@/stores/wallet.store'
 import { ToastType } from '@/enums/toast.enums'
-import type { StringOrNull } from '@/interfaces/interfaces'
 import type { EthereumAddress } from '@/interfaces/ethereum.interfaces'
 import type { Wallet } from '@/interfaces/wallet.interfaces'
 import { PaginationButtonDirection } from '@/enums/component.enums'
@@ -118,7 +117,7 @@ defineComponent({
 
 onMounted(async () => {
   // Initialize form with wallet address from route params
-  form.walletAddr = route.params?.walletAddr as StringOrNull
+  form.walletAddr = route.params?.walletAddr as string
   // Set item clicked state based on wallet existence
   isItemClicked.value = walletStore.wallet !== null
   // Initialize page number from route query, default to 1
@@ -139,18 +138,18 @@ interface Props {
 const props = defineProps<Props>()
 
 interface Form {
-  walletAddr: StringOrNull
+  walletAddr: string
 }
 // Reactive form for wallet address input
-const form = reactive<Form>({ walletAddr: null })
+const form = reactive<Form>({ walletAddr: '' })
 
 // Watch for changes in wallet address in route params
 watch(
   () => route.params.walletAddr,
   (walletAddr) => {
-    form.walletAddr = walletAddr as StringOrNull
+    form.walletAddr = walletAddr as string
     // Fetch wallet if address is valid, otherwise set wallet to null
-    if (isValidAddr(walletAddr as StringOrNull)) findWallet(walletAddr as EthereumAddress)
+    if (isValidAddr(walletAddr as string)) findWallet(walletAddr as EthereumAddress)
     else walletStore.wallet = null
   },
 )
@@ -161,7 +160,7 @@ const rules = {
     // Custom error message for invalid wallet address
     validAddrIf: helpers.withMessage(
       'Wallet address is not valid.',
-      (addr) => isEmpty(addr) || isValidAddr(addr as StringOrNull),
+      (addr: string) => isEmpty(addr) || isValidAddr(addr),
     ),
   },
 }

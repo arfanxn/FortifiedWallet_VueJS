@@ -1,5 +1,3 @@
-import type { ObjectKeyValue, StringOrNull } from '@/interfaces/interfaces'
-
 export namespace SelectFieldComponent {
   export interface Props<T> {
     name: string

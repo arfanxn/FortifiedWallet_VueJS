@@ -79,7 +79,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { useVuelidate } from '@vuelidate/core'
 import { useWallet } from '@/composables/wallet.composable'
 import { useToken } from '@/composables/token.composable'
-import { notEmpty } from '@/utils/boolean.utils'
+import { isNotEmpty } from '@/utils/boolean.utils'
 import { isValidAddr, validateAndToast } from '@/helpers/validator.helpers'
 import ButtonC from '@/components/ButtonC.vue'
 import SelectFieldC from '@/components/SelectFieldC.vue'
@@ -90,7 +90,6 @@ import { useEthereumUnit } from '@/composables/ethereumUnit.composable'
 import { computedAsync } from '@vueuse/core'
 import { ToastType } from '@/enums/toast.enums'
 import { EthereumAddress } from '@/interfaces/ethereum.interfaces'
-import type { StringOrNull } from '@/interfaces/interfaces'
 import { TokenMetadata } from '@/interfaces/token.interfaces'
 import BigNumber from 'bignumber.js'
 
@@ -116,27 +115,26 @@ const isEtherDeposit = computed(() => depositType.value === 'eth')
 const isTokenDeposit = computed(() => depositType.value === 'token')
 
 interface Form {
-  walletAddr: StringOrNull
-  token: StringOrNull
-  amount: StringOrNull
+  walletAddr: string
+  token: string
+  amount: string
 }
 interface ProcessedForm {
   walletAddr: EthereumAddress
   token: EthereumAddress
   amount: BigNumber
 }
-
 const form = reactive<Form>({
-  walletAddr: route.params?.walletAddr?.toString(),
-  token: null,
-  amount: null,
+  walletAddr: route.params?.walletAddr?.toString() ?? '',
+  token: '',
+  amount: '',
 })
 const rules = computed(() => {
   return {
     walletAddr: {
       validAddr: helpers.withMessage(
         'Wallet address must be valid Ethereum address.',
-        (address: StringOrNull) => isValidAddr(address),
+        (address: string) => isValidAddr(address),
       ),
     },
     token: {
@@ -146,7 +144,7 @@ const rules = computed(() => {
       ),
       validAddr: helpers.withMessage(
         'Token address must be valid ERC20 address.',
-        (address: StringOrNull) =>
+        (address: string) =>
           // If this is a token deposit, the token address must be a valid Ethereum address.
           // If it's an ether deposit, the token address is not required.
           isTokenDeposit.value ? isValidAddr(address) : true,
@@ -205,8 +203,8 @@ const amountLabel = computed(() => {
  * Resets the input fields to their default values.
  */
 function resetForm() {
-  form.amount = null
-  form.token = null
+  form.amount = ''
+  form.token = ''
   resetSelectedUnitValue()
 }
 

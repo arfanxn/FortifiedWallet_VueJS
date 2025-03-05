@@ -2,7 +2,6 @@ import { showToast } from '@/helpers/toast.helpers'
 import { ethers } from 'ethers'
 import type { Ref } from 'vue'
 import type { ErrorObject, Validation } from '@vuelidate/core'
-import { EthereumAddress } from '@/interfaces/ethereum.interfaces'
 import { ToastType } from '@/enums/toast.enums'
 import { StringOrNullOrUndefined } from '@/interfaces/interfaces'
 

@@ -61,7 +61,6 @@ import { faPlus, faRotateLeft } from '@fortawesome/free-solid-svg-icons'
 import { library } from '@fortawesome/fontawesome-svg-core'
 import TextFieldC from '@/components/TextFieldC.vue'
 import ButtonC from '@/components/ButtonC.vue'
-import { StringOrNull } from '@/interfaces/interfaces'
 
 library.add(faPlus, faRotateLeft)
 
@@ -70,9 +69,9 @@ defineComponent({
 })
 
 interface Form {
-  sender: StringOrNull
-  receiver: StringOrNull
-  token: StringOrNull
+  sender: string
+  receiver: string
+  token: string
   amount: number
 }
 const form = reactive<Form>({
@@ -86,19 +85,18 @@ const rules = computed(() => ({
   sender: {
     validAddr: helpers.withMessage(
       'Sender address must be valid Ethereum address.',
-      (addr: StringOrNull) => isValidAddr(addr),
+      (addr: string) => isValidAddr(addr),
     ),
   },
   receiver: {
     validAddr: helpers.withMessage(
       'Receiver address must be valid Ethereum address.',
-      (addr: StringOrNull) => isValidAddr(addr),
+      (addr: string) => isValidAddr(addr),
     ),
   },
   token: {
-    validAddr: helpers.withMessage(
-      'Token address must be valid ERC20 address.',
-      (addr: StringOrNull) => isValidAddr(addr),
+    validAddr: helpers.withMessage('Token address must be valid ERC20 address.', (addr: string) =>
+      isValidAddr(addr),
     ),
   },
   amount: {

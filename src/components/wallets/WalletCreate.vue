@@ -63,7 +63,7 @@ import {
 } from '@vuelidate/validators'
 import { useBlockchainStore } from '@/stores/blockchain.store'
 import { isValidAddr, validateAndToast } from '@/helpers/validator.helpers'
-import { empty, notEmpty } from '@/utils/boolean.utils'
+import { isEmpty, isNotEmpty } from '@/utils/boolean.utils'
 import { faPlus, faRotateLeft } from '@fortawesome/free-solid-svg-icons'
 import { library } from '@fortawesome/fontawesome-svg-core'
 import { useWallet } from '@/composables/wallet.composable'
@@ -74,7 +74,6 @@ import { formatEthAddr } from '@/helpers/string.helpers'
 import { ToastType } from '@/enums/toast.enums'
 import TextFieldC from '@/components/TextFieldC.vue'
 import ButtonC from '@/components/ButtonC.vue'
-import type { StringOrNull } from '@/interfaces/interfaces'
 
 library.add(faPlus, faRotateLeft)
 
@@ -90,19 +89,27 @@ defineComponent({
 // Define constants for wallet creation constraints
 const [minimumApprovalsRequired, minumumSigners, maximumSigners] = [2, 2, 10]
 
-interface Form {
-  name: StringOrNull
-  signers: StringOrNull[]
+interface ProcessedForm {
+  name: string
+  signers: string[]
   minimumApprovals: number
-  password: StringOrNull
-  salt: StringOrNull
+  password: string
+  passwordHash: string
+  salt: string
+}
+interface Form {
+  name: string
+  signers: string[]
+  minimumApprovals: number
+  password: string
+  salt: string
 }
 const form = reactive<Form>({
-  name: null,
-  signers: [blockchainStore.activeAccount, null],
+  name: '',
+  signers: [blockchainStore.activeAccount, ''],
   minimumApprovals: minimumApprovalsRequired,
-  password: null,
-  salt: null,
+  password: '',
+  salt: '',
 })
 const signersLength = computed(() => form.signers.length)
 const signersLastIndex = computed(() => signersLength.value - 1)
@@ -128,7 +135,7 @@ const rules = computed(() => ({
     // Ensure that there are at least 2 signers
     minLength: helpers.withMessage(
       `Signers must be at least ${minumumSigners} provided.`,
-      (signers: StringOrNull[]) =>
+      (signers: string[]) =>
         signersLength.value >= minumumSigners && isNotEmpty(signers[minumumSigners - 1]),
     ),
     // Ensure that there are no more than 10 signers
@@ -142,8 +149,8 @@ const rules = computed(() => ({
     // Otherwise, check if the signer is not empty and matches the Ethereum address regex pattern.
     validAddr: helpers.withMessage(
       'Signers must be valid Ethereum addresses.',
-      (signers: StringOrNull[]) => {
-        return signers.every((signer: StringOrNull, index: number) => {
+      (signers: string[]) => {
+        return signers.every((signer: string, index: number) => {
           // If it's the last signer and the signers array length is not at the minimum or maximum, return true to allow adding a new row.
           const [isLastIndex, notMinLength, notMaxLength] = [
             index == signersLastIndex.value,
@@ -157,7 +164,7 @@ const rules = computed(() => ({
         })
       },
     ),
-    unique: helpers.withMessage('Signers must be unique.', (signers: StringOrNull[]) =>
+    unique: helpers.withMessage('Signers must be unique.', (signers: string[]) =>
       signers.every((signer, index) => !signers.slice(0, index).includes(signer)),
     ),
   },
@@ -201,11 +208,11 @@ function signerOnInput(index: number) {
  * and setting the minimum approvals required back to the minimum of 2.
  */
 function resetForm() {
-  form.name = null
-  form.signers = [blockchainStore.activeAccount, null]
+  form.name = ''
+  form.signers = [blockchainStore.activeAccount, '']
   form.minimumApprovals = minimumApprovalsRequired
-  form.password = null
-  form.salt = null
+  form.password = ''
+  form.salt = ''
 }
 
 function processForm() {
@@ -218,7 +225,7 @@ function processForm() {
 
   const passwordHash = ethers.solidityPackedKeccak256(['string', 'string'], [password, salt])
 
-  return {
+  const processedForm: ProcessedForm = {
     name,
     signers,
     minimumApprovals,
@@ -226,6 +233,7 @@ function processForm() {
     passwordHash,
     salt,
   }
+  return processedForm
 }
 
 async function onSubmit() {
