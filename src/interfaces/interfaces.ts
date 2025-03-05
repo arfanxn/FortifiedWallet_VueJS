@@ -1,7 +1,9 @@
 export type StringOrNull = string | null
+export type StringOrUndefined = string | undefined
 export type StringOrNullOrUndefined = string | null | undefined
 
 export type BooleanOrNull = boolean | null
+export type BooleanOrUndefined = boolean | undefined
 export type BooleanOrNullOrUndefined = boolean | null | undefined
 
 export type NumberOrNull = number | null
