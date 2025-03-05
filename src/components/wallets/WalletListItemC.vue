@@ -5,7 +5,7 @@
       'bg-slate-700 text-slate-300 hover:bg-slate-700! hover:text-slate-300!':
         route.params.walletAddr === props.wallet.address,
     }"
-    @click="() => onItemClick(props.wallet)"
+    @click="(event: MouseEvent) => onClick(event, props.wallet)"
   >
     <FontAwesomeIcon :icon="faUser" class="text-xl" />
     <div class="flex flex-col items-start overflow-hidden text-ellipsis">
@@ -31,14 +31,14 @@ library.add(faDollarSign, faUser)
 
 const route = useRoute()
 
-const emit = defineEmits(['onItemClick'])
+const emit = defineEmits(['onClick'])
 
 interface Props {
   wallet: Wallet
 }
 const props = defineProps<Props>()
 
-function onItemClick(wallet: Wallet) {
-  emit('onItemClick', wallet)
+function onClick(event: MouseEvent, wallet: Wallet) {
+  emit('onClick', event, wallet)
 }
 </script>

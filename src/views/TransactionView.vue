@@ -28,7 +28,6 @@ let blockchainStore = useBlockchainStore()
 
 function filterTransactionByWallet(address) {
   router.push({ path: '/transactions', query: { wallet: address } })
-  console.log('filterTransactionByWallet', address)
 }
 
 onMounted(() => {})
