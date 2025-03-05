@@ -5,6 +5,7 @@
         class="w-full md:basis-1/4"
         defaultRouteName="dashboard"
         @onItemClick="(wallet: Wallet) => navigateToShowWallet(wallet)"
+        @onItemUnclick="() => navigateBack()"
       />
       <div class="flex w-full flex-col md:basis-3/4">
         <WalletMenu />
@@ -23,18 +24,24 @@ import WalletIndex from '@/components/wallets/WalletIndex.vue'
 import WalletMenu from '@/components/wallets/WalletMenu.vue'
 import { onMounted } from 'vue'
 import { Wallet } from '@/interfaces/wallet.interfaces'
+import { RouteName } from '@/enums/route.enums'
+import { useWalletStore } from '@/stores/wallet.store'
 
 library.add(faLink)
 
+const walletStore = useWalletStore()
+
 const router = useRouter()
 
-onMounted(() => {})
+onMounted(() => {
+  if (walletStore.wallet !== undefined) navigateToShowWallet(walletStore.wallet)
+})
 
 function navigateToShowWallet(wallet: Wallet) {
-  router.push({ name: 'wallet.show', params: { walletAddr: wallet.address } })
+  router.push({ name: RouteName.WalletShow, params: { walletAddr: wallet.address } })
 }
 
-// function navigateBack() {
-//   router.push({ name: 'dashboard' })
-// }
+function navigateBack() {
+  router.replace({ name: RouteName.Dashboard })
+}
 </script>

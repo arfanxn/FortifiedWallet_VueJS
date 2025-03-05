@@ -21,7 +21,7 @@
 
       <!-- Message displayed when no wallets are found -->
       <div
-        v-if="walletStore.wallets.length === 0 && walletStore.wallet === null"
+        v-if="walletStore.wallets.length === 0 && walletStore.wallet === undefined"
         class="flex items-center justify-center"
       >
         <span class="text-lg font-semibold">No Wallet(s) Found.</span>
@@ -29,28 +29,25 @@
 
       <!-- List of wallet items -->
       <ul
-        v-show="walletStore.wallets.length > 0 || walletStore.wallet !== null"
+        v-show="walletStore.wallets.length > 0 || walletStore.wallet !== undefined"
         class="flex flex-col gap-y-4"
       >
         <!-- Single wallet item if a specific wallet is selected -->
         <WalletListItemC
-          v-if="walletStore.wallet !== null"
+          v-if="walletStore.wallet !== undefined"
           :wallet="walletStore.wallet"
-          @onItemClick="
-            () =>
-              isItemClicked
-                ? onItemUnclick(walletStore.wallet as Wallet)
-                : onItemClick(walletStore.wallet as Wallet)
+          @onClick="
+            () => (isItemClicked ? onItemUnclick() : onItemClick(walletStore.wallet as Wallet))
           "
         />
 
         <!-- Loop through and display all wallets -->
         <WalletListItemC
+          v-show="walletStore.wallet === undefined"
           v-for="(wallet, index) in walletStore.wallets"
           :key="index"
-          v-show="walletStore.wallet === null"
           :wallet="wallet"
-          @onItemClick="onItemClick"
+          @onClick="() => onItemClick(wallet as Wallet)"
         />
       </ul>
 
@@ -103,6 +100,8 @@ import { ToastType } from '@/enums/toast.enums'
 import type { EthereumAddress } from '@/interfaces/ethereum.interfaces'
 import type { Wallet } from '@/interfaces/wallet.interfaces'
 import { PaginationButtonDirection } from '@/enums/component.enums'
+import { useAppStore } from '@/stores/app.store'
+import { useApp } from '@/composables/app.composable'
 library.add(faSquareCaretLeft, faSquareCaretRight, faDollarSign, faPlus, faUser)
 
 const route = useRoute()
@@ -110,6 +109,7 @@ const router = useRouter()
 
 const { fetchWallets, findWallet } = useWallet()
 const walletStore = useWalletStore()
+const { startLoading, stopLoading } = useApp()
 
 defineComponent({
   name: 'WalletIndex',
@@ -119,7 +119,7 @@ onMounted(async () => {
   // Initialize form with wallet address from route params
   form.walletAddr = route.params?.walletAddr as string
   // Set item clicked state based on wallet existence
-  isItemClicked.value = walletStore.wallet !== null
+  isItemClicked.value = isNotEmpty(form.walletAddr)
   // Initialize page number from route query, default to 1
   page.value = toBase10Number(route.query.page as string, 1)
 
@@ -131,12 +131,6 @@ onMounted(async () => {
 
 const emit = defineEmits(['onItemClick', 'onItemUnclick'])
 
-// Prop for default route navigation when an item is unclicked or page changes
-interface Props {
-  defaultRouteName: string
-}
-const props = defineProps<Props>()
-
 interface Form {
   walletAddr: string
 }
@@ -146,11 +140,12 @@ const form = reactive<Form>({ walletAddr: '' })
 // Watch for changes in wallet address in route params
 watch(
   () => route.params.walletAddr,
-  (walletAddr) => {
-    form.walletAddr = walletAddr as string
+  async (walletAddr) => {
+    startLoading()
     // Fetch wallet if address is valid, otherwise set wallet to null
-    if (isValidAddr(walletAddr as string)) findWallet(walletAddr as EthereumAddress)
-    else walletStore.wallet = null
+    if (isValidAddr(walletAddr as string)) await findWallet(walletAddr as EthereumAddress)
+    else walletStore.wallet = undefined
+    stopLoading()
   },
 )
 
@@ -167,14 +162,14 @@ const rules = {
 const v$ = useVuelidate(rules, form)
 
 // State to track if an item is clicked
-const isItemClicked = ref()
+const isItemClicked = ref<boolean>()
 // State for current page number
 const page = ref()
 
 // Function to navigate to a specific page
 function navigateToPage(_page: number) {
   page.value = _page
-  router.push({ query: { page: page.value } })
+  router.replace({ query: { page: page.value } })
   fetchWallets(_page)
   window.scrollTo({
     top: 0,
@@ -189,10 +184,9 @@ function onItemClick(wallet: Wallet) {
 }
 
 // Function to handle item unclick
-function onItemUnclick(wallet: Wallet) {
+function onItemUnclick() {
   isItemClicked.value = false
-  router.push({ name: props.defaultRouteName, query: { page: page.value } })
-  emit('onItemUnclick', wallet)
+  emit('onItemUnclick')
 }
 
 // Function to navigate to wallet creation page
@@ -206,7 +200,7 @@ async function textFieldOnKeyupEnter() {
 
   if (isEmpty(form.walletAddr)) {
     await fetchWallets()
-    router.push({ name: props.defaultRouteName, params: {}, query: { page: page.value } })
+    onItemUnclick()
     return
   }
 

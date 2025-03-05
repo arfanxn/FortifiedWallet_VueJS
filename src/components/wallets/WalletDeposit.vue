@@ -274,7 +274,6 @@ async function handleDepositSubmission() {
     await findWallet(form.walletAddr!)
   } catch (error) {
     showToast(ToastType.ERROR, 'Deposit failed.')
-    console.log(error)
     return
   }
 }

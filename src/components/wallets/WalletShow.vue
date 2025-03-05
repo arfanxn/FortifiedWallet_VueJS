@@ -6,7 +6,7 @@
 
     <main
       class="flex flex-col items-start gap-4 px-4 py-4 font-semibold md:flex-row"
-      v-if="isWalletFound"
+      v-if="isWalletFound && !isLoading"
     >
       <div class="flex basis-1/3 flex-col gap-y-2">
         <div class="flex flex-col gap-y-0.5">
@@ -49,7 +49,10 @@
         </ul>
       </div>
     </main>
-    <main v-else class="flex items-center justify-center gap-4 px-4 py-4 font-semibold md:flex-row">
+    <main
+      v-else-if="!isWalletFound && !isLoading"
+      class="flex items-center justify-center gap-4 px-4 py-4 font-semibold md:flex-row"
+    >
       <h2 class="flex flex-col items-center text-lg">
         <span class="mr-auto">Wallet</span>
         <span class="font-mono italic">{{ route.params.walletAddr }}</span>
@@ -67,6 +70,7 @@ import { useWalletStore } from '@/stores/wallet.store'
 import { library } from '@fortawesome/fontawesome-svg-core'
 import { useRoute } from 'vue-router'
 import { formatUsd } from '@/helpers/string.helpers'
+import { useApp } from '@/composables/app.composable'
 
 library.add(faDollarSign)
 
@@ -76,9 +80,10 @@ defineComponent({
 
 const route = useRoute()
 
-let walletStore = useWalletStore()
+const walletStore = useWalletStore()
+const { isLoading } = useApp()
 
 const isWalletFound = computed(() => {
-  return walletStore.wallet !== null
+  return walletStore.wallet !== undefined
 })
 </script>

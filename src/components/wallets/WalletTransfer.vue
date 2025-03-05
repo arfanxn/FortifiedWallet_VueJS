@@ -115,7 +115,5 @@ function resetForm(): void {}
 async function onSubmit() {
   const isValid = await validateAndToast(v$)
   if (!isValid) return
-
-  console.log('success submitting')
 }
 </script>
