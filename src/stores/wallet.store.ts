@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
-import type { Wallet, WalletOrNull } from '@/interfaces/wallet.interfaces'
+import type { Wallet } from '@/interfaces/wallet.interfaces'
 
 export const useWalletStore = defineStore('wallet', () => {
   // ==========================================================================
@@ -11,7 +11,7 @@ export const useWalletStore = defineStore('wallet', () => {
   // ==========================================================================
   //                                State
   // ==========================================================================
-  const wallet = ref<WalletOrNull>(null)
+  const wallet = ref<Wallet | undefined>()
   const wallets = ref<Wallet[]>([])
 
   // ==========================================================================
