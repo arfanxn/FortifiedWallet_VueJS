@@ -23,9 +23,7 @@
 </template>
 
 <script setup lang="ts">
-import { notEmpty } from '@/utils/boolean.utils'
-import { defineComponent, defineModel, defineEmits, computed, onMounted, Ref, ref } from 'vue'
-import type { ObjectKeyValue } from '@/interfaces/interfaces'
+import { defineComponent, defineModel, defineEmits, onMounted, Ref, ref } from 'vue'
 import { SelectFieldComponent } from '@/interfaces/component.interfaces'
 
 defineComponent({
