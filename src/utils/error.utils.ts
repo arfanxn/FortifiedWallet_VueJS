@@ -34,3 +34,13 @@ export function tryRethrow(tryClosure: Function): any {
     throw error
   }
 }
+
+/**
+ * Type guard for determining if an unknown value is an Error.
+ *
+ * @param {unknown} error - The value to check.
+ * @returns {error is Error} True if the value is an Error, false otherwise.
+ */
+export function isError(error: unknown): error is Error {
+  return error instanceof Error
+}
