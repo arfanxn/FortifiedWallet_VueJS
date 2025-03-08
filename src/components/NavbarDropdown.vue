@@ -34,9 +34,9 @@ import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 import NavbarDropdownItem from '@/components/NavbarDropdownItem.vue'
 import { library } from '@fortawesome/fontawesome-svg-core'
 import { faBell, faGear, faLinkSlash, faUser, faBars } from '@fortawesome/free-solid-svg-icons'
-import { useEthereumStore } from '@/stores/ethereum.store'
 import { showToast } from '@/helpers/toast.helpers'
 import { ToastType } from '@/enums/toast.enums'
+import { useEthereum } from '@/composables/ethereum.composable'
 
 library.add(faBell, faUser, faGear, faLinkSlash, faBars)
 
@@ -46,12 +46,12 @@ defineComponent({
 
 let router = useRouter()
 
-const ethereumStore = useEthereumStore()
+const { disconnect } = useEthereum()
 
 const isDropdownOpened = ref(false)
 
 async function handleDisconnect() {
-  await ethereumStore.disconnect()
+  await disconnect()
   router.push({ name: 'connect' })
   showToast(ToastType.Success, 'Successfully disconnected from wallet.', 5000)
 }

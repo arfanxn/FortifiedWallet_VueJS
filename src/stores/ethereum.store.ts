@@ -1,7 +1,6 @@
 // stores/ethers.ts
-import { ref, computed, markRaw } from 'vue'
+import { ref, computed } from 'vue'
 import { defineStore } from 'pinia'
-import { connect as connectProvider, getAccounts } from '@/services/blockchain.service'
 import { ethers } from 'ethers'
 import { EthereumAddress } from '@/interfaces/ethereum.interfaces'
 
@@ -14,6 +13,25 @@ export const useEthereumStore = defineStore('ethereum', () => {
   // ==========================================================================
   //                                Internal functions
   // ==========================================================================
+  //
+
+  // ==========================================================================
+  //                                States
+  // ==========================================================================
+  const provider = ref<ethers.BrowserProvider | null>(null)
+  const accounts = ref<EthereumAddress[]>([])
+
+  // ==========================================================================
+  //                                Getters
+  // ==========================================================================
+  // TODO: implement a live active account getter (if the user changed the account, the active account also changed)
+  const activeAccount = computed(() => accounts.value[0])
+  const isConnected = computed(() => accounts.value.length > 0)
+
+  // ==========================================================================
+  //                                Actions
+  // ==========================================================================
+
   /**
    * Stores the current state in the local storage.
    *
@@ -37,50 +55,6 @@ export const useEthereumStore = defineStore('ethereum', () => {
   }
 
   // ==========================================================================
-  //                                States
-  // ==========================================================================
-  const provider = ref<ethers.BrowserProvider | null>(null)
-  const accounts = ref<EthereumAddress[]>([])
-
-  // ==========================================================================
-  //                                Getters
-  // ==========================================================================
-  // TODO: implement a live active account getter (if the user changed the account, the active account also changed)
-  const activeAccount = computed(() => accounts.value[0])
-  const isConnected = computed(() => accounts.value.length > 0)
-
-  // ==========================================================================
-  //                                Actions
-  // ==========================================================================
-  /**
-   * Connects to the Ethereum provider and retrieves the connected accounts.
-   *
-   * Also, it stores the connected accounts in the local storage.
-   *
-   * @returns {Promise<void>}
-   * @throws {Error}
-   */
-  const connect = async (): Promise<void> => {
-    provider.value = markRaw(await connectProvider())
-    accounts.value = await getAccounts(provider.value as ethers.BrowserProvider)
-
-    persistState()
-  }
-  /**
-   * Disconnects from the Ethereum provider and clears the connected accounts.
-   *
-   * @returns {Promise<void>}
-   * @throws {Error}
-   */
-  const disconnect = async (): Promise<void> => {
-    await provider?.value?.removeAllListeners()
-    await window.ethereum?.removeAllListeners?.()
-    provider.value = null
-    accounts.value = []
-    persistState()
-  }
-
-  // ==========================================================================
   //                               Initializations
   // ==========================================================================
   restoreState()
@@ -89,11 +63,13 @@ export const useEthereumStore = defineStore('ethereum', () => {
   //                                Returns the store
   // ==========================================================================
   return {
+    // ================================= Variables ================================
     provider,
     accounts,
     isConnected,
     activeAccount,
-    connect,
-    disconnect,
+    // ================================== Methods ==================================
+    persistState,
+    restoreState,
   }
 })
