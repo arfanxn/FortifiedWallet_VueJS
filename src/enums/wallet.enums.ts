@@ -1,4 +1,4 @@
-export enum DepositType {
+export enum WalletDepositType {
   Token = 'token',
   Ether = 'ether',
 }
