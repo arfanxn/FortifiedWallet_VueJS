@@ -3,6 +3,8 @@
  * or more input parameters.
  */
 
+import { ethers } from 'ethers'
+
 export function contains(str?: string, substr?: string): boolean {
   if (!str || !substr) return false
   const regex = new RegExp(`.*${substr}.*`)
@@ -108,4 +110,22 @@ export function isInstanceOf<T>(
   constructor: new (...args: any[]) => T,
 ): instance is T {
   return instance instanceof constructor
+}
+
+/**
+ * Checks if a given string is a valid Ethereum address.
+ *
+ * First verifies the address format matches the standard Ethereum pattern,
+ * then performs a checksum validation using ethers.js.
+ *
+ * @param {string | null | undefined} address - The Ethereum address to validate
+ * @returns {boolean} True if the address is valid, false otherwise
+ */
+export function isEthAddr(address: string | null | undefined): boolean {
+  if (address === null || address === undefined) return false
+  // Quick format check first
+  if (!/^0x[a-fA-F0-9]{40}$/.test(address)) return false
+
+  // Full checksum validation
+  return ethers.isAddress(address)
 }
