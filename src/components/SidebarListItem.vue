@@ -18,7 +18,7 @@ import { defineComponent } from 'vue'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 
 defineComponent({
-  name: 'SidebarItem',
+  name: 'SidebarListItem',
 })
 
 const emit = defineEmits(['onClick'])

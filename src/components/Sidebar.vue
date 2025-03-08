@@ -18,19 +18,19 @@
         </button>
       </header>
       <ul class="flex grow flex-col gap-y-2 text-slate-300 md:gap-y-5">
-        <SidebarItem
+        <SidebarListItem
           :isActive="$route.matched[0]?.name === RouteName.Dashboard"
           :icon="faHouse"
           text="0xDashboard"
           @onClick="() => navigateToDashboard()"
         />
-        <SidebarItem
+        <SidebarListItem
           :isActive="$route.matched[0]?.name === RouteName.TokenIndex"
           :icon="faCoins"
           text="0xTokens"
           @onClick="() => router.push({ name: RouteName.TokenIndex })"
         />
-        <SidebarItem
+        <SidebarListItem
           :isActive="$route.matched[0]?.name === RouteName.TransactionIndex"
           :icon="faRightLeft"
           text="0xTransactions"
@@ -51,7 +51,7 @@ import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 import { library } from '@fortawesome/fontawesome-svg-core'
 import { faWallet, faHouse, faCoins, faRightLeft, faXmark } from '@fortawesome/free-solid-svg-icons'
 import { useAppStore } from '@/stores/app.store'
-import SidebarItem from '@/components/SidebarItem.vue'
+import SidebarListItem from '@/components/SidebarListItem.vue'
 import { RouteName } from '@/enums/route.enums'
 import { useWallet } from '@/composables/wallet.composable'
 
