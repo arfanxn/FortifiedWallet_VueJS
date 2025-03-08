@@ -17,6 +17,25 @@ export function useApp() {
     appStore.stopLoading()
   }
 
+  /**
+   * Calls the given closure while loading is enabled.
+   *
+   * @template T type of the value returned by the closure
+   * @param {() => Promise<T>} closure closure to be called
+   * @returns {Promise<T>} value returned by the closure
+   */
+  const withLoading = async <T>(closure: () => Promise<T>): Promise<T> => {
+    startLoading()
+    try {
+      const result = await closure()
+      stopLoading()
+      return result
+    } catch (error) {
+      stopLoading()
+      throw error
+    }
+  }
+
   return {
     // ============================== State variables ==============================
     isSidebarOpened,
@@ -25,5 +44,6 @@ export function useApp() {
     toggleSidebar,
     startLoading,
     stopLoading,
+    withLoading,
   }
 }
