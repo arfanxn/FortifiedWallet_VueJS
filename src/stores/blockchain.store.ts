@@ -4,6 +4,7 @@ import { defineStore } from 'pinia'
 import { connect as connectProvider, getAccounts } from '@/services/blockchain.service'
 import { ethers } from 'ethers'
 import { EthereumAddress } from '@/interfaces/ethereum.interfaces'
+import { computedAsync } from '@vueuse/core'
 
 export const useBlockchainStore = defineStore('blockchain', () => {
   // ==========================================================================
@@ -45,6 +46,7 @@ export const useBlockchainStore = defineStore('blockchain', () => {
   // ==========================================================================
   //                                Getters
   // ==========================================================================
+  // TODO: implement a live active account getter (if the user changed the account, the active account also changed)
   const activeAccount = computed(() => accounts.value[0])
   const isConnected = computed(() => accounts.value.length > 0)
 
