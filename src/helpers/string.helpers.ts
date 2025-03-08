@@ -49,6 +49,6 @@ export function formatEthAddr(addr: EthereumAddress): string {
  * @returns {boolean} True if the address is the zero address, false otherwise.
  */
 
-export function isZeroAddress(addr: EthereumAddress): boolean {
+export function isZeroAddress(addr: string): boolean {
   return ethers.getAddress(addr) == ethers.ZeroAddress
 }
