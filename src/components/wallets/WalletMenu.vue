@@ -33,10 +33,13 @@ import { faPlus, faRightLeft, faLock } from '@fortawesome/free-solid-svg-icons'
 import { library } from '@fortawesome/fontawesome-svg-core'
 import { isNotEmpty } from '@/utils/boolean.utils'
 import { WalletRouteName } from '@/enums/wallet.enums'
+import { useNavigation } from '@/composables/navigation.composable'
 
 library.add(faPlus, faRightLeft, faLock)
+
 const router = useRouter()
 const route = useRoute()
+const { navigateToWalletCreate } = useNavigation()
 
 defineComponent({
   name: 'WalletMenu',
@@ -53,9 +56,7 @@ function navigateTo(routeName: WalletRouteName) {
       })
       break
     case WalletRouteName.Create:
-      router.push({
-        name: routeName,
-      })
+      navigateToWalletCreate()
   }
 }
 </script>
