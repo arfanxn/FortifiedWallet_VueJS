@@ -16,7 +16,7 @@ export async function validateAndToast(v$: Ref<Validation>): Promise<boolean> {
   const isValid = await v$.value.$validate()
 
   v$.value.$errors.forEach((value: ErrorObject) => {
-    showToast(ToastType.ERROR, value.$message.toString())
+    showToast(ToastType.Error, value.$message.toString())
   })
 
   return isValid
