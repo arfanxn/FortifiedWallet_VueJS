@@ -42,12 +42,12 @@ let toastStore = useToastStore()
 
 function getIconByType(type: ToastType) {
   switch (type) {
-    case ToastType.SUCCESS:
+    case ToastType.Success:
       return 'circle-check'
-    case ToastType.WARNING:
-    case ToastType.ERROR:
+    case ToastType.Warning:
+    case ToastType.Error:
       return 'circle-exclamation'
-    case ToastType.INFO:
+    case ToastType.Info:
     default:
       return 'circle-info'
   }
@@ -55,12 +55,12 @@ function getIconByType(type: ToastType) {
 
 function getBorderByType(type: ToastType) {
   switch (type) {
-    case ToastType.SUCCESS:
+    case ToastType.Success:
       return 'border-green-700'
-    case ToastType.WARNING:
-    case ToastType.ERROR:
+    case ToastType.Warning:
+    case ToastType.Error:
       return 'border-red-700'
-    case ToastType.INFO:
+    case ToastType.Info:
     default:
       return 'border-blue-700'
   }
