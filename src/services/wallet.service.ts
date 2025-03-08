@@ -1,11 +1,18 @@
 import { TransactionFailedError } from '@/errors/ethereum.errors'
-import { didTransactionFail } from '@/helpers/ethereum.helpers'
 import { isZeroAddress } from '@/helpers/string.helpers'
 import { EthereumAddress } from '@/interfaces/ethereum.interfaces'
 import { tryRethrow } from '@/utils/error.utils'
 import BigNumber from 'bignumber.js'
 import { ethers } from 'ethers'
 import { WalletTuple } from '@/interfaces/wallet.interfaces'
+import {
+  didTransactionFail,
+  didTransactionSucceed,
+  isEthersError,
+  resolveAndThrowEthersError,
+  withResolvedEthersErrorHandling,
+} from '@/helpers/ethers.helpers'
+import { ResolvedEthersError } from '@/errors/ethers.error'
 
 const _walletFactoryContractAddr = () => import.meta.env.VITE__WALLET_FACTORY_CONTRACT_ADDRESS
 
@@ -37,141 +44,133 @@ const walletAbis = [
   'event Deposited(address indexed sender, uint256 value)',
 ]
 
-interface FetchWalletAddressesBySignerParams {
-  offset: number
-  limit: number
-}
 /**
- * Fetches wallet addresses associated with a specific signer.
- *
- * @param {ethers.BrowserProvider} provider - An ethers.js provider object used to interact with the Ethereum network.
- * @param {EthereumAddress} signer - The Ethereum address of the signer whose wallet addresses are to be fetched.
- * @param {FetchWalletAddressesBySignerParams} opts - An object containing the following properties:
- *   - {number} offset - The starting index from which wallet addresses should be fetched.
+ * Fetches a list of wallet addresses associated with a given signer.
+ * @param {ethers.BrowserProvider} provider - An ethers.js provider object.
+ * @param {{ signerAddr: string; offset: number; limit: number }} params - An object containing the following properties:
+ *   - {string} signerAddr - The Ethereum address of the account to fetch wallets for.
+ *   - {number} offset - The offset of the first wallet address to fetch.
  *   - {number} limit - The maximum number of wallet addresses to fetch.
- * @returns {Promise<string[]>} A promise that resolves to an array of wallet addresses associated with the signer.
+ * @returns {Promise<string[]>} A promise that resolves to an array of wallet addresses associated with the given signer.
+ * @throws {Error|ResolvedEthersError} If fails.
  */
 export const fetchWalletAddressesBySigner = async (
   provider: ethers.BrowserProvider,
-  signer: EthereumAddress,
-  { offset, limit }: FetchWalletAddressesBySignerParams,
-): Promise<EthereumAddress[]> => {
+  params: { signer: string; offset: number; limit: number },
+): Promise<string[]> => {
   const contract = new ethers.Contract(_walletFactoryContractAddr(), walletFactoryAbis, provider)
-  const addresses = await contract.getWalletAddressesBySigner(signer, offset, limit)
-  return addresses
+  return await withResolvedEthersErrorHandling<string[]>(async () => {
+    const addresses = await contract.getWalletAddressesBySigner(
+      params.signer,
+      params.offset,
+      params.limit,
+    )
+    return addresses
+  }, contract)
 }
 
-interface GetNewestWalletsBySignerParams {
-  signerAddr: EthereumAddress
-  offset: number
-  limit: number
-}
-
+/**
+ * Fetches a list of wallet tuples associated with a given signer.
+ * @param {ethers.BrowserProvider} provider - An ethers.js provider object.
+ * @param {{ signerAddr: string; offset: number; limit: number }} params - An object containing the following properties:
+ *   - {string} signerAddr - The Ethereum address of the account to fetch wallets for.
+ *   - {number} offset - The offset of the first wallet to fetch.
+ *   - {number} limit - The maximum number of wallets to fetch.
+ * @returns {Promise<WalletTuple[]>} A promise that resolves to an array of wallet tuples associated with the given signer.
+ * @throws {Error|ResolvedEthersError} If fails.
+ */
 export const getNewestWalletsBySigner = async (
   provider: ethers.BrowserProvider,
-  { signerAddr, offset, limit }: GetNewestWalletsBySignerParams,
+  params: { signer: string; offset: number; limit: number },
 ): Promise<WalletTuple[]> => {
   const contract = new ethers.Contract(_walletFactoryContractAddr(), walletFactoryAbis, provider)
-  const tuples = await contract.getNewestWalletsBySigner(signerAddr, offset, limit)
-  return tuples
+  return await withResolvedEthersErrorHandling<WalletTuple[]>(async () => {
+    const tuples = await contract.getNewestWalletsBySigner(
+      params.signer,
+      params.offset,
+      params.limit,
+    )
+    return tuples
+  }, contract)
 }
 
-interface GetWalletParams {
-  walletAddr: EthereumAddress
-}
 /**
- * Retrieves a specific wallet.
- *
- * @param {Object} provider - An ethers.js provider object for interacting with Ethereum.
- * @param {Object} opts - An object containing the following properties:
- *   - {string} walletAddr - The Ethereum address of the wallet to be retrieved.
- * @returns {Promise<tuple>} A promise that resolves to a tuple containing:
- *   - string name: The name of the wallet.
- *   - address addr: The Ethereum address of the wallet.
- *   - address[] signers: The list of signers for the wallet.
- *   - number minimumApprovals: The minimum number of approvals required for transactions.
- *   - number totalBalanceInUsd: The total balance of the wallet in USD (assuming 18 decimals).
+ * Fetches a wallet tuple associated with a given wallet address.
+ * @param {ethers.BrowserProvider} provider - An ethers.js provider object.
+ * @param {{ walletAddr: string }} params - An object containing the following properties:
+ *   - {string} walletAddr - The Ethereum address of the wallet to fetch.
+ * @returns {Promise<WalletTuple>} A promise that resolves to a tuple containing the wallet's name, address, signers, minimum approvals, and total balance in USD.
+ * @throws {Error|ResolvedEthersError} If fails.
  */
 export const getWallet = async (
   provider: ethers.BrowserProvider,
-  { walletAddr }: GetWalletParams,
+  params: { address: string },
 ): Promise<WalletTuple> => {
-  return await tryRethrow(async () => {
-    const contract = new ethers.Contract(_walletFactoryContractAddr(), walletFactoryAbis, provider)
-    const tuple = await contract.getWallet(walletAddr)
+  const { address } = params
+  const contract = new ethers.Contract(_walletFactoryContractAddr(), walletFactoryAbis, provider)
+
+  return await withResolvedEthersErrorHandling<WalletTuple>(async () => {
+    const tuple = await contract.getWallet(address)
     return tuple
-  })
+  }, contract)
 }
 
-interface CreateWalletParams {
-  name: string
-  signers: EthereumAddress[]
-  minimumApprovals: number
-  passwordHash: string
-}
-
-/**
- * Creates a new wallet by interacting with the wallet factory contract.
- *
- * @param {Object} providerSigner - An ethers.js signer object for signing transactions.
- * @param {Object} opts - An object containing the following properties:
- *   - {string} name - The name of the wallet.
- *   - {address[]} signers - The list of signer addresses authorized for the wallet.
- *   - {number} minimumApprovals - The minimum number of approvals required for transactions.
- *   - {string} passwordHash - A hash representing the password for the wallet.
- * @returns {Promise<string>} The address of the newly created wallet.
- * @throws {Error|TransactionFailedError} If fails.
- */
 export const createWallet = async (
-  providerSigner: ethers.Signer,
-  { name, signers, minimumApprovals, passwordHash }: CreateWalletParams,
-): Promise<EthereumAddress> => {
-  return await tryRethrow(async () => {
-    const contract = new ethers.Contract(
-      _walletFactoryContractAddr(),
-      walletFactoryAbis,
-      providerSigner,
+  signer: ethers.Signer,
+  params: { name: string; signers: string[]; minimumApprovals: number; passwordHash: string },
+): Promise<string> => {
+  const contract = new ethers.Contract(_walletFactoryContractAddr(), walletFactoryAbis, signer)
+
+  return await withResolvedEthersErrorHandling<string>(async () => {
+    // Create a new wallet with the given parameters
+    const tx: ethers.TransactionResponse = await contract.createWallet(
+      params.name,
+      params.signers,
+      params.minimumApprovals,
+      params.passwordHash,
     )
-    const tx = await contract.createWallet(name, signers, minimumApprovals, passwordHash)
-    const receipt = await tx.wait()
-    // Check if transaction was successful
-    if (didTransactionFail(receipt)) throw new TransactionFailedError()
-    const logs = receipt.logs
-    const event = logs[0]
-    const walletAddr = event.args[0]
-    return walletAddr
-  })
+    // Wait for the transaction to be mined
+    const receipt: ethers.TransactionReceipt | null = await tx.wait()
+    // Extract the wallet address from the event emitted by the contract
+    if (didTransactionSucceed(receipt)) {
+      const logs: readonly ethers.Log[] = receipt.logs
+      const event: ethers.EventLog = logs[0] as ethers.EventLog
+      const walletAddr = event.args[0]
+      return walletAddr
+    } else {
+      // If the transaction failed, throw an error
+      throw new TransactionFailedError()
+    }
+  }, contract)
 }
 
-interface DepositParams {
-  token: EthereumAddress
-  value: BigNumber
-}
 /**
- * Deposits funds into a wallet.
+ * Deposits a certain amount of a token into a wallet.
  *
- * @param {Object} signer - An ethers.js signer object for interacting with Ethereum.
- * @param {string} wallet - The Ethereum address of the wallet to deposit funds into.
- * @param {Object} opts - An object containing the following properties:
- *   - {string} token - The Ethereum address of the token to deposit. If the zero address is provided, ETH is deposited.
- *   - {string|number|BN} value - The amount of the token (or ETH) to deposit.
- * @returns {Promise<void>}
+ * @param {ethers.Signer} signer - An ethers.js Signer object for interacting with Ethereum.
+ * @param {{ to: string, token: string, value: BigNumber }} params - An object containing the following properties:
+ *   - {string} to - The Ethereum address of the wallet to deposit into.
+ *   - {string} token - The Ethereum address of the token to deposit. If this is the zero address, it means depositing Ether.
+ *   - {BigNumber} value - The amount of the token to deposit.
+ * @returns {Promise<void>} A promise that resolves when the transaction has been successfully mined.
  * @throws {Error|TransactionFailedError} If fails.
  */
 export const deposit = async (
   signer: ethers.Signer,
-  wallet: EthereumAddress,
-  { token, value }: DepositParams,
+  params: { to: string; token: string; value: BigNumber },
 ): Promise<void> => {
-  await tryRethrow(async () => {
-    const contract = new ethers.Contract(wallet, walletAbis, signer)
+  const { to, token, value } = params
+  const contract = new ethers.Contract(to, walletAbis, signer)
 
-    // Deposit either ETH (when token is the zero address) or ERC-20 tokens (when token is a valid contract address)
-    const tx = isZeroAddress(token)
+  withResolvedEthersErrorHandling(async () => {
+    const tx: ethers.TransactionResponse = isZeroAddress(token)
       ? await contract.deposit(token, value, { value }) // Deposit ETH
       : await contract.deposit(token, value) // Deposit ERC-20 tokens
-    const receipt = await tx.wait()
-    // Check if transaction was successful
+
+    // We use the `wait()` method to wait for the transaction to be mined
+    const receipt: ethers.TransactionReceipt | null = await tx.wait()
+
+    // If the transaction failed, throw an error
     if (didTransactionFail(receipt)) throw new TransactionFailedError()
-  })
+  }, contract)
 }
