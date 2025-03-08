@@ -5,14 +5,24 @@
 
       <div class="flew-row flex gap-4">
         <ButtonC
-          @onClick="() => router.push({ name: 'wallet.deposit', params: { depositType: 'eth' } })"
+          @onClick="
+            () =>
+              router.replace({
+                params: { depositType: WalletDepositType.Ether },
+              })
+          "
           type="button"
           :text="'ETH'"
           class="rounded-none border-slate-700 bg-transparent px-1! font-bold text-slate-700! outline-none hover:bg-transparent hover:text-slate-700!"
           :class="{ 'border-b': isEtherDeposit }"
         />
         <ButtonC
-          @onClick="() => router.push({ name: 'wallet.deposit', params: { depositType: 'token' } })"
+          @onClick="
+            () =>
+              router.replace({
+                params: { depositType: WalletDepositType.Token },
+              })
+          "
           type="button"
           :text="'ERC20'"
           class="rounded-none border-slate-700 bg-transparent px-1! font-bold text-slate-700! outline-none hover:bg-transparent hover:text-slate-700!"
@@ -89,9 +99,13 @@ import { formatEthAddr } from '@/helpers/string.helpers'
 import { useEthereumUnit } from '@/composables/ethereumUnit.composable'
 import { computedAsync } from '@vueuse/core'
 import { ToastType } from '@/enums/toast.enums'
-import { EthereumAddress } from '@/interfaces/ethereum.interfaces'
 import { TokenMetadata } from '@/interfaces/token.interfaces'
 import BigNumber from 'bignumber.js'
+import { useWalletStore } from '@/stores/wallet.store'
+import { WalletDepositType } from '@/enums/wallet.enums'
+import { RouteName } from '@/enums/route.enums'
+import { useApp } from '@/composables/app.composable'
+import { useNavigation } from '@/composables/navigation.composable'
 
 library.add(faPlus, faRotateLeft)
 
@@ -102,17 +116,19 @@ defineComponent({
 const router = useRouter()
 const route = useRoute()
 
-const { depositWallet, findWallet } = useWallet()
+const { startLoading, stopLoading } = useApp()
+const { refreshWallets, depositWallet } = useWallet()
 const { fetchTokenMetadata } = useToken()
 const { units, selectedUnitValue, getTextByValue, resetSelectedUnitValue } = useEthereumUnit()
+const { navigateToWalletShow } = useNavigation()
 
 const depositType = computed(() =>
-  ['erc20', 'token'].includes(route.params?.depositType?.toString().toLowerCase())
-    ? 'token'
-    : 'eth',
+  route.params?.depositType?.toString().toLowerCase() === WalletDepositType.Token
+    ? WalletDepositType.Token
+    : WalletDepositType.Ether,
 )
-const isEtherDeposit = computed(() => depositType.value === 'eth')
-const isTokenDeposit = computed(() => depositType.value === 'token')
+const isEtherDeposit = computed(() => depositType.value === WalletDepositType.Ether)
+const isTokenDeposit = computed(() => depositType.value === WalletDepositType.Token)
 
 interface Form {
   walletAddr: string
@@ -120,12 +136,12 @@ interface Form {
   amount: string
 }
 interface ProcessedForm {
-  walletAddr: EthereumAddress
-  token: EthereumAddress
+  walletAddr: string
+  token: string
   amount: BigNumber
 }
 const form = reactive<Form>({
-  walletAddr: route.params?.walletAddr?.toString() ?? '',
+  walletAddr: (route.params?.walletAddr as string) ?? '',
   token: '',
   amount: '',
 })
@@ -175,7 +191,7 @@ const v$ = useVuelidate(rules, form)
 const tokenMetadata = computedAsync<TokenMetadata | undefined>(
   async () => {
     const isTokenValid = isTokenDeposit.value && isValidAddr(form.token)
-    return isTokenValid ? await fetchTokenMetadata(form.token as EthereumAddress) : undefined
+    return isTokenValid ? await fetchTokenMetadata(form.token as string) : undefined
   },
   undefined,
   { lazy: true },
@@ -226,8 +242,8 @@ function resetForm() {
 function processForm(): ProcessedForm {
   let { walletAddr, token, amount } = toRaw(form)
   const processedForm: ProcessedForm = {
-    walletAddr: walletAddr as EthereumAddress,
-    token: token as EthereumAddress,
+    walletAddr: walletAddr as string,
+    token: token as string,
     amount: BigNumber(0),
   }
   if (isEtherDeposit.value) {
@@ -238,7 +254,7 @@ function processForm(): ProcessedForm {
     /* Set the token address to the zero address when depositing ether.
     This is because the deposit transaction is always an ether transaction.
     The token address is only used when depositing a token. */
-    token = ethers.ZeroAddress
+    processedForm.token = ethers.ZeroAddress
   } else if (isTokenDeposit.value && tokenMetadata.value) {
     processedForm.amount = BigNumber(
       ethers.parseUnits(amount!.toString(), tokenMetadata.value.decimals).toString(),
@@ -262,19 +278,18 @@ async function onSubmit() {
 async function handleDepositSubmission() {
   const processedForm: ProcessedForm = processForm()
   try {
-    await depositWallet(processedForm.walletAddr, {
-      token: processedForm.token,
-      value: processedForm.amount,
-    })
+    startLoading()
+    await depositWallet(processedForm.walletAddr, processedForm.token, processedForm.amount)
     // Show a success toast with the deposit information
     // Navigate to the "show" menu with the wallet as the active wallet
     // Refresh the wallets to display the updated balance
-    showToast(ToastType.SUCCESS, formatDepositSuccessMessageForToast(), 10 * 1000)
-    router.push({ name: 'wallet.show', params: { walletAddr: form.walletAddr } })
-    await findWallet(form.walletAddr!)
+    showToast(ToastType.Success, formatDepositSuccessMessageForToast(), 10 * 1000)
+    await refreshWallets()
+    navigateToWalletShow()
   } catch (error) {
-    showToast(ToastType.ERROR, 'Deposit failed.')
-    return
+    showToast(ToastType.Error, 'Deposit failed.')
+  } finally {
+    stopLoading()
   }
 }
 
