@@ -22,3 +22,15 @@ export function toNumber(str: string, radix: number = 10, fallback?: number): nu
 export function toBase10Number(str: string, fallback?: number) {
   return toNumber(str, 10, fallback)
 }
+
+/**
+ * Calculates the offset for pagination based on the given page and limit.
+ *
+ * @param {number} page - The page number, 1-indexed.
+ * @param {number} limit - The number of items per page.
+ * @returns {number} The calculated offset.
+ */
+export function getPaginationOffset(page: number, limit: number): number {
+  const offset = (page - 1) * limit
+  return offset
+}
