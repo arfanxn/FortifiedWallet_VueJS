@@ -1,18 +1,13 @@
 import { TransactionFailedError } from '@/errors/ethereum.errors'
 import { isZeroAddress } from '@/helpers/string.helpers'
-import { EthereumAddress } from '@/interfaces/ethereum.interfaces'
-import { tryRethrow } from '@/utils/error.utils'
 import BigNumber from 'bignumber.js'
 import { ethers } from 'ethers'
 import { WalletTuple } from '@/interfaces/wallet.interfaces'
 import {
   didTransactionFail,
   didTransactionSucceed,
-  isEthersError,
-  resolveAndThrowEthersError,
   withResolvedEthersErrorHandling,
 } from '@/helpers/ethers.helpers'
-import { ResolvedEthersError } from '@/errors/ethers.error'
 
 const _walletFactoryContractAddr = () => import.meta.env.VITE__WALLET_FACTORY_CONTRACT_ADDRESS
 
@@ -159,13 +154,13 @@ export const deposit = async (
   signer: ethers.Signer,
   params: { to: string; token: string; value: BigNumber },
 ): Promise<void> => {
-  const { to, token, value } = params
+  let { to, token, value } = params
   const contract = new ethers.Contract(to, walletAbis, signer)
 
-  withResolvedEthersErrorHandling(async () => {
+  await withResolvedEthersErrorHandling(async () => {
     const tx: ethers.TransactionResponse = isZeroAddress(token)
-      ? await contract.deposit(token, value, { value }) // Deposit ETH
-      : await contract.deposit(token, value) // Deposit ERC-20 tokens
+      ? await contract.deposit(token, value.toString(), { value: value.toString() }) // Deposit ETH
+      : await contract.deposit(token, value.toString()) // Deposit ERC-20 tokens
 
     // We use the `wait()` method to wait for the transaction to be mined
     const receipt: ethers.TransactionReceipt | null = await tx.wait()
