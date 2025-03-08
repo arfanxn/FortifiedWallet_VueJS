@@ -9,6 +9,7 @@ import { ethers } from 'ethers'
 import BigNumber from 'bignumber.js'
 import { getPaginationOffset } from '@/utils/number.utils'
 import { isNonEmptyString, isStringNumber } from '@/utils/boolean.utils'
+import { isZeroAddress } from '@/helpers/string.helpers'
 
 export function useWallet() {
   // ==========================================================================
@@ -49,6 +50,19 @@ export function useWallet() {
     } else {
       await fetchPaginatedWallets(currentPage)
       walletStore.selectWallet(undefined)
+    }
+  }
+
+  /**
+   * Refreshes the list of wallets, either by refetching a single wallet by address
+   * or by refetching the paginated list of wallets.
+   */
+  const refreshWallets = async () => {
+    if (walletStore.keyword) {
+      await fetchWalletByAddr(walletStore.keyword)
+      if (walletStore.selectedWallet) walletStore.selectWallet(walletStore.keyword)
+    } else {
+      await fetchPaginatedWallets(walletStore.currentPage)
     }
   }
 
@@ -97,7 +111,9 @@ export function useWallet() {
 
   const depositWallet = async (to: string, token: string, value: BigNumber) => {
     const providerSigner = await blockchainStore.provider!.getSigner()
-    await tokenService.approve(providerSigner, { token, spender: to, value })
+    if (isZeroAddress(token) === false) {
+      await tokenService.approve(providerSigner, { token, spender: to, value })
+    }
     await walletService.deposit(providerSigner, { to, token, value })
   }
 
@@ -105,6 +121,7 @@ export function useWallet() {
     // ============================== State variables ==============================
     wallets,
     // ================================== Methods ==================================
+    refreshWallets,
     fillWalletStoreFromRoute,
     fetchPaginatedWallets,
     fetchWalletByAddr,
