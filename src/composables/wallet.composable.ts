@@ -1,5 +1,5 @@
 import { storeToRefs } from 'pinia'
-import { useBlockchainStore } from '@/stores/blockchain.store'
+import { useEthereumStore } from '@/stores/ethereum.store'
 import { useWalletStore } from '@/stores/wallet.store'
 import * as walletService from '@/services/wallet.service'
 import * as tokenService from '@/services/token.service'
@@ -16,7 +16,7 @@ export function useWallet() {
   //                                Variables
   // ==========================================================================
   const route = useRoute()
-  const blockchainStore = useBlockchainStore()
+  const ethereumStore = useEthereumStore()
   const walletStore = useWalletStore()
   const { wallets } = storeToRefs(walletStore)
 
@@ -67,8 +67,8 @@ export function useWallet() {
   }
 
   const fetchPaginatedWallets = async (page: number): Promise<void> => {
-    const signer = blockchainStore.activeAccount
-    const provider = blockchainStore.provider as ethers.BrowserProvider
+    const signer = ethereumStore.activeAccount
+    const provider = ethereumStore.provider as ethers.BrowserProvider
     const limit = 5
     const offset = getPaginationOffset(page, limit)
     const tuples = await walletService.getNewestWalletsBySigner(provider, {
@@ -83,7 +83,7 @@ export function useWallet() {
 
   const fetchWalletByAddr = async (address: string): Promise<void> => {
     try {
-      const provider = blockchainStore.provider as ethers.BrowserProvider
+      const provider = ethereumStore.provider as ethers.BrowserProvider
       const tuple = await walletService.getWallet(provider, { address })
       const wallet = tupleToWallet(tuple)
       walletStore.wallets = [wallet]
@@ -99,7 +99,7 @@ export function useWallet() {
     minimumApprovals: number,
     passwordHash: string,
   ) => {
-    const providerSigner = await blockchainStore.provider!.getSigner()
+    const providerSigner = await ethereumStore.provider!.getSigner()
     const address = await walletService.createWallet(providerSigner, {
       name,
       signers,
@@ -110,7 +110,7 @@ export function useWallet() {
   }
 
   const depositWallet = async (to: string, token: string, value: BigNumber) => {
-    const providerSigner = await blockchainStore.provider!.getSigner()
+    const providerSigner = await ethereumStore.provider!.getSigner()
     if (isZeroAddress(token) === false) {
       await tokenService.approve(providerSigner, { token, spender: to, value })
     }

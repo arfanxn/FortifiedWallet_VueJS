@@ -61,7 +61,7 @@ import {
   minLength,
   helpers,
 } from '@vuelidate/validators'
-import { useBlockchainStore } from '@/stores/blockchain.store'
+import { useEthereumStore } from '@/stores/ethereum.store'
 import { isValidAddr, validateAndToast } from '@/helpers/validator.helpers'
 import { isEmpty, isNotEmpty } from '@/utils/boolean.utils'
 import { faPlus, faRotateLeft } from '@fortawesome/free-solid-svg-icons'
@@ -83,7 +83,7 @@ library.add(faPlus, faRotateLeft)
 const { startLoading, stopLoading } = useApp()
 const { createWallet, fetchPaginatedWallets } = useWallet()
 const walletStore = useWalletStore()
-const blockchainStore = useBlockchainStore()
+const ethereumStore = useEthereumStore()
 
 const router = useRouter()
 
@@ -218,7 +218,7 @@ function signerOnInput(index: number) {
  */
 function resetForm() {
   form.name = ''
-  form.signers = [blockchainStore.activeAccount, '']
+  form.signers = [ethereumStore.activeAccount, '']
   form.minimumApprovals = minimumApprovalsRequired
   form.password = ''
   form.salt = ''

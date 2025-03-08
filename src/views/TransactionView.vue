@@ -15,7 +15,7 @@ import AuthLayout from '@/layouts/AuthLayout.vue'
 import { useRoute, useRouter } from 'vue-router'
 import { library } from '@fortawesome/fontawesome-svg-core'
 import { faLink } from '@fortawesome/free-solid-svg-icons'
-import { useBlockchainStore } from '@/stores/blockchain.store'
+import { useEthereumStore } from '@/stores/ethereum.store'
 import WalletIndex from '@/components/wallets/WalletIndex.vue'
 import TransactionList from '@/components/transactions/TransactionList.vue'
 
@@ -24,7 +24,7 @@ library.add(faLink)
 const route = useRoute()
 const router = useRouter()
 
-let blockchainStore = useBlockchainStore()
+let ethereumStore = useEthereumStore()
 
 function filterTransactionByWallet(address) {
   router.push({ path: '/transactions', query: { wallet: address } })

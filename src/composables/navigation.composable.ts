@@ -1,4 +1,3 @@
-import { useBlockchainStore } from '@/stores/blockchain.store'
 import { useWalletStore } from '@/stores/wallet.store'
 import { useRoute, useRouter } from 'vue-router'
 import { RouteName } from '@/enums/route.enums'

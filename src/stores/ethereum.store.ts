@@ -4,13 +4,12 @@ import { defineStore } from 'pinia'
 import { connect as connectProvider, getAccounts } from '@/services/blockchain.service'
 import { ethers } from 'ethers'
 import { EthereumAddress } from '@/interfaces/ethereum.interfaces'
-import { computedAsync } from '@vueuse/core'
 
-export const useBlockchainStore = defineStore('blockchain', () => {
+export const useEthereumStore = defineStore('ethereum', () => {
   // ==========================================================================
   //                                Constants
   // ==========================================================================
-  const localStorageKey = 'blockchain'
+  const localStorageKey = 'ethereum'
 
   // ==========================================================================
   //                                Internal functions

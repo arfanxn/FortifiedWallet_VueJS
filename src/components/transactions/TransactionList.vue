@@ -121,7 +121,7 @@ library.add(
   faCalendar,
 )
 
-// let blockchainStore = useBlockchainStore()
+// let ethereumStore = useEthereumStore()
 
 defineComponent({
   name: 'WalletShow',
