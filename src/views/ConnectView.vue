@@ -26,6 +26,7 @@ import { library } from '@fortawesome/fontawesome-svg-core'
 import { faLink } from '@fortawesome/free-solid-svg-icons'
 import { useBlockchainStore } from '@/stores/blockchain.store'
 import { showToast } from '@/helpers/toast.helpers'
+import { ToastType } from '@/enums/toast.enums'
 
 library.add(faLink)
 
@@ -35,17 +36,17 @@ let blockchainStore = useBlockchainStore()
 
 onMounted(() => {
   if (!blockchainStore.isConnected) {
-    showToast('info', 'Please connect to your wallet.')
+    showToast(ToastType.Info, 'Please connect to your wallet.')
   }
 })
 
 async function connect() {
   try {
     await blockchainStore.connect()
-    showToast('success', 'Successfully connected to wallet.', 5000)
+    showToast(ToastType.Success, 'Successfully connected to wallet.', 5000)
     router.push('/')
   } catch (error) {
-    showToast('error', error)
+    showToast(ToastType.Error, error)
   }
 }
 </script>

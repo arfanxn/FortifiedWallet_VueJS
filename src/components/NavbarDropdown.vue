@@ -53,6 +53,6 @@ const isDropdownOpened = ref(false)
 async function handleDisconnect() {
   await blockchainStore.disconnect()
   router.push({ name: 'connect' })
-  showToast(ToastType.SUCCESS, 'Successfully disconnected from wallet.', 5000)
+  showToast(ToastType.Success, 'Successfully disconnected from wallet.', 5000)
 }
 </script>
