@@ -13,59 +13,48 @@
       <!-- Input field for wallet address -->
       <TextFieldC
         class="px-2"
-        name="walletAddr"
+        name="keyword"
         placeholder="Wallet Address (0x...)"
-        v-model="form.walletAddr"
-        @onKeyupEnter="textFieldOnKeyupEnter"
+        v-model="walletStore.keyword"
+        @onKeyupEnter="async () => await search()"
       />
 
       <!-- Message displayed when no wallets are found -->
       <div
-        v-if="walletStore.wallets.length === 0 && walletStore.wallet === undefined"
+        v-if="walletStore.wallets.length === 0 && !isLoading"
         class="flex items-center justify-center"
       >
         <span class="text-lg font-semibold">No Wallet(s) Found.</span>
       </div>
 
       <!-- List of wallet items -->
-      <ul
-        v-show="walletStore.wallets.length > 0 || walletStore.wallet !== undefined"
-        class="flex flex-col gap-y-4"
-      >
-        <!-- Single wallet item if a specific wallet is selected -->
-        <WalletListItemC
-          v-if="walletStore.wallet !== undefined"
-          :wallet="walletStore.wallet"
-          @onClick="
-            () => (isItemClicked ? onItemUnclick() : onItemClick(walletStore.wallet as Wallet))
-          "
-        />
-
+      <ul v-show="walletStore.wallets.length > 0" class="flex flex-col gap-y-4">
         <!-- Loop through and display all wallets -->
         <WalletListItemC
-          v-show="walletStore.wallet === undefined"
           v-for="(wallet, index) in walletStore.wallets"
           :key="index"
           :wallet="wallet"
-          @onClick="() => onItemClick(wallet as Wallet)"
+          :isSelected="walletStore.selectedWallet?.address === wallet.address"
+          v-show="
+            walletStore.selectedWallet === undefined ||
+            walletStore.selectedWallet.address === wallet.address
+          "
+          @onClick="() => toggleSelectWallet(wallet)"
         />
       </ul>
 
       <!-- Pagination controls -->
-      <div
-        v-if="isEmpty(route.params?.walletAddr)"
-        class="flex items-center justify-end gap-x-2 px-4"
-      >
-        <span class="mr-auto text-sm font-semibold">Page: {{ page }}</span>
+      <div v-if="!walletStore.selectedWallet" class="flex items-center justify-end gap-x-2 px-4">
+        <span class="mr-auto text-sm font-semibold">Page: {{ walletStore.currentPage }}</span>
         <PaginationButtonC
           :direction="PaginationButtonDirection.Prev"
-          :disabled="page === 1"
-          @onClick="() => navigateToPage(page - 1)"
+          :disabled="walletStore.currentPage === 1"
+          @onClick="() => navigateToPage(walletStore.currentPage - 1)"
         />
         <PaginationButtonC
           :direction="PaginationButtonDirection.Next"
           :disabled="walletStore.wallets.length === 0"
-          @onClick="() => navigateToPage(page + 1)"
+          @onClick="() => navigateToPage(walletStore.currentPage + 1)"
         />
       </div>
     </main>
@@ -73,7 +62,7 @@
 </template>
 
 <script setup lang="ts">
-import { defineComponent, defineEmits, onMounted, reactive, ref, watch } from 'vue'
+import { defineComponent, onMounted } from 'vue'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 import { library } from '@fortawesome/fontawesome-svg-core'
 import {
@@ -84,136 +73,138 @@ import {
   faUser,
 } from '@fortawesome/free-solid-svg-icons'
 import { useWallet } from '@/composables/wallet.composable'
-import { useRouter, useRoute } from 'vue-router'
+import { useRouter } from 'vue-router'
 import TextFieldC from '../TextFieldC.vue'
 import WalletListItemC from './WalletListItemC.vue'
 import PaginationButtonC from '../PaginationButtonC.vue'
 import { helpers } from '@vuelidate/validators'
 import { isValidAddr, validateAndToast } from '@/helpers/validator.helpers'
 import useVuelidate from '@vuelidate/core'
-import { isEmpty, isNotEmpty } from '@/utils/boolean.utils'
-import { WalletDoesNotExistError } from '@/errors/wallet.errors'
+import { isEmpty, isInstanceOf } from '@/utils/boolean.utils'
 import { showToast } from '@/helpers/toast.helpers'
-import { toBase10Number } from '@/utils/number.utils'
 import { useWalletStore } from '@/stores/wallet.store'
 import { ToastType } from '@/enums/toast.enums'
-import type { EthereumAddress } from '@/interfaces/ethereum.interfaces'
 import type { Wallet } from '@/interfaces/wallet.interfaces'
 import { PaginationButtonDirection } from '@/enums/component.enums'
-import { useAppStore } from '@/stores/app.store'
 import { useApp } from '@/composables/app.composable'
+import { storeToRefs } from 'pinia'
+import { useNavigation } from '@/composables/navigation.composable'
 library.add(faSquareCaretLeft, faSquareCaretRight, faDollarSign, faPlus, faUser)
-
-const route = useRoute()
-const router = useRouter()
-
-const { fetchWallets, findWallet } = useWallet()
-const walletStore = useWalletStore()
-const { startLoading, stopLoading } = useApp()
 
 defineComponent({
   name: 'WalletIndex',
 })
 
-onMounted(async () => {
-  // Initialize form with wallet address from route params
-  form.walletAddr = route.params?.walletAddr as string
-  // Set item clicked state based on wallet existence
-  isItemClicked.value = isNotEmpty(form.walletAddr)
-  // Initialize page number from route query, default to 1
-  page.value = toBase10Number(route.query.page as string, 1)
+const emit = defineEmits(['onWalletSelected', 'onWalletDeselected'])
 
-  // Fetch wallet or wallets based on the presence of a wallet address
-  isNotEmpty(form.walletAddr)
-    ? await findWallet(form.walletAddr as EthereumAddress)
-    : await fetchWallets(page.value)
+const router = useRouter()
+
+const walletStore = useWalletStore()
+const { fillWalletStoreFromRoute, fetchPaginatedWallets, fetchWalletByAddr } = useWallet()
+const { navigateToWalletCreate } = useNavigation()
+const { isLoading, withLoading } = useApp()
+
+onMounted(async () => {
+  withLoading(async () => await fillWalletStoreFromRoute())
 })
 
-const emit = defineEmits(['onItemClick', 'onItemUnclick'])
-
-interface Form {
-  walletAddr: string
-}
-// Reactive form for wallet address input
-const form = reactive<Form>({ walletAddr: '' })
-
-// Watch for changes in wallet address in route params
-watch(
-  () => route.params.walletAddr,
-  async (walletAddr) => {
-    startLoading()
-    // Fetch wallet if address is valid, otherwise set wallet to null
-    if (isValidAddr(walletAddr as string)) await findWallet(walletAddr as EthereumAddress)
-    else walletStore.wallet = undefined
-    stopLoading()
+const v$ = useVuelidate(
+  {
+    keyword: {
+      validAddrIf: helpers.withMessage(
+        'Wallet address is not valid.',
+        (addr: string) => isEmpty(addr) || isValidAddr(addr),
+      ),
+    },
   },
+  { keyword: storeToRefs(walletStore).keyword },
 )
 
-// Validation rules for wallet address
-const rules = {
-  walletAddr: {
-    // Custom error message for invalid wallet address
-    validAddrIf: helpers.withMessage(
-      'Wallet address is not valid.',
-      (addr: string) => isEmpty(addr) || isValidAddr(addr),
-    ),
-  },
+function onWalletSelected(wallet: Wallet) {
+  emit('onWalletSelected', wallet)
 }
-const v$ = useVuelidate(rules, form)
 
-// State to track if an item is clicked
-const isItemClicked = ref<boolean>()
-// State for current page number
-const page = ref()
+function onWalletDeselected() {
+  withLoading(async () => await fetchPaginatedWallets(walletStore.currentPage))
+  walletStore.keyword = undefined
+  emit('onWalletDeselected')
+}
 
-// Function to navigate to a specific page
-function navigateToPage(_page: number) {
-  page.value = _page
-  router.replace({ query: { page: page.value } })
-  fetchWallets(_page)
+async function navigateToPage(page: number): Promise<void> {
+  walletStore.$patch({
+    selectedWallet: undefined,
+    currentPage: page,
+  })
   window.scrollTo({
     top: 0,
     behavior: 'smooth',
   })
+  router.replace({ query: { page } })
+  fetchPaginatedWallets(page)
 }
 
-// Function to handle item click
-function onItemClick(wallet: Wallet) {
-  isItemClicked.value = true
-  emit('onItemClick', wallet)
+/**
+ * Toggles the selection of a given wallet.
+ *
+ * If the given wallet is undefined, or if the given wallet is different from the currently selected wallet,
+ * the given wallet is selected. Otherwise, the currently selected wallet is deselected.
+ * @param {Wallet} [wallet] - The wallet to toggle selection on.
+ */
+function toggleSelectWallet(wallet?: Wallet): void {
+  // Toggles the selection of a given wallet.
+  // If the given wallet is undefined, or if the given wallet is different from the currently selected wallet,
+  // the given wallet is selected. Otherwise, the currently selected wallet is deselected.
+  if (walletStore.selectedWallet && wallet) {
+    // If the given wallet is the same as the currently selected wallet, toggle to not selected.
+    if (walletStore.selectedWallet.address === wallet.address)
+      walletStore.selectedWallet = undefined
+    // Otherwise, select the given wallet.
+    else walletStore.selectedWallet = wallet
+  } else {
+    // If the given wallet is undefined, or if the given wallet is different from the currently selected wallet,
+    // select the given wallet.
+    walletStore.selectedWallet = wallet
+  }
+
+  // If the wallet is selected, emit the onWalletSelected event.
+  // Otherwise, emit the onWalletDeselected event and fetch the wallets for the current page.
+  const selectedWallet = walletStore.selectedWallet
+  const isWalletSelected = selectedWallet !== undefined
+  if (isWalletSelected) {
+    // Emit the onWalletSelected event.
+    onWalletSelected(selectedWallet)
+  } else {
+    // Emit the onWalletDeselected event and fetch the wallets for the current page.
+    onWalletDeselected()
+  }
 }
 
-// Function to handle item unclick
-function onItemUnclick() {
-  isItemClicked.value = false
-  emit('onItemUnclick')
-}
-
-// Function to navigate to wallet creation page
-async function navigateToWalletCreate() {
-  router.push({ name: 'wallet.create' })
-}
-
-// Function to handle enter key press in text field
-async function textFieldOnKeyupEnter() {
+/**
+ * Performs a search for a wallet by its address.
+ *
+ * If the user enters an empty string, the currently selected wallet is deselected and the wallets for the current page are refetched.
+ * If the user enters a valid Ethereum address, the wallet with the given address is fetched and selected.
+ * If the user enters an invalid Ethereum address, an error message is displayed and the function returns.
+ */
+async function search(): Promise<void> {
   if (!(await validateAndToast(v$))) return
 
-  if (isEmpty(form.walletAddr)) {
-    await fetchWallets()
-    onItemUnclick()
-    return
-  }
-
-  try {
-    await findWallet(form.walletAddr as EthereumAddress)
-    onItemClick(walletStore.wallet as Wallet)
-  } catch (error) {
-    if (error instanceof WalletDoesNotExistError) {
-      // TODO: fix bug here
-      showToast(ToastType.ERROR, error.message)
+  withLoading(async () => {
+    if (isEmpty(walletStore.keyword)) {
+      walletStore.selectWallet(undefined)
+      await fetchPaginatedWallets(walletStore.currentPage)
       return
     }
-    throw error
-  }
+
+    try {
+      const walletAddr = walletStore.keyword as string
+      await fetchWalletByAddr(walletAddr)
+      walletStore.selectWallet(walletStore.keyword)
+    } catch (error) {
+      if (isInstanceOf(error, Error)) showToast(ToastType.Error, error.message)
+
+      throw Error
+    }
+  })
 }
 </script>
