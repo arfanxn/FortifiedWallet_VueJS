@@ -50,7 +50,7 @@
 </template>
 
 <script setup lang="ts">
-import { defineComponent, reactive, computed, toRaw } from 'vue'
+import { onMounted, defineComponent, reactive, computed, toRaw } from 'vue'
 import { useVuelidate } from '@vuelidate/core'
 import {
   required,
@@ -74,16 +74,25 @@ import { formatEthAddr } from '@/helpers/string.helpers'
 import { ToastType } from '@/enums/toast.enums'
 import TextFieldC from '@/components/TextFieldC.vue'
 import ButtonC from '@/components/ButtonC.vue'
+import { useWalletStore } from '@/stores/wallet.store'
+import { RouteName } from '@/enums/route.enums'
+import { useApp } from '@/composables/app.composable'
 
 library.add(faPlus, faRotateLeft)
 
-let blockchainStore = useBlockchainStore()
-const { createWallet, fetchWallets } = useWallet()
+const { startLoading, stopLoading } = useApp()
+const { createWallet, fetchPaginatedWallets } = useWallet()
+const walletStore = useWalletStore()
+const blockchainStore = useBlockchainStore()
 
 const router = useRouter()
 
 defineComponent({
   name: 'WalletCreate',
+})
+
+onMounted(() => {
+  resetForm()
 })
 
 // Define constants for wallet creation constraints
@@ -106,8 +115,8 @@ interface Form {
 }
 const form = reactive<Form>({
   name: '',
-  signers: [blockchainStore.activeAccount, ''],
-  minimumApprovals: minimumApprovalsRequired,
+  signers: [],
+  minimumApprovals: 0,
   password: '',
   salt: '',
 })
@@ -243,14 +252,17 @@ async function onSubmit() {
 
 async function handleCreateSubmission() {
   try {
+    startLoading()
     const { name, signers, minimumApprovals, passwordHash } = processForm()
-    const walletAddr = await createWallet({ name, signers, minimumApprovals, passwordHash })
-    const message = `Wallet created with address "${formatEthAddr(walletAddr)}".`
-    showToast(ToastType.SUCCESS, message, 10 * 1000)
-    router.push({ name: 'wallet.show', params: { walletAddr } })
-    fetchWallets()
+    const address = await createWallet(name, signers, minimumApprovals, passwordHash)
+    const message = `Wallet created with address "${formatEthAddr(address)}".`
+    showToast(ToastType.Success, message, 10 * 1000)
+    await fetchPaginatedWallets(walletStore.currentPage)
+    router.push({ name: RouteName.WalletShow, params: { address } })
   } catch {
-    showToast(ToastType.ERROR, 'Wallet creation failed.')
+    showToast(ToastType.Error, 'Wallet creation failed.')
+  } finally {
+    stopLoading()
   }
 }
 </script>
