@@ -3,20 +3,27 @@ import { useBlockchainStore } from '@/stores/blockchain.store'
 import { useWalletStore } from '@/stores/wallet.store'
 import * as walletService from '@/services/wallet.service'
 import * as tokenService from '@/services/token.service'
-import { WalletDoesNotExistError } from '@/errors/wallet.errors'
-import { useRouter } from 'vue-router'
-import { EthereumAddress } from '@/interfaces/ethereum.interfaces'
-import { WalletTuple } from '@/interfaces/wallet.interfaces'
-import { BrowserProvider, ethers } from 'ethers'
+import { useRoute } from 'vue-router'
+import { Wallet, WalletTuple } from '@/interfaces/wallet.interfaces'
+import { ethers } from 'ethers'
 import BigNumber from 'bignumber.js'
+import { getPaginationOffset } from '@/utils/number.utils'
+import { isNonEmptyString, isStringNumber } from '@/utils/boolean.utils'
 
 export function useWallet() {
-  const router = useRouter()
+  // ==========================================================================
+  //                                Variables
+  // ==========================================================================
+  const route = useRoute()
   const blockchainStore = useBlockchainStore()
   const walletStore = useWalletStore()
-  const { wallet, wallets } = storeToRefs(walletStore)
+  const { wallets } = storeToRefs(walletStore)
 
-  const tupleToWallet = (tuple: WalletTuple) => {
+  // ==========================================================================
+  //                            Internal functions
+  // ==========================================================================
+
+  const tupleToWallet = (tuple: WalletTuple): Wallet => {
     return {
       name: tuple[0],
       address: tuple[1],
@@ -26,91 +33,82 @@ export function useWallet() {
     }
   }
 
-  const fetchWallets = async (page: number = 1) => {
-    const limit = 5
-    const offset = (page - 1) * limit
-    const provider = blockchainStore.provider as ethers.BrowserProvider
-    const signerAddr = blockchainStore.activeAccount
-    const tuples = await walletService.getNewestWalletsBySigner(provider, {
-      signerAddr,
-      offset,
-      limit,
-    })
-    walletStore.wallets = tuples.map(tupleToWallet)
-    return walletStore.wallets
-  }
+  // ==========================================================================
+  //                            External functions
+  // ==========================================================================
 
-  const findWallet = async (walletAddr: EthereumAddress) => {
-    try {
-      const provider = blockchainStore.provider as ethers.BrowserProvider
-      const tuple = await walletService.getWallet(provider, { walletAddr })
-      const wallet = tupleToWallet(tuple)
-      walletStore.wallet = wallet
-      return wallet
-    } catch {
-      throw new WalletDoesNotExistError()
+  const fillWalletStoreFromRoute = async () => {
+    const params = route.params
+    const query = route.query
+    const currentPage = isStringNumber(query.page) ? parseInt(query.page as string) : 1
+    const keyword = isNonEmptyString(params.walletAddr) ? (params.walletAddr as string) : undefined
+    walletStore.$patch({ currentPage, keyword })
+    if (keyword) {
+      await fetchWalletByAddr(keyword)
+      walletStore.selectWallet(keyword)
+    } else {
+      await fetchPaginatedWallets(currentPage)
+      walletStore.selectWallet(undefined)
     }
   }
 
-  interface CreateWalletParams {
-    name: string
-    signers: EthereumAddress[]
-    minimumApprovals: number
-    passwordHash: string
+  const fetchPaginatedWallets = async (page: number): Promise<void> => {
+    const signer = blockchainStore.activeAccount
+    const provider = blockchainStore.provider as ethers.BrowserProvider
+    const limit = 5
+    const offset = getPaginationOffset(page, limit)
+    const tuples = await walletService.getNewestWalletsBySigner(provider, {
+      signer,
+      offset,
+      limit,
+    })
+    // Convert the tuples to Wallet objects and store them in the walletStore
+    walletStore.wallets = tuples.map(tupleToWallet)
+    walletStore.currentPage = page
   }
-  const createWallet = async ({
-    name,
-    signers,
-    minimumApprovals,
-    passwordHash,
-  }: CreateWalletParams) => {
+
+  const fetchWalletByAddr = async (address: string): Promise<void> => {
+    try {
+      const provider = blockchainStore.provider as ethers.BrowserProvider
+      const tuple = await walletService.getWallet(provider, { address })
+      const wallet = tupleToWallet(tuple)
+      walletStore.wallets = [wallet]
+    } catch (error) {
+      walletStore.wallets = []
+      throw error
+    }
+  }
+
+  const createWallet = async (
+    name: string,
+    signers: string[],
+    minimumApprovals: number,
+    passwordHash: string,
+  ) => {
     const providerSigner = await blockchainStore.provider!.getSigner()
-    const walletAddr = await walletService.createWallet(providerSigner, {
+    const address = await walletService.createWallet(providerSigner, {
       name,
       signers,
       minimumApprovals,
       passwordHash,
     })
-    return walletAddr
+    return address
   }
 
-  interface DepositWalletParams {
-    token: EthereumAddress
-    value: BigNumber
-  }
-  const depositWallet = async (
-    walletAddr: EthereumAddress,
-    { token, value }: DepositWalletParams,
-  ) => {
+  const depositWallet = async (to: string, token: string, value: BigNumber) => {
     const providerSigner = await blockchainStore.provider!.getSigner()
-    await tokenService.approve(providerSigner, token, { spender: walletAddr, value })
-    await walletService.deposit(providerSigner, walletAddr, { token, value })
-  }
-
-  const navigateToWalletShow = async (walletAddr: EthereumAddress) => {
-    router.push({ name: 'wallet.show', params: { walletAddr } })
-    await findWallet(walletAddr)
-  }
-
-  const navigateToWalletDeposit = (walletAddr: EthereumAddress) => {
-    router.push({ name: 'wallet.deposit', params: { walletAddr } })
-  }
-
-  const navigateToWalletCreate = () => {
-    router.push({ name: 'wallet.create' })
+    await tokenService.approve(providerSigner, { token, spender: to, value })
+    await walletService.deposit(providerSigner, { to, token, value })
   }
 
   return {
     // ============================== State variables ==============================
-    wallet,
     wallets,
     // ================================== Methods ==================================
-    fetchWallets,
-    findWallet,
+    fillWalletStoreFromRoute,
+    fetchPaginatedWallets,
+    fetchWalletByAddr,
     createWallet,
     depositWallet,
-    navigateToWalletShow,
-    navigateToWalletDeposit,
-    navigateToWalletCreate,
   }
 }
