@@ -6,25 +6,25 @@
 
     <main
       class="flex flex-col items-start gap-4 px-4 py-4 font-semibold md:flex-row"
-      v-if="isWalletFound && !isLoading"
+      v-if="walletStore.selectedWallet && !isLoading"
     >
       <div class="flex basis-1/3 flex-col gap-y-2">
         <div class="flex flex-col gap-y-0.5">
           <h2>Name</h2>
-          <span>{{ walletStore.wallet!.name }}</span>
+          <span>{{ walletStore.selectedWallet.name }}</span>
         </div>
 
         <div class="flex flex-col gap-y-0.5">
           <h2>Total balance</h2>
           <span class="inline-flex items-center">
             <FontAwesomeIcon :icon="faDollarSign" class="text-sm" />
-            <span>{{ formatUsd(walletStore.wallet!.totalBalanceInUsd) }}</span>
+            <span>{{ formatUsd(walletStore.selectedWallet.totalBalanceInUsd) }}</span>
           </span>
         </div>
 
         <div class="flex flex-col gap-y-0.5">
           <h2>Min approvals</h2>
-          <span>{{ walletStore.wallet!.minimumApprovals }}</span>
+          <span>{{ walletStore.selectedWallet.minimumApprovals }}</span>
         </div>
       </div>
 
@@ -32,7 +32,7 @@
         <div class="flex flex-col gap-y-0.5">
           <h2>Address</h2>
           <span class="font-mono break-all whitespace-pre-wrap">{{
-            walletStore.wallet!.address
+            walletStore.selectedWallet.address
           }}</span>
         </div>
 
@@ -40,7 +40,7 @@
           <h2>Signers</h2>
           <li
             class="flex gap-x-2 font-mono"
-            v-for="(signer, index) in walletStore.wallet!.signers"
+            v-for="(signer, index) in walletStore.selectedWallet.signers"
             :key="index"
           >
             <span class="min-w-[1rem]">{{ index + 1 }}.</span>
@@ -50,20 +50,20 @@
       </div>
     </main>
     <main
-      v-else-if="!isWalletFound && !isLoading"
+      v-else-if="!walletStore.selectedWallet && !isLoading"
       class="flex items-center justify-center gap-4 px-4 py-4 font-semibold md:flex-row"
     >
-      <h2 class="flex flex-col items-center text-lg">
+      <div class="flex min-w-80 flex-col items-center text-lg">
         <span class="mr-auto">Wallet</span>
         <span class="font-mono italic">{{ route.params.walletAddr }}</span>
         <span class="ml-auto">Does Not Exist.</span>
-      </h2>
+      </div>
     </main>
   </section>
 </template>
 
 <script setup lang="ts">
-import { computed, defineComponent } from 'vue'
+import { defineComponent } from 'vue'
 import { faDollarSign } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 import { useWalletStore } from '@/stores/wallet.store'
@@ -82,8 +82,4 @@ const route = useRoute()
 
 const walletStore = useWalletStore()
 const { isLoading } = useApp()
-
-const isWalletFound = computed(() => {
-  return walletStore.wallet !== undefined
-})
 </script>
