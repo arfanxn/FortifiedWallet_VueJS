@@ -3,9 +3,8 @@
     <div class="flex flex-col items-start md:flex-row">
       <WalletIndex
         class="w-full md:basis-1/4"
-        defaultRouteName="dashboard"
-        @onItemClick="(wallet: Wallet) => navigateToShowWallet(wallet)"
-        @onItemUnclick="() => navigateBack()"
+        @onWalletSelected="(selectedWallet) => navigateToWalletShow()"
+        @onWalletDeselected="() => navigateToDashboard()"
       />
       <div class="flex w-full flex-col md:basis-3/4">
         <WalletMenu />
@@ -16,32 +15,33 @@
 </template>
 
 <script setup lang="ts">
-import { useRouter } from 'vue-router'
 import { library } from '@fortawesome/fontawesome-svg-core'
 import { faLink } from '@fortawesome/free-solid-svg-icons'
 import AuthLayout from '@/layouts/AuthLayout.vue'
 import WalletIndex from '@/components/wallets/WalletIndex.vue'
 import WalletMenu from '@/components/wallets/WalletMenu.vue'
 import { onMounted } from 'vue'
-import { Wallet } from '@/interfaces/wallet.interfaces'
-import { RouteName } from '@/enums/route.enums'
-import { useWalletStore } from '@/stores/wallet.store'
+import { useNavigation } from '@/composables/navigation.composable'
 
 library.add(faLink)
 
-const walletStore = useWalletStore()
+const { navigateToDashboard, navigateToWalletShow } = useNavigation()
 
-const router = useRouter()
+onMounted(() => {})
 
-onMounted(() => {
-  if (walletStore.wallet !== undefined) navigateToShowWallet(walletStore.wallet)
-})
-
-function navigateToShowWallet(wallet: Wallet) {
-  router.push({ name: RouteName.WalletShow, params: { walletAddr: wallet.address } })
-}
-
-function navigateBack() {
-  router.replace({ name: RouteName.Dashboard })
-}
+// watch(
+//   () => ({
+//     selectedWallet: walletStore.selectedWallet,
+//     keyword: walletStore.keyword,
+//     currentPage: walletStore.currentPage,
+//   }),
+//   ({ selectedWallet, currentPage }) => {
+//     if (selectedWallet) {
+//       router.push({ name: RouteName.WalletShow, params: { walletAddr: selectedWallet.address } })
+//     } else {
+//       router.push({ name: RouteName.Dashboard, query: { page: currentPage } })
+//     }
+//   },
+//   { deep: true },
+// )
 </script>
