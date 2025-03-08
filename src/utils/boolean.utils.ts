@@ -14,8 +14,19 @@ export function contains(str?: string, substr?: string): boolean {
  * @param {unknown} value - The value to check
  * @returns {boolean} True if the value is a string
  */
-export function isString(value: unknown): boolean {
+export function isString(value: unknown): value is string {
   return typeof value === 'string'
+}
+
+/**
+ * Checks if the given value is a non-empty string.
+ * @param {unknown} value - The value to check
+ * @returns {boolean} True if the value is a non-empty string
+ */
+export function isNonEmptyString(value: unknown): boolean {
+  if (!isString(value)) return false
+  else if (value === '') return false
+  else return true
 }
 
 /**
@@ -90,4 +101,11 @@ export function isNotEmpty<T>(value: T): boolean {
  */
 export function isEmpty<T>(value: T): boolean {
   return !isNotEmpty<T>(value)
+}
+
+export function isInstanceOf<T>(
+  instance: unknown,
+  constructor: new (...args: any[]) => T,
+): instance is T {
+  return instance instanceof constructor
 }
