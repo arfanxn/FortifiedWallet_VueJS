@@ -18,21 +18,20 @@
         </button>
       </header>
       <ul class="flex grow flex-col gap-y-2 text-slate-300 md:gap-y-5">
-        <!-- TODO: implements dynamic active route with `getRootRoute()!.name === menu.routeName` or any other ways -->
         <SidebarItem
-          :isActive="false"
+          :isActive="$route.matched[0]?.name === RouteName.Dashboard"
           :icon="faHouse"
           text="0xDashboard"
-          @onClick="() => router.push({ name: RouteName.Dashboard })"
+          @onClick="() => navigateToDashboard()"
         />
         <SidebarItem
-          :isActive="false"
+          :isActive="$route.matched[0]?.name === RouteName.TokenIndex"
           :icon="faCoins"
           text="0xTokens"
           @onClick="() => router.push({ name: RouteName.TokenIndex })"
         />
         <SidebarItem
-          :isActive="false"
+          :isActive="$route.matched[0]?.name === RouteName.TransactionIndex"
           :icon="faRightLeft"
           text="0xTransactions"
           @onClick="() => router.push({ name: RouteName.TransactionIndex })"
@@ -54,6 +53,7 @@ import { faWallet, faHouse, faCoins, faRightLeft, faXmark } from '@fortawesome/f
 import { useAppStore } from '@/stores/app.store'
 import SidebarItem from '@/components/SidebarItem.vue'
 import { RouteName } from '@/enums/route.enums'
+import { useWallet } from '@/composables/wallet.composable'
 
 const router = useRouter()
 
@@ -63,5 +63,11 @@ defineComponent({
   name: 'Sidebar',
 })
 
-let appStore = useAppStore()
+const appStore = useAppStore()
+const { fillWalletStoreFromRoute } = useWallet()
+
+async function navigateToDashboard() {
+  await router.push({ name: RouteName.Dashboard, query: { page: 1 } })
+  await fillWalletStoreFromRoute()
+}
 </script>

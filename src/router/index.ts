@@ -13,6 +13,7 @@ const router = createRouter({
       component: () => import('../views/DashboardView.vue'),
       meta: {
         requiresWallet: true,
+        title: 'Dashboard',
       },
       children: [
         {
@@ -45,6 +46,7 @@ const router = createRouter({
       component: () => import('../views/TokensView.vue'),
       meta: {
         requiresWallet: true,
+        title: 'Tokens',
       },
     },
 
@@ -55,6 +57,7 @@ const router = createRouter({
       component: () => import('../views/TransactionView.vue'),
       meta: {
         requiresWallet: true,
+        title: 'Transactions',
       },
     },
 

@@ -2,15 +2,13 @@
   <teleport to="#navbars">
     <nav
       id="navbar"
-      class="fixed left-0 right-0 top-0 flex items-center justify-between border-b-2 border-slate-700 bg-slate-300 px-4 py-6 text-slate-700 md:px-8"
+      class="fixed top-0 right-0 left-0 flex items-center justify-between border-b-2 border-slate-700 bg-slate-300 px-4 py-6 text-slate-700 md:px-8"
     >
       <div>
         <span class="md:hidden"><FontAwesomeIcon icon="wallet" class="text-2xl" /></span>
         <span class="hidden md:block"
           ><h1 class="text-xl font-bold">
-            <!-- TODO: implements dynamic route name -->
-            <!-- {{ appStore.menus.find((menu) => menu.routeName == getRootRoute().name)!.name }} -->
-            Dashboard
+            {{ $route.matched[0]?.meta?.title }}
           </h1></span
         >
       </div>
