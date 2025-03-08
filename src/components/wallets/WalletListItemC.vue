@@ -2,8 +2,7 @@
   <li
     class="inline-flex cursor-pointer items-center justify-start gap-x-4 px-4 py-2 hover:bg-slate-400 hover:text-slate-800"
     :class="{
-      'bg-slate-700 text-slate-300 hover:bg-slate-700! hover:text-slate-300!':
-        route.params.walletAddr === props.wallet.address,
+      'bg-slate-700 text-slate-300 hover:bg-slate-700! hover:text-slate-300!': props.isSelected,
     }"
     @click="(event: MouseEvent) => onClick(event, props.wallet)"
   >
@@ -34,6 +33,7 @@ const route = useRoute()
 const emit = defineEmits(['onClick'])
 
 interface Props {
+  isSelected: boolean
   wallet: Wallet
 }
 const props = defineProps<Props>()
