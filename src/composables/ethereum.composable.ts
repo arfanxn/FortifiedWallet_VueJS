@@ -3,9 +3,13 @@ import * as ethereumService from '@/services/ethereum.service'
 import { markRaw } from 'vue'
 import { ethers } from 'ethers'
 import { storeToRefs } from 'pinia'
+import { useNavigation } from './navigation.composable'
+import { showToast } from '@/helpers/toast.helpers'
+import { ToastType } from '@/enums/toast.enums'
 
 export function useEthereum() {
   const ethereumStore = useEthereumStore()
+  const { navigateToConnect } = useNavigation()
   const { isConnected } = storeToRefs(ethereumStore)
 
   const connect = async (): Promise<void> => {
@@ -15,6 +19,12 @@ export function useEthereum() {
     )
 
     ethereumStore.persistState()
+
+    window?.ethereum?.on('accountsChanged', async (accounts: string[]) => {
+      await disconnect()
+      navigateToConnect()
+      showToast(ToastType.Info, 'Account changed, please reconnect.', 5000)
+    })
   }
 
   /**
