@@ -20,6 +20,10 @@ export function useNavigation() {
   //                            External functions
   // ==========================================================================
 
+  const navigateToConnect = async () => {
+    router.push({ name: RouteName.Connect })
+  }
+
   /**
    * Navigate to the dashboard, with the current page number as a query parameter.
    *
@@ -75,6 +79,7 @@ export function useNavigation() {
     //
 
     // ================================== Methods ==================================
+    navigateToConnect,
     navigateToDashboard,
     navigateToWalletShow,
     navigateToWalletCreate,
