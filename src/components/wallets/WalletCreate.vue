@@ -74,15 +74,14 @@ import { formatEthAddr } from '@/helpers/string.helpers'
 import { ToastType } from '@/enums/toast.enums'
 import TextFieldC from '@/components/TextFieldC.vue'
 import ButtonC from '@/components/ButtonC.vue'
-import { useWalletStore } from '@/stores/wallet.store'
-import { RouteName } from '@/enums/route.enums'
 import { useApp } from '@/composables/app.composable'
+import { useNavigation } from '@/composables/navigation.composable'
 
 library.add(faPlus, faRotateLeft)
 
 const { startLoading, stopLoading } = useApp()
-const { createWallet, fetchPaginatedWallets } = useWallet()
-const walletStore = useWalletStore()
+const { createWallet, fetchWalletByAddr } = useWallet()
+const { navigateToWalletShow } = useNavigation()
 const ethereumStore = useEthereumStore()
 
 const router = useRouter()
@@ -254,12 +253,12 @@ async function handleCreateSubmission() {
   try {
     startLoading()
     const { name, signers, minimumApprovals, passwordHash } = processForm()
-    const address = await createWallet(name, signers, minimumApprovals, passwordHash)
-    const message = `Wallet created with address "${formatEthAddr(address)}".`
+    const walletAddr = await createWallet(name, signers, minimumApprovals, passwordHash)
+    const message = `Wallet created with address "${formatEthAddr(walletAddr)}".`
     showToast(ToastType.Success, message, 10 * 1000)
-    await fetchPaginatedWallets(walletStore.currentPage)
-    router.push({ name: RouteName.WalletShow, params: { address } })
-  } catch {
+    await fetchWalletByAddr(walletAddr)
+    navigateToWalletShow()
+  } catch (error) {
     showToast(ToastType.Error, 'Wallet creation failed.')
   } finally {
     stopLoading()

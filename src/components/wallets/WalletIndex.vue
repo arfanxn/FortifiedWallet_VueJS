@@ -191,8 +191,9 @@ async function search(): Promise<void> {
 
   withLoading(async () => {
     if (isEmpty(walletStore.keyword)) {
-      walletStore.selectWallet(undefined)
       await fetchPaginatedWallets(walletStore.currentPage)
+      walletStore.selectWallet(undefined)
+      onWalletDeselected()
       return
     }
 
@@ -200,6 +201,7 @@ async function search(): Promise<void> {
       const walletAddr = walletStore.keyword as string
       await fetchWalletByAddr(walletAddr)
       walletStore.selectWallet(walletStore.keyword)
+      onWalletSelected(walletStore.selectedWallet as Wallet)
     } catch (error) {
       if (isInstanceOf(error, Error)) showToast(ToastType.Error, error.message)
 

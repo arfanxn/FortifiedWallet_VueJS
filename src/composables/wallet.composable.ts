@@ -61,6 +61,9 @@ export function useWallet() {
     if (walletStore.keyword) {
       await fetchWalletByAddr(walletStore.keyword)
       if (walletStore.selectedWallet) walletStore.selectWallet(walletStore.keyword)
+    } else if (walletStore.selectedWallet) {
+      await fetchWalletByAddr(walletStore.selectedWallet.address)
+      walletStore.selectWallet(walletStore.selectedWallet.address)
     } else {
       await fetchPaginatedWallets(walletStore.currentPage)
     }
