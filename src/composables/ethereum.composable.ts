@@ -1,11 +1,13 @@
 import { useEthereumStore } from '@/stores/ethereum.store'
 import * as ethereumService from '@/services/ethereum.service'
-import { markRaw } from 'vue'
+import { markRaw, ref } from 'vue'
 import { ethers } from 'ethers'
 import { storeToRefs } from 'pinia'
 import { useNavigation } from './navigation.composable'
 import { showToast } from '@/helpers/toast.helpers'
 import { ToastType } from '@/enums/toast.enums'
+
+const hasListened = ref<boolean>(false)
 
 export function useEthereum() {
   const ethereumStore = useEthereumStore()
@@ -20,11 +22,16 @@ export function useEthereum() {
 
     ethereumStore.persistState()
 
-    window?.ethereum?.on('accountsChanged', async (accounts: string[]) => {
-      await disconnect()
-      navigateToConnect()
-      showToast(ToastType.Info, 'Account changed, please reconnect.', 5000)
-    })
+    if (hasListened.value === false) {
+      ethereumService.listenAccountsChanged(async (accounts: string[]) => {
+        console.log('this executed')
+        await disconnect()
+        navigateToConnect()
+        showToast(ToastType.Info, 'Accounts changed, please reconnect.', 5 * 1000)
+      })
+
+      hasListened.value = true
+    }
   }
 
   /**
@@ -34,8 +41,10 @@ export function useEthereum() {
    * @throws {Error}
    */
   const disconnect = async (): Promise<void> => {
-    await ethereumStore.provider?.removeAllListeners()
-    await window.ethereum?.removeAllListeners?.()
+    if (hasListened.value) {
+      await ethereumService.removeAllListeners(ethereumStore.provider as ethers.BrowserProvider)
+      hasListened.value = false
+    }
     ethereumStore.provider = null
     ethereumStore.accounts = []
 
