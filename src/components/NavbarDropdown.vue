@@ -37,6 +37,7 @@ import { faBell, faGear, faLinkSlash, faUser, faBars } from '@fortawesome/free-s
 import { showToast } from '@/helpers/toast.helpers'
 import { ToastType } from '@/enums/toast.enums'
 import { useEthereum } from '@/composables/ethereum.composable'
+import { useNavigation } from '@/composables/navigation.composable'
 
 library.add(faBell, faUser, faGear, faLinkSlash, faBars)
 
@@ -47,12 +48,13 @@ defineComponent({
 let router = useRouter()
 
 const { disconnect } = useEthereum()
+const { navigateToConnect } = useNavigation()
 
 const isDropdownOpened = ref(false)
 
 async function handleDisconnect() {
   await disconnect()
-  router.push({ name: 'connect' })
+  navigateToConnect()
   showToast(ToastType.Success, 'Successfully disconnected from wallet.', 5000)
 }
 </script>
