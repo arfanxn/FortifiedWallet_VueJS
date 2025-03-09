@@ -72,8 +72,8 @@ const router = createRouter({
 
 router.beforeEach((to, from, next) => {
   if (to.meta.requiresWallet) {
-    const { isConnected, connect } = useEthereum()
-    isConnected ? connect() : next({ name: 'connect' })
+    const { isConnected } = useEthereum()
+    if (!isConnected) next({ name: RouteName.Connect })
   }
 
   next()
