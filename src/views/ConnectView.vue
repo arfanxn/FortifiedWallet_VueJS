@@ -7,7 +7,7 @@
         <h1 class="font-serif text-2xl md:text-4xl">Fortified Wallet</h1>
         <button
           class="inline-flex w-full items-center justify-center gap-x-2 rounded-md border-1 border-slate-200 bg-slate-500 p-2 text-slate-300 hover:text-slate-200 hover:outline-2 hover:outline-slate-200"
-          @click="connect"
+          @click="onClick"
         >
           <FontAwesomeIcon icon="link" class="text-2xl" />
           <span>Connect</span>
@@ -19,32 +19,29 @@
 
 <script setup>
 import { onMounted } from 'vue'
-import { useRouter } from 'vue-router'
 import GuestLayout from '@/layouts/GuestLayout.vue'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 import { library } from '@fortawesome/fontawesome-svg-core'
 import { faLink } from '@fortawesome/free-solid-svg-icons'
-import { useEthereumStore } from '@/stores/ethereum.store'
 import { showToast } from '@/helpers/toast.helpers'
 import { ToastType } from '@/enums/toast.enums'
+import { useEthereum } from '@/composables/ethereum.composable'
+import { useNavigation } from '@/composables/navigation.composable'
 
 library.add(faLink)
 
-const router = useRouter()
-
-let ethereumStore = useEthereumStore()
+const { isConnected, connect } = useEthereum()
+const { navigateToDashboard } = useNavigation()
 
 onMounted(() => {
-  if (!ethereumStore.isConnected) {
-    showToast(ToastType.Info, 'Please connect to your wallet.')
-  }
+  if (!isConnected) showToast(ToastType.Info, 'Please connect to your wallet.')
 })
 
-async function connect() {
+async function onClick() {
   try {
-    await ethereumStore.connect()
+    await connect()
     showToast(ToastType.Success, 'Successfully connected to wallet.', 5000)
-    router.push('/')
+    navigateToDashboard()
   } catch (error) {
     showToast(ToastType.Error, error)
   }
