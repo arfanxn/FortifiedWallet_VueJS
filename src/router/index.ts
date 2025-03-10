@@ -32,7 +32,7 @@ const router = createRouter({
           component: () => import('../components/wallets/WalletDeposit.vue'),
         },
         {
-          path: '/wallets/:walletAddr/transfer',
+          path: '/wallets/:walletAddr/transfer/:transactionType?',
           name: RouteName.WalletTransfer,
           component: () => import('../components/wallets/WalletTransfer.vue'),
         },
