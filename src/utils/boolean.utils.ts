@@ -121,7 +121,7 @@ export function isInstanceOf<T>(
  * @param {string | null | undefined} address - The Ethereum address to validate
  * @returns {boolean} True if the address is valid, false otherwise
  */
-export function isEthAddr(address: string | null | undefined): boolean {
+export function isEthAddr(address: string | null | undefined): address is string {
   if (address === null || address === undefined) return false
   // Quick format check first
   if (!/^0x[a-fA-F0-9]{40}$/.test(address)) return false
