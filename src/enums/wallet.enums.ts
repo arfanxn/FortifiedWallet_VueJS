@@ -1,6 +1,13 @@
+import { EthereumAssetType } from '@/enums/ethereum.enums'
+
 export enum WalletDepositType {
-  Token = 'token',
-  Ether = 'ether',
+  Token = EthereumAssetType.Token,
+  Ether = EthereumAssetType.Ether,
+}
+
+export enum WalletTransactionType {
+  Token = EthereumAssetType.Token,
+  Ether = EthereumAssetType.Ether,
 }
 
 export enum WalletRouteName {
