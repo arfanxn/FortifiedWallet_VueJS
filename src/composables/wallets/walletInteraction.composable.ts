@@ -114,7 +114,13 @@ export function useWalletInteraction() {
 
   const createWalletTransaction = async (token: string, to: string, value: BigNumber) => {
     const providerSigner = await ethereumStore.provider!.getSigner()
-    const txHash = await walletService.createTransaction(providerSigner, { token, to, value })
+    const from = walletStore.selectedWallet!.address
+    const txHash = await walletService.createTransaction(providerSigner, {
+      from,
+      token,
+      to,
+      value,
+    })
     return txHash
   }
 
