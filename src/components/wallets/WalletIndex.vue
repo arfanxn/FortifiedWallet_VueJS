@@ -1,7 +1,7 @@
 <template>
-  <section class="flex flex-col text-slate-700">
+  <section class="flex flex-col gap-y-4 text-slate-700">
     <!-- Header section with title and create wallet button -->
-    <header class="inline-flex items-center justify-between bg-slate-300 px-4 py-4 md:px-4">
+    <header class="inline-flex items-center justify-between bg-slate-300 px-4 pt-4 md:px-4">
       <h2 class="text-lg font-bold">Wallets</h2>
       <button class="cursor-pointer" @click="navigateToWalletCreate()">
         <FontAwesomeIcon :icon="faPlus" class="text-xl" />
