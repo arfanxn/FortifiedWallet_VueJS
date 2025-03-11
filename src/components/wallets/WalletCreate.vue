@@ -67,7 +67,6 @@ import { isEmpty, isEthAddr, isNotEmpty } from '@/utils/boolean.utils'
 import { faPlus, faRotateLeft } from '@fortawesome/free-solid-svg-icons'
 import { library } from '@fortawesome/fontawesome-svg-core'
 import { useWalletInteraction } from '@/composables/wallets/walletInteraction.composable'
-import { ethers } from 'ethers'
 import { showToast } from '@/helpers/toast.helpers'
 import { formatEthAddr } from '@/helpers/string.helpers'
 import { ToastType } from '@/enums/toast.enums'
@@ -75,6 +74,7 @@ import TextFieldC from '@/components/TextFieldC.vue'
 import ButtonC from '@/components/ButtonC.vue'
 import { useAppUI } from '@/composables/appUI.composable'
 import { useNavigation } from '@/composables/wallets/walletNavigator.composable'
+import { toSolidityPackedKeccak256Hash } from '@/helpers/ethers.helpers'
 
 library.add(faPlus, faRotateLeft)
 
@@ -236,7 +236,7 @@ function processForm() {
     return true
   })
 
-  const passwordHash = ethers.solidityPackedKeccak256(['string', 'string'], [password, salt])
+  const passwordHash = toSolidityPackedKeccak256Hash(password, salt)
 
   const processedForm: ProcessedForm = {
     name,
@@ -264,7 +264,8 @@ async function handleCreateSubmission() {
     await fetchWalletByAddr(walletAddr)
     navigateToWalletShow()
   } catch (error) {
-    showToast(ToastType.Error, 'Wallet creation failed.')
+    const message = error instanceof Error ? error.message : 'Wallet creation failed.'
+    showToast(ToastType.Error, message)
   } finally {
     stopLoading()
   }
