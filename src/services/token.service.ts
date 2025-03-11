@@ -18,26 +18,26 @@ const tokenAbis: ethers.InterfaceAbi = [
   'function approve(address spender, uint256 value) returns (bool)',
 ]
 
-export const name = async (provider: ethers.BrowserProvider, token: EthereumAddress) => {
-  const contract = new ethers.Contract(token, tokenAbis, provider)
+export const name = async (token: EthereumAddress, runner: ethers.BrowserProvider) => {
+  const contract = new ethers.Contract(token, tokenAbis, runner)
   return await contract.name()
 }
 
-export const symbol = async (provider: ethers.BrowserProvider, token: EthereumAddress) => {
-  const contract = new ethers.Contract(token, tokenAbis, provider)
+export const symbol = async (token: EthereumAddress, runner: ethers.BrowserProvider) => {
+  const contract = new ethers.Contract(token, tokenAbis, runner)
   return await contract.symbol()
 }
 
-export const decimals = async (provider: ethers.BrowserProvider, token: EthereumAddress) => {
-  const contract = new ethers.Contract(token, tokenAbis, provider)
+export const decimals = async (token: EthereumAddress, runner: ethers.BrowserProvider) => {
+  const contract = new ethers.Contract(token, tokenAbis, runner)
   return await contract.decimals()
 }
 
 export const approve = async (
-  signer: ethers.Signer,
   params: { token: string; spender: string; value: BigNumber },
+  runner: ethers.Signer,
 ): Promise<void> => {
-  const contract = new ethers.Contract(params.token, tokenAbis, signer)
+  const contract = new ethers.Contract(params.token, tokenAbis, runner)
 
   await withResolvedEthersErrorHandling(async () => {
     const tx: ethers.TransactionResponse = await contract.approve(

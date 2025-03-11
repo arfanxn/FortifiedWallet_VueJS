@@ -8,10 +8,10 @@ export function useTokenMetadata() {
   const tokenMetadata = ref<TokenMetadata>()
 
   const fetchTokenMetadata = async (tokenAddr: string): Promise<void> => {
-    const provider = useEthereumStore().provider
-    const name = await tokenService.name(provider as ethers.BrowserProvider, tokenAddr)
-    const symbol = await tokenService.symbol(provider as ethers.BrowserProvider, tokenAddr)
-    const decimals = await tokenService.decimals(provider as ethers.BrowserProvider, tokenAddr)
+    const runner = useEthereumStore().provider as ethers.BrowserProvider
+    const name = await tokenService.name(tokenAddr, runner)
+    const symbol = await tokenService.symbol(tokenAddr, runner)
+    const decimals = await tokenService.decimals(tokenAddr, runner)
     if (name && symbol && decimals)
       tokenMetadata.value = {
         address: tokenAddr,
@@ -20,15 +20,6 @@ export function useTokenMetadata() {
         decimals,
       }
   }
-
-  // const tokenMetadata = computedAsync(
-  //   async () => {
-  //     if (isEthAddr(tokenAddr.value)) return fetchTokenMetadata(tokenAddr.value)
-  //     return
-  //   },
-  //   undefined,
-  //   { lazy: true },
-  // )
 
   const tokenLabel = computed(() =>
     tokenMetadata.value

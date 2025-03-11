@@ -27,19 +27,19 @@ const abis: ethers.InterfaceAbi = [
 
 /**
  * Fetches a list of wallet addresses associated with a given signer.
- * @param {ethers.BrowserProvider} provider - An ethers.js provider object.
  * @param {{ signerAddr: string; offset: number; limit: number }} params - An object containing the following properties:
  *   - {string} signerAddr - The Ethereum address of the account to fetch wallets for.
  *   - {number} offset - The offset of the first wallet address to fetch.
  *   - {number} limit - The maximum number of wallet addresses to fetch.
+ * @param {ethers.BrowserProvider} runner - An ethers.js provider object.
  * @returns {Promise<string[]>} A promise that resolves to an array of wallet addresses associated with the given signer.
  * @throws {Error|ResolvedEthersError} If fails.
  */
 export const fetchWalletAddressesBySigner = async (
-  provider: ethers.BrowserProvider,
   params: { signer: string; offset: number; limit: number },
+  runner: ethers.BrowserProvider,
 ): Promise<string[]> => {
-  const contract = new ethers.Contract(_walletFactoryContractAddr(), abis, provider)
+  const contract = new ethers.Contract(_walletFactoryContractAddr(), abis, runner)
   return await withResolvedEthersErrorHandling<string[]>(async () => {
     const addresses = await contract.getWalletAddressesBySigner(
       params.signer,
@@ -52,19 +52,19 @@ export const fetchWalletAddressesBySigner = async (
 
 /**
  * Fetches a list of wallet tuples associated with a given signer.
- * @param {ethers.BrowserProvider} provider - An ethers.js provider object.
  * @param {{ signerAddr: string; offset: number; limit: number }} params - An object containing the following properties:
  *   - {string} signerAddr - The Ethereum address of the account to fetch wallets for.
  *   - {number} offset - The offset of the first wallet to fetch.
  *   - {number} limit - The maximum number of wallets to fetch.
+ * @param {ethers.BrowserProvider} runner - An ethers.js provider object.
  * @returns {Promise<WalletTuple[]>} A promise that resolves to an array of wallet tuples associated with the given signer.
  * @throws {Error|ResolvedEthersError} If fails.
  */
 export const getNewestWalletsBySigner = async (
-  provider: ethers.BrowserProvider,
   params: { signer: string; offset: number; limit: number },
+  runner: ethers.BrowserProvider,
 ): Promise<WalletTuple[]> => {
-  const contract = new ethers.Contract(_walletFactoryContractAddr(), abis, provider)
+  const contract = new ethers.Contract(_walletFactoryContractAddr(), abis, runner)
   return await withResolvedEthersErrorHandling<WalletTuple[]>(async () => {
     const tuples = await contract.getNewestWalletsBySigner(
       params.signer,
@@ -77,18 +77,18 @@ export const getNewestWalletsBySigner = async (
 
 /**
  * Fetches a wallet tuple associated with a given wallet address.
- * @param {ethers.BrowserProvider} provider - An ethers.js provider object.
  * @param {{ walletAddr: string }} params - An object containing the following properties:
+ * @param {ethers.BrowserProvider} runner - An ethers.js provider object.
  *   - {string} walletAddr - The Ethereum address of the wallet to fetch.
  * @returns {Promise<WalletTuple>} A promise that resolves to a tuple containing the wallet's name, address, signers, minimum approvals, and total balance in USD.
  * @throws {Error|ResolvedEthersError} If fails.
  */
 export const getWallet = async (
-  provider: ethers.BrowserProvider,
   params: { address: string },
+  runner: ethers.BrowserProvider,
 ): Promise<WalletTuple> => {
   const { address } = params
-  const contract = new ethers.Contract(_walletFactoryContractAddr(), abis, provider)
+  const contract = new ethers.Contract(_walletFactoryContractAddr(), abis, runner)
 
   return await withResolvedEthersErrorHandling<WalletTuple>(async () => {
     const tuple = await contract.getWallet(address)
@@ -97,8 +97,8 @@ export const getWallet = async (
 }
 
 export const createWallet = async (
-  signer: ethers.Signer,
   params: { name: string; signers: string[]; minimumApprovals: number; passwordHash: string },
+  signer: ethers.Signer,
 ): Promise<string> => {
   const contract = new ethers.Contract(_walletFactoryContractAddr(), abis, signer)
 
