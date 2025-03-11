@@ -1,5 +1,5 @@
 import { TransactionFailedError } from '@/errors/ethereum.errors'
-import { didTransactionFail, withResolvedEthersErrorHandling } from '@/helpers/ethers.helpers'
+import { didTransactionFail, resolveEthersError } from '@/helpers/ethers.helpers'
 import BigNumber from 'bignumber.js'
 import { ethers } from 'ethers'
 import { EthereumAddress } from '@/interfaces/ethereum.interfaces'
@@ -39,12 +39,14 @@ export const approve = async (
 ): Promise<void> => {
   const contract = new ethers.Contract(params.token, tokenAbis, runner)
 
-  await withResolvedEthersErrorHandling(async () => {
+  try {
     const tx: ethers.TransactionResponse = await contract.approve(
       params.spender,
       params.value.toString(),
     )
     const receipt: ethers.TransactionReceipt | null = await tx.wait()
     if (didTransactionFail(receipt)) throw new TransactionFailedError()
-  }, contract)
+  } catch (error) {
+    throw resolveEthersError(error, contract) ?? error
+  }
 }

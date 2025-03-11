@@ -3,39 +3,33 @@ import { ResolvedEthersError } from '@/errors/ethers.error'
 import { pascalToSentenceCase } from '@/utils/string.utils'
 import { ethers } from 'ethers'
 
-/**
- * Checks if a given transaction receipt object indicates that the transaction
- * has failed.
- *
- * @param {ethers.TransactionReceipt | null} receipt - The transaction receipt
- * object to be checked.
- * @returns {boolean} True if the transaction failed, false if the
- * transaction succeeded or if the receipt is null.
- */
-export function didTransactionFail(receipt: ethers.TransactionReceipt | null): boolean {
-  if (receipt === null) return false
-  return receipt.status !== 1
+// ==========================================================================
+//                            Internal functions
+// ==========================================================================
+
+function isActionRejectedError(error: any): boolean {
+  return error?.code === EthersErrorCode.ActionRejected
 }
 
-/**
- * Checks if a given transaction receipt object indicates that the transaction
- * has succeeded.
- *
- * This function is a type guard that will narrow the type of the receipt
- * parameter from `ethers.TransactionReceipt | null` to `ethers.TransactionReceipt`
- * if the transaction succeeded. If the transaction failed, the return value
- * will be `false`.
- *
- * @param {ethers.TransactionReceipt | null} receipt - The transaction receipt
- * object to be checked.
- * @returns {receipt is ethers.TransactionReceipt} True if the transaction
- * succeeded, false if the transaction failed or if the receipt is null.
- */
-export function didTransactionSucceed(
-  receipt: ethers.TransactionReceipt | null,
-): receipt is ethers.TransactionReceipt {
-  return !didTransactionFail(receipt)
+function isNetworkError(error: any): boolean {
+  return error?.code === EthersErrorCode.NetworkError || error.message?.includes('network')
 }
+
+function isInsufficientFundsError(error: any): boolean {
+  return error?.code === EthersErrorCode.InsufficientFunds
+}
+
+function isInvalidArgumentError(error: any): boolean {
+  return error?.code === EthersErrorCode.InvalidArgument
+}
+
+function isContractError(error: any): error is { data: string } {
+  return error?.code === EthersErrorCode.CallException && typeof error.data === 'string'
+}
+
+// ==========================================================================
+//                            External functions
+// ==========================================================================
 
 /**
  * Determines if a given error object conforms to the ethers.EthersError interface.
@@ -89,86 +83,93 @@ export function isEthersError(error: any): error is ethers.EthersError {
  * @throws {ResolvedEthersError} Throws a resolved error with a specific message
  * based on the type of ethers error encountered.
  */
-export function resolveAndThrowEthersError(
-  error: ethers.EthersError,
-  contract?: ethers.Contract,
-): ResolvedEthersError {
+export function resolveEthersError(
+  error: unknown,
+  contract: ethers.Contract,
+): ResolvedEthersError | undefined {
+  if (isEthersError(error) === false) return undefined
+
   switch (true) {
     case isActionRejectedError(error):
-      throw new ResolvedEthersError('Action rejected by user.', error)
+      return new ResolvedEthersError('Action rejected by user.', error)
 
     case isNetworkError(error):
-      throw new ResolvedEthersError('Network error.', error)
+      return new ResolvedEthersError('Network error.', error)
 
     case isContractError(error):
-      if (contract === undefined)
-        throw new ResolvedEthersError('Unknown contract error occurred.', error)
-      else {
-        // Attempt to parse the contract error data using the contract's interface
-        const errorDescription = contract.interface.parseError(error.data)
-        let message: string
+      // Attempt to parse the contract error data using the contract's interface
+      const errorDescription = contract.interface.parseError(error.data)
+      let message: string
 
-        // Handle the case where the error data is a standard "revert" opcode
-        if (error.data.startsWith('0x08c379a0')) {
-          // Extract the error message from the parsed error description
-          message = errorDescription!.args[0] as string
-        } else {
-          // Handle the case where the error data is a custom contract error
-          // Convert the PascalCase error name to sentence case
-          message = pascalToSentenceCase(errorDescription!.name).concat('.')
-        }
-
-        // Throw a resolved error with the parsed message
-        throw new ResolvedEthersError(message, error)
+      // Handle the case where the error data is a standard "revert" opcode
+      if (error.data.startsWith('0x08c379a0')) {
+        // Extract the error message from the parsed error description
+        message = errorDescription!.args[0] as string
+      } else {
+        // Handle the case where the error data is a custom contract error
+        // Convert the PascalCase error name to sentence case
+        message = pascalToSentenceCase(errorDescription!.name).concat('.')
       }
 
+      // Throw a resolved error with the parsed message
+      return new ResolvedEthersError(message, error)
+
     case isInsufficientFundsError(error):
-      throw new ResolvedEthersError('Unpredictable gas limit.', error)
+      return new ResolvedEthersError('Unpredictable gas limit.', error)
 
     case isInvalidArgumentError(error):
-      throw new ResolvedEthersError('Invalid input format.', error)
-
-    case error instanceof Error:
-      throw new ResolvedEthersError(error.message, error)
+      return new ResolvedEthersError('Invalid input format.', error)
 
     default:
-      throw new ResolvedEthersError('Unknown error occurred.', error)
+      return new ResolvedEthersError('Unknown error occurred.', error)
   }
 }
 
-export function isActionRejectedError(error: any): boolean {
-  return error?.code === EthersErrorCode.ActionRejected
+/**
+ * Checks if a given transaction receipt object indicates that the transaction
+ * has failed.
+ *
+ * @param {ethers.TransactionReceipt | null} receipt - The transaction receipt
+ * object to be checked.
+ * @returns {boolean} True if the transaction failed, false if the
+ * transaction succeeded or if the receipt is null.
+ */
+export function didTransactionFail(receipt: ethers.TransactionReceipt | null): boolean {
+  if (receipt === null) return false
+  return receipt.status !== 1
 }
 
-export function isNetworkError(error: any): boolean {
-  return error?.code === EthersErrorCode.NetworkError || error.message?.includes('network')
+/**
+ * Checks if a given transaction receipt object indicates that the transaction
+ * has succeeded.
+ *
+ * This function is a type guard that will narrow the type of the receipt
+ * parameter from `ethers.TransactionReceipt | null` to `ethers.TransactionReceipt`
+ * if the transaction succeeded. If the transaction failed, the return value
+ * will be `false`.
+ *
+ * @param {ethers.TransactionReceipt | null} receipt - The transaction receipt
+ * object to be checked.
+ * @returns {receipt is ethers.TransactionReceipt} True if the transaction
+ * succeeded, false if the transaction failed or if the receipt is null.
+ */
+export function didTransactionSucceed(
+  receipt: ethers.TransactionReceipt | null,
+): receipt is ethers.TransactionReceipt {
+  return !didTransactionFail(receipt)
 }
 
-export function isInsufficientFundsError(error: any): boolean {
-  return error?.code === EthersErrorCode.InsufficientFunds
-}
-
-export function isInvalidArgumentError(error: any): boolean {
-  return error?.code === EthersErrorCode.InvalidArgument
-}
-
-export function isContractError(error: any): error is { data: string } {
-  return error?.code === EthersErrorCode.CallException && typeof error.data === 'string'
-}
-
-export async function withResolvedEthersErrorHandling<T>(
-  closure: () => Promise<T>,
-  contract?: ethers.Contract,
-): Promise<T> {
-  try {
-    return await closure()
-  } catch (error) {
-    if (isEthersError(error)) resolveAndThrowEthersError(error, contract)
-    throw error
-  }
-}
-
-export function toSolidityPackedKeccak256Hash(str: string, salt?: string) {
+/**
+ * Generates a Keccak256 hash from a given string and optional salt using Solidity's
+ * packed encoding.
+ *
+ * @param {string} str - The input string to be hashed.
+ * @param {string} salt - An optional salt to be used in the hash computation.
+ * If provided, the hash will be generated from the concatenation of the string and
+ * the salt.
+ * @returns {string} The resulting Keccak256 hash as a hex string.
+ */
+export function toSolidityPackedKeccak256Hash(str: string, salt?: string): string {
   const hash = salt
     ? ethers.solidityPackedKeccak256(['string', 'string'], [str, salt])
     : ethers.solidityPackedKeccak256(['string'], [str])

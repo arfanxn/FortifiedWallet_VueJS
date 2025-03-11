@@ -1,7 +1,7 @@
 import { TransactionFailedError } from '@/errors/ethereum.errors'
 import { ethers } from 'ethers'
 import { WalletTuple } from '@/interfaces/wallet.interfaces'
-import { didTransactionSucceed, withResolvedEthersErrorHandling } from '@/helpers/ethers.helpers'
+import { didTransactionSucceed, resolveEthersError } from '@/helpers/ethers.helpers'
 
 const _walletFactoryContractAddr = () => import.meta.env.VITE__WALLET_FACTORY_CONTRACT_ADDRESS
 
@@ -40,14 +40,16 @@ export const fetchWalletAddressesBySigner = async (
   runner: ethers.BrowserProvider,
 ): Promise<string[]> => {
   const contract = new ethers.Contract(_walletFactoryContractAddr(), abis, runner)
-  return await withResolvedEthersErrorHandling<string[]>(async () => {
+  try {
     const addresses = await contract.getWalletAddressesBySigner(
       params.signer,
       params.offset,
       params.limit,
     )
     return addresses
-  }, contract)
+  } catch (error) {
+    throw resolveEthersError(error, contract) ?? error
+  }
 }
 
 /**
@@ -65,14 +67,16 @@ export const getNewestWalletsBySigner = async (
   runner: ethers.BrowserProvider,
 ): Promise<WalletTuple[]> => {
   const contract = new ethers.Contract(_walletFactoryContractAddr(), abis, runner)
-  return await withResolvedEthersErrorHandling<WalletTuple[]>(async () => {
+  try {
     const tuples = await contract.getNewestWalletsBySigner(
       params.signer,
       params.offset,
       params.limit,
     )
     return tuples
-  }, contract)
+  } catch (error) {
+    throw resolveEthersError(error, contract) ?? error
+  }
 }
 
 /**
@@ -89,11 +93,12 @@ export const getWallet = async (
 ): Promise<WalletTuple> => {
   const { address } = params
   const contract = new ethers.Contract(_walletFactoryContractAddr(), abis, runner)
-
-  return await withResolvedEthersErrorHandling<WalletTuple>(async () => {
+  try {
     const tuple = await contract.getWallet(address)
     return tuple
-  }, contract)
+  } catch (error) {
+    throw resolveEthersError(error, contract) ?? error
+  }
 }
 
 export const createWallet = async (
@@ -102,7 +107,7 @@ export const createWallet = async (
 ): Promise<string> => {
   const contract = new ethers.Contract(_walletFactoryContractAddr(), abis, signer)
 
-  return await withResolvedEthersErrorHandling<string>(async () => {
+  try {
     // Create a new wallet with the given parameters
     const tx: ethers.TransactionResponse = await contract.createWallet(
       params.name,
@@ -122,5 +127,7 @@ export const createWallet = async (
       // If the transaction failed, throw an error
       throw new TransactionFailedError()
     }
-  }, contract)
+  } catch (error) {
+    throw resolveEthersError(error, contract) ?? error
+  }
 }
