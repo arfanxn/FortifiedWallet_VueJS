@@ -8,8 +8,6 @@ import {
   didTransactionSucceed,
   resolveEthersError,
 } from '@/helpers/ethers.helpers'
-import { ResolvedEthersError } from '@/errors/ethers.error'
-import { error } from 'console'
 
 const abis = [
   // deposit
@@ -110,7 +108,7 @@ export async function getNewestTransactions(
       params.limit,
     )
     return tuples
-  } catch (e) {
+  } catch (error) {
     throw resolveEthersError(error, contract) ?? error
   }
 }
