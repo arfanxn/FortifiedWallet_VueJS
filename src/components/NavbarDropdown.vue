@@ -36,8 +36,8 @@ import { library } from '@fortawesome/fontawesome-svg-core'
 import { faBell, faGear, faLinkSlash, faUser, faBars } from '@fortawesome/free-solid-svg-icons'
 import { showToast } from '@/helpers/toast.helpers'
 import { ToastType } from '@/enums/toast.enums'
-import { useEthereum } from '@/composables/ethereum.composable'
-import { useNavigation } from '@/composables/navigation.composable'
+import { useEthereumInteraction } from '@/composables/ethereums/ethereumInteraction.composable'
+import { useNavigation } from '@/composables/wallets/walletNavigator.composable'
 
 library.add(faBell, faUser, faGear, faLinkSlash, faBars)
 
@@ -47,7 +47,7 @@ defineComponent({
 
 let router = useRouter()
 
-const { disconnect } = useEthereum()
+const { disconnect } = useEthereumInteraction()
 const { navigateToConnect } = useNavigation()
 
 const isDropdownOpened = ref(false)

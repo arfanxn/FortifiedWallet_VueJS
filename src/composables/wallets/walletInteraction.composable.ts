@@ -2,37 +2,29 @@ import { storeToRefs } from 'pinia'
 import { useEthereumStore } from '@/stores/ethereum.store'
 import { useWalletStore } from '@/stores/wallet.store'
 import * as walletService from '@/services/wallet.service'
+import * as walletFactoryService from '@/services/walletFactory.service'
 import * as tokenService from '@/services/token.service'
 import { useRoute } from 'vue-router'
-import { Wallet, WalletTuple } from '@/interfaces/wallet.interfaces'
 import { ethers } from 'ethers'
 import BigNumber from 'bignumber.js'
 import { getPaginationOffset } from '@/utils/number.utils'
 import { isNonEmptyString, isStringNumber } from '@/utils/boolean.utils'
 import { isZeroAddress } from '@/helpers/string.helpers'
+import { useWalletParser } from './walletParser.composable'
 
-export function useWallet() {
+export function useWalletInteraction() {
   // ==========================================================================
   //                                Variables
   // ==========================================================================
   const route = useRoute()
   const ethereumStore = useEthereumStore()
   const walletStore = useWalletStore()
-  const { wallets } = storeToRefs(walletStore)
+  const { tupleToWallet } = useWalletParser()
 
   // ==========================================================================
   //                            Internal functions
   // ==========================================================================
-
-  const tupleToWallet = (tuple: WalletTuple): Wallet => {
-    return {
-      name: tuple[0],
-      address: tuple[1],
-      signers: tuple[2],
-      minimumApprovals: tuple[3],
-      totalBalanceInUsd: tuple[4], // Assuming USD is 18 decimals
-    }
-  }
+  //
 
   // ==========================================================================
   //                            External functions
@@ -74,7 +66,7 @@ export function useWallet() {
     const provider = ethereumStore.provider as ethers.BrowserProvider
     const limit = 5
     const offset = getPaginationOffset(page, limit)
-    const tuples = await walletService.getNewestWalletsBySigner(provider, {
+    const tuples = await walletFactoryService.getNewestWalletsBySigner(provider, {
       signer,
       offset,
       limit,
@@ -87,7 +79,7 @@ export function useWallet() {
   const fetchWalletByAddr = async (address: string): Promise<void> => {
     try {
       const provider = ethereumStore.provider as ethers.BrowserProvider
-      const tuple = await walletService.getWallet(provider, { address })
+      const tuple = await walletFactoryService.getWallet(provider, { address })
       const wallet = tupleToWallet(tuple)
       walletStore.wallets = [wallet]
     } catch (error) {
@@ -103,7 +95,7 @@ export function useWallet() {
     passwordHash: string,
   ) => {
     const providerSigner = await ethereumStore.provider!.getSigner()
-    const address = await walletService.createWallet(providerSigner, {
+    const address = await walletFactoryService.createWallet(providerSigner, {
       name,
       signers,
       minimumApprovals,
@@ -120,15 +112,23 @@ export function useWallet() {
     await walletService.deposit(providerSigner, { to, token, value })
   }
 
+  const createWalletTransaction = async (token: string, to: string, value: BigNumber) => {
+    const providerSigner = await ethereumStore.provider!.getSigner()
+    const txHash = await walletService.createTransaction(providerSigner, { token, to, value })
+    return txHash
+  }
+
   return {
     // ============================== State variables ==============================
-    wallets,
+    //
+
     // ================================== Methods ==================================
-    refreshWallets,
     fillWalletStoreFromRoute,
     fetchPaginatedWallets,
     fetchWalletByAddr,
+    refreshWallets,
     createWallet,
     depositWallet,
+    createWalletTransaction,
   }
 }

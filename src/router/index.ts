@@ -1,6 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { RouteName } from '@/enums/route.enums'
-import { useEthereum } from '@/composables/ethereum.composable'
+import { useEthereumInteraction } from '@/composables/ethereums/ethereumInteraction.composable'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -72,7 +72,7 @@ const router = createRouter({
 
 router.beforeEach((to, from, next) => {
   if (to.meta.requiresWallet) {
-    const { isConnected, connect } = useEthereum()
+    const { isConnected, connect } = useEthereumInteraction()
     isConnected ? connect() : next({ name: RouteName.Connect })
   }
 

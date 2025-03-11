@@ -30,9 +30,9 @@
 import { defineComponent } from 'vue'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 import NavbarDropdown from '@/components/NavbarDropdown.vue'
-import { IconDefinition, library } from '@fortawesome/fontawesome-svg-core'
+import { library } from '@fortawesome/fontawesome-svg-core'
 import { faBell, faUser, faGear, faLinkSlash, faBars } from '@fortawesome/free-solid-svg-icons'
-import { useAppStore } from '@/stores/app.store'
+import { useUIStore } from '@/stores/ui.store'
 
 library.add(faBell, faUser, faGear, faLinkSlash, faBars)
 
@@ -40,5 +40,5 @@ defineComponent({
   name: 'NavbarC',
 })
 
-let appStore = useAppStore()
+let appStore = useUIStore()
 </script>

@@ -33,7 +33,7 @@ import { faPlus, faRightLeft, faLock } from '@fortawesome/free-solid-svg-icons'
 import { library } from '@fortawesome/fontawesome-svg-core'
 import { isNotEmpty } from '@/utils/boolean.utils'
 import { WalletRouteName } from '@/enums/wallet.enums'
-import { useNavigation } from '@/composables/navigation.composable'
+import { useNavigation } from '@/composables/wallets/walletNavigator.composable'
 
 library.add(faPlus, faRightLeft, faLock)
 

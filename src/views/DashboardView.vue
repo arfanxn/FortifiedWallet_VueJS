@@ -21,7 +21,7 @@ import AuthLayout from '@/layouts/AuthLayout.vue'
 import WalletIndex from '@/components/wallets/WalletIndex.vue'
 import WalletMenu from '@/components/wallets/WalletMenu.vue'
 import { onMounted } from 'vue'
-import { useNavigation } from '@/composables/navigation.composable'
+import { useNavigation } from '@/composables/wallets/walletNavigator.composable'
 
 library.add(faLink)
 

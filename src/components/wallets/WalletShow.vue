@@ -70,7 +70,7 @@ import { useWalletStore } from '@/stores/wallet.store'
 import { library } from '@fortawesome/fontawesome-svg-core'
 import { useRoute } from 'vue-router'
 import { formatUsd } from '@/helpers/string.helpers'
-import { useApp } from '@/composables/app.composable'
+import { useAppUI } from '@/composables/appUI.composable'
 
 library.add(faDollarSign)
 
@@ -81,5 +81,5 @@ defineComponent({
 const route = useRoute()
 
 const walletStore = useWalletStore()
-const { isLoading } = useApp()
+const { isLoading } = useAppUI()
 </script>

@@ -25,12 +25,12 @@ import { library } from '@fortawesome/fontawesome-svg-core'
 import { faLink } from '@fortawesome/free-solid-svg-icons'
 import { showToast } from '@/helpers/toast.helpers'
 import { ToastType } from '@/enums/toast.enums'
-import { useEthereum } from '@/composables/ethereum.composable'
-import { useNavigation } from '@/composables/navigation.composable'
+import { useEthereumInteraction } from '@/composables/ethereums/ethereumInteraction.composable'
+import { useNavigation } from '@/composables/wallets/walletNavigator.composable'
 
 library.add(faLink)
 
-const { isConnected, connect } = useEthereum()
+const { isConnected, connect } = useEthereumInteraction()
 const { navigateToDashboard } = useNavigation()
 
 onMounted(() => {

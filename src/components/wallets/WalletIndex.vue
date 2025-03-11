@@ -72,23 +72,23 @@ import {
   faPlus,
   faUser,
 } from '@fortawesome/free-solid-svg-icons'
-import { useWallet } from '@/composables/wallet.composable'
+import { useWalletInteraction } from '@/composables/wallets/walletInteraction.composable'
 import { useRouter } from 'vue-router'
 import TextFieldC from '../TextFieldC.vue'
 import WalletListItemC from './WalletListItemC.vue'
 import PaginationButtonC from '../PaginationButtonC.vue'
 import { helpers } from '@vuelidate/validators'
-import { isValidAddr, validateAndToast } from '@/helpers/validator.helpers'
+import { validateAndToast } from '@/helpers/validator.helpers'
 import useVuelidate from '@vuelidate/core'
-import { isEmpty, isInstanceOf } from '@/utils/boolean.utils'
+import { isEmpty, isEthAddr, isInstanceOf } from '@/utils/boolean.utils'
 import { showToast } from '@/helpers/toast.helpers'
 import { useWalletStore } from '@/stores/wallet.store'
 import { ToastType } from '@/enums/toast.enums'
 import type { Wallet } from '@/interfaces/wallet.interfaces'
 import { PaginationButtonDirection } from '@/enums/component.enums'
-import { useApp } from '@/composables/app.composable'
+import { useAppUI } from '@/composables/appUI.composable'
 import { storeToRefs } from 'pinia'
-import { useNavigation } from '@/composables/navigation.composable'
+import { useNavigation } from '@/composables/wallets/walletNavigator.composable'
 library.add(faSquareCaretLeft, faSquareCaretRight, faDollarSign, faPlus, faUser)
 
 defineComponent({
@@ -100,9 +100,10 @@ const emit = defineEmits(['onWalletSelected', 'onWalletDeselected'])
 const router = useRouter()
 
 const walletStore = useWalletStore()
-const { fillWalletStoreFromRoute, fetchPaginatedWallets, fetchWalletByAddr } = useWallet()
+const { fillWalletStoreFromRoute, fetchPaginatedWallets, fetchWalletByAddr } =
+  useWalletInteraction()
 const { navigateToWalletCreate } = useNavigation()
-const { isLoading, withLoading } = useApp()
+const { isLoading, withLoading } = useAppUI()
 
 onMounted(async () => {
   withLoading(async () => await fillWalletStoreFromRoute())
@@ -113,7 +114,7 @@ const v$ = useVuelidate(
     keyword: {
       validAddrIf: helpers.withMessage(
         'Wallet address is not valid.',
-        (addr: string) => isEmpty(addr) || isValidAddr(addr),
+        (addr: string) => isEmpty(addr) || isEthAddr(addr),
       ),
     },
   },

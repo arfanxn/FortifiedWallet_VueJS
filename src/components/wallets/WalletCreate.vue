@@ -62,29 +62,26 @@ import {
   helpers,
 } from '@vuelidate/validators'
 import { useEthereumStore } from '@/stores/ethereum.store'
-import { isValidAddr, validateAndToast } from '@/helpers/validator.helpers'
-import { isEmpty, isNotEmpty } from '@/utils/boolean.utils'
+import { validateAndToast } from '@/helpers/validator.helpers'
+import { isEmpty, isEthAddr, isNotEmpty } from '@/utils/boolean.utils'
 import { faPlus, faRotateLeft } from '@fortawesome/free-solid-svg-icons'
 import { library } from '@fortawesome/fontawesome-svg-core'
-import { useWallet } from '@/composables/wallet.composable'
+import { useWalletInteraction } from '@/composables/wallets/walletInteraction.composable'
 import { ethers } from 'ethers'
 import { showToast } from '@/helpers/toast.helpers'
-import { useRouter } from 'vue-router'
 import { formatEthAddr } from '@/helpers/string.helpers'
 import { ToastType } from '@/enums/toast.enums'
 import TextFieldC from '@/components/TextFieldC.vue'
 import ButtonC from '@/components/ButtonC.vue'
-import { useApp } from '@/composables/app.composable'
-import { useNavigation } from '@/composables/navigation.composable'
+import { useAppUI } from '@/composables/appUI.composable'
+import { useNavigation } from '@/composables/wallets/walletNavigator.composable'
 
 library.add(faPlus, faRotateLeft)
 
-const { startLoading, stopLoading } = useApp()
-const { createWallet, fetchWalletByAddr } = useWallet()
-const { navigateToWalletShow } = useNavigation()
 const ethereumStore = useEthereumStore()
-
-const router = useRouter()
+const { startLoading, stopLoading } = useAppUI()
+const { createWallet, fetchWalletByAddr } = useWalletInteraction()
+const { navigateToWalletShow } = useNavigation()
 
 defineComponent({
   name: 'WalletCreate',
@@ -125,8 +122,10 @@ const signersSecondLastIndex = computed(() => signersLength.value - 2)
 
 const rules = computed(() => ({
   // The name of the wallet is required and must be alphanumeric.
-  name: { required: helpers.withMessage('Name is required.', required), alphaNum },
-
+  name: {
+    required: helpers.withMessage('Name is required.', required),
+    alphaNum: helpers.withMessage('Name must be alphanumeric.', alphaNum),
+  },
   // The minimum number of approvals required is required, numeric, and between
   // the minimum number of signers (2) and the length of the signers array, which
   // is at least 2.
@@ -138,7 +137,6 @@ const rules = computed(() => ({
       between(minimumApprovalsRequired, form.signers.length),
     ),
   },
-
   signers: {
     // Ensure that there are at least 2 signers
     minLength: helpers.withMessage(
@@ -151,11 +149,10 @@ const rules = computed(() => ({
       `Signers cannot be longer than ${maximumSigners} provided.`,
       maxLength(maximumSigners),
     ),
-
     // Validate each signer in the signers array by checking if it's in the correct Ethereum address format.
     // If it's the last signer and the signers array length is not at the minimum or maximum, return true to allow adding a new row.
     // Otherwise, check if the signer is not empty and matches the Ethereum address regex pattern.
-    validAddr: helpers.withMessage(
+    ethAddr: helpers.withMessage(
       'Signers must be valid Ethereum addresses.',
       (signers: string[]) => {
         return signers.every((signer: string, index: number) => {
@@ -168,12 +165,17 @@ const rules = computed(() => ({
           if (isLastIndex && notMinLength && notMaxLength) return true
 
           // Validate the signer
-          return isValidAddr(signer)
+          return isEthAddr(signer)
         })
       },
     ),
+    // Ensure that each signer in the array is unique by checking if the current signer
+    // appears in the array before its current position.
     unique: helpers.withMessage('Signers must be unique.', (signers: string[]) =>
-      signers.every((signer, index) => !signers.slice(0, index).includes(signer)),
+      signers.every(
+        // Check that the signer does not exist in any previous positions in the array.
+        (signer, index) => !signers.slice(0, index).includes(signer),
+      ),
     ),
   },
   password: {
@@ -182,7 +184,10 @@ const rules = computed(() => ({
   },
   salt: {
     required: helpers.withMessage('Salt is required.', required),
-    minLength: helpers.withMessage('Salt must be at least 32 characters.', minLength(32)),
+    exactLength: helpers.withMessage(
+      'Salt must be exactly 32 characters.',
+      (salt: string) => salt.length == 32,
+    ),
   },
 }))
 

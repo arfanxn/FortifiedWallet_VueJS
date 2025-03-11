@@ -3,7 +3,7 @@
     <section
       id="sidebar"
       class="fixed top-0 bottom-0 left-0 flex w-full transform flex-col justify-between gap-y-8 overflow-y-auto bg-slate-700 py-8 font-serif transition-transform duration-300 md:w-64 md:translate-x-0 md:gap-y-16 md:py-8"
-      :class="{ '-translate-x-full': !appStore.isSidebarOpened }"
+      :class="{ '-translate-x-full': !uiStore.isSidebarOpened }"
       style="scrollbar-width: none"
     >
       <header
@@ -13,7 +13,7 @@
           <FontAwesomeIcon icon="wallet" class="text-2xl" />
           <h1 class="text-xl font-bold">Fortified Wallet</h1>
         </div>
-        <button class="md:hidden" @click="appStore.toggleSidebar">
+        <button class="md:hidden" @click="uiStore.toggleSidebar">
           <FontAwesomeIcon icon="xmark" class="text-2xl" />
         </button>
       </header>
@@ -50,10 +50,10 @@ import { useRouter } from 'vue-router'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 import { library } from '@fortawesome/fontawesome-svg-core'
 import { faWallet, faHouse, faCoins, faRightLeft, faXmark } from '@fortawesome/free-solid-svg-icons'
-import { useAppStore } from '@/stores/app.store'
+import { useUIStore } from '@/stores/ui.store'
 import SidebarListItem from '@/components/SidebarListItem.vue'
 import { RouteName } from '@/enums/route.enums'
-import { useWallet } from '@/composables/wallet.composable'
+import { useWalletInteraction } from '@/composables/wallets/walletInteraction.composable'
 
 const router = useRouter()
 
@@ -63,8 +63,8 @@ defineComponent({
   name: 'Sidebar',
 })
 
-const appStore = useAppStore()
-const { fillWalletStoreFromRoute } = useWallet()
+const uiStore = useUIStore()
+const { fillWalletStoreFromRoute } = useWalletInteraction()
 
 async function navigateToDashboard() {
   await router.push({ name: RouteName.Dashboard, query: { page: 1 } })

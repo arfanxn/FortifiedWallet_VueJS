@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 
-export const useAppStore = defineStore('app', () => {
+export const useUIStore = defineStore('ui', () => {
   // ==========================================================================
   //                                State
   // ==========================================================================

@@ -1,11 +1,11 @@
-import { useAppStore } from '@/stores/app.store'
+import { useUIStore } from '@/stores/ui.store'
 import { storeToRefs } from 'pinia'
 
-export function useApp() {
-  const appStore = useAppStore()
+export function useAppUI() {
+  const appStore = useUIStore()
   const { isSidebarOpened, isLoading } = storeToRefs(appStore)
 
-  const toggleSidebar = () => {
+  const toggleSidebar = (): void => {
     appStore.toggleSidebar()
   }
 
