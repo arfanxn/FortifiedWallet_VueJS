@@ -154,3 +154,10 @@ export async function withResolvedEthersErrorHandling<T>(
     throw error
   }
 }
+
+export function toSolidityPackedKeccak256Hash(str: string, salt?: string) {
+  const hash = salt
+    ? ethers.solidityPackedKeccak256(['string', 'string'], [str, salt])
+    : ethers.solidityPackedKeccak256(['string'], [str])
+  return hash
+}
