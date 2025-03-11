@@ -2,33 +2,10 @@
   <section class="flex flex-col bg-slate-300 text-slate-700">
     <header class="inline-flex items-center justify-between px-4 py-4 md:px-4">
       <h2 class="text-lg font-bold">Deposit</h2>
-
-      <div class="flew-row flex gap-4">
-        <ButtonC
-          @onClick="
-            () =>
-              router.replace({
-                params: { depositType: WalletDepositType.Ether },
-              })
-          "
-          type="button"
-          :text="'ETH'"
-          class="rounded-none border-slate-700 bg-transparent px-1! font-bold text-slate-700! outline-none hover:bg-transparent hover:text-slate-700!"
-          :class="{ 'border-b': isEtherDeposit }"
-        />
-        <ButtonC
-          @onClick="
-            () =>
-              router.replace({
-                params: { depositType: WalletDepositType.Token },
-              })
-          "
-          type="button"
-          :text="'ERC20'"
-          class="rounded-none border-slate-700 bg-transparent px-1! font-bold text-slate-700! outline-none hover:bg-transparent hover:text-slate-700!"
-          :class="{ 'border-b': isTokenDeposit }"
-        />
-      </div>
+      <SwitchEthereumAssetType
+        :value="selectedDepositType"
+        @onAssetCurrencyChange="(depositType: WalletDepositType) => changeDepositType(depositType)"
+      />
     </header>
 
     <form
@@ -47,13 +24,14 @@
         :class="{ 'md:col-span-3': isEtherDeposit, 'md:col-span-4': isTokenDeposit }"
         v-model="form.token"
         :label="tokenLabel"
+        @onInput="tokenOnInput"
         name="token"
         placeholder="0x..."
       />
       <TextFieldC
         :class="{ 'md:col-span-3': isEtherDeposit, 'md:col-span-4': isTokenDeposit }"
         v-model="form.amount"
-        :label="amountLabel"
+        :label="tokenAmountLabel"
         name="amount"
         placeholder="7 or 7.0 or 0.7 or 0.000007"
       />
@@ -80,32 +58,30 @@
 </template>
 
 <script setup lang="ts">
-import { computed, defineComponent, reactive, toRaw } from 'vue'
+import { computed, defineComponent, onMounted, reactive, toRaw } from 'vue'
 import { faPlus, faRotateLeft } from '@fortawesome/free-solid-svg-icons'
 import { library } from '@fortawesome/fontawesome-svg-core'
 import { ethers } from 'ethers'
 import { helpers, numeric, required, requiredIf } from '@vuelidate/validators'
 import { useRoute, useRouter } from 'vue-router'
 import { useVuelidate } from '@vuelidate/core'
-import { useWallet } from '@/composables/wallet.composable'
-import { useToken } from '@/composables/token.composable'
-import { isNotEmpty } from '@/utils/boolean.utils'
-import { isValidAddr, validateAndToast } from '@/helpers/validator.helpers'
+import { useWalletInteraction } from '@/composables/wallets/walletInteraction.composable'
+import { useTokenMetadata } from '@/composables/tokens/tokenMetadata.composable'
+import { isNotEmpty, isEthAddr } from '@/utils/boolean.utils'
+import { validateAndToast } from '@/helpers/validator.helpers'
 import ButtonC from '@/components/ButtonC.vue'
 import SelectFieldC from '@/components/SelectFieldC.vue'
 import TextFieldC from '@/components/TextFieldC.vue'
+import SwitchEthereumAssetType from '@/components/SwitchEthereumAssetType.vue'
 import { showToast } from '@/helpers/toast.helpers'
 import { formatEthAddr } from '@/helpers/string.helpers'
-import { useEthereumUnit } from '@/composables/ethereumUnit.composable'
-import { computedAsync } from '@vueuse/core'
+import { useEthereumUnit } from '@/composables/ethereums/ethereumUnit.composable'
 import { ToastType } from '@/enums/toast.enums'
-import { TokenMetadata } from '@/interfaces/token.interfaces'
 import BigNumber from 'bignumber.js'
-import { useWalletStore } from '@/stores/wallet.store'
 import { WalletDepositType } from '@/enums/wallet.enums'
-import { RouteName } from '@/enums/route.enums'
-import { useApp } from '@/composables/app.composable'
-import { useNavigation } from '@/composables/navigation.composable'
+import { useAppUI } from '@/composables/appUI.composable'
+import { useNavigation } from '@/composables/wallets/walletNavigator.composable'
+import { useEthereumAssetType } from '@/composables/ethereums/ethereumAssetType.composable'
 
 library.add(faPlus, faRotateLeft)
 
@@ -116,19 +92,23 @@ defineComponent({
 const router = useRouter()
 const route = useRoute()
 
-const { startLoading, stopLoading } = useApp()
-const { refreshWallets, depositWallet } = useWallet()
-const { fetchTokenMetadata } = useToken()
-const { units, selectedUnitValue, getTextByValue, resetSelectedUnitValue } = useEthereumUnit()
+const { startLoading, stopLoading } = useAppUI()
+const { refreshWallets, depositWallet } = useWalletInteraction()
+const { tokenMetadata, tokenLabel, tokenAmountLabel, fetchTokenMetadata } = useTokenMetadata()
+const { units, selectedUnit, selectedUnitValue, resetSelectedUnit } = useEthereumUnit()
+const {
+  selectedAssetType: selectedDepositType,
+  isEther: isEtherDeposit,
+  isToken: isTokenDeposit,
+  resolveAssetType: resolveDepositType,
+} = useEthereumAssetType()
 const { navigateToWalletShow } = useNavigation()
 
-const depositType = computed(() =>
-  route.params?.depositType?.toString().toLowerCase() === WalletDepositType.Token
-    ? WalletDepositType.Token
-    : WalletDepositType.Ether,
-)
-const isEtherDeposit = computed(() => depositType.value === WalletDepositType.Ether)
-const isTokenDeposit = computed(() => depositType.value === WalletDepositType.Token)
+onMounted(() => {
+  selectedDepositType.value = resolveDepositType(
+    route.params?.depositType?.toString(),
+  ) as WalletDepositType
+})
 
 interface Form {
   walletAddr: string
@@ -145,75 +125,46 @@ const form = reactive<Form>({
   token: '',
   amount: '',
 })
-const rules = computed(() => {
-  return {
-    walletAddr: {
-      validAddr: helpers.withMessage(
-        'Wallet address must be valid Ethereum address.',
-        (address: string) => isValidAddr(address),
-      ),
-    },
-    token: {
-      requiredIf: helpers.withMessage(
-        'Token address is required.',
-        requiredIf(isTokenDeposit.value),
-      ),
-      validAddr: helpers.withMessage(
-        'Token address must be valid ERC20 address.',
-        (address: string) =>
-          // If this is a token deposit, the token address must be a valid Ethereum address.
+const v$ = useVuelidate(
+  computed(() => {
+    return {
+      walletAddr: {
+        ethAddr: helpers.withMessage('Wallet address must be Ethereum address.', isEthAddr),
+      },
+      token: {
+        requiredIf: helpers.withMessage(
+          'Token address is required.',
+          requiredIf(isTokenDeposit.value),
+        ),
+        validAddr: helpers.withMessage(
+          'Token address must be valid ERC20 address.',
+          (address: string) =>
+            // If this is a token deposit, the token address must be a valid Ethereum address.
+            // If it's an ether deposit, the token address is not required.
+            isTokenDeposit.value ? isEthAddr(address) : true,
+        ),
+        tokenExists: helpers.withMessage('Token does not exist.', () =>
+          // If this is a token deposit, the token address must exist and be a valid Ethereum address.
           // If it's an ether deposit, the token address is not required.
-          isTokenDeposit.value ? isValidAddr(address) : true,
-      ),
-      tokenExists: helpers.withMessage('Token does not exist.', () =>
-        // If this is a token deposit, the token address must exist and be a valid Ethereum address.
-        // If it's an ether deposit, the token address is not required.
-        isTokenDeposit.value ? isNotEmpty(tokenMetadata.value?.name) : true,
-      ),
-    },
-    amount: {
-      required: helpers.withMessage('Amount is required.', required),
-      numeric: helpers.withMessage('Amount must be numeric.', numeric),
-      notZero: helpers.withMessage(`Amount cannot be zero.`, (amount) => amount != 0),
-    },
-    // unit: {
-    //   validFormat: helpers.withMessage('Unit must be valid.', (unit) => unitTexts.includes(unit)),
-    // },
-  }
-})
-const v$ = useVuelidate(rules, form)
-
-/**
- * Retrieves the metadata for the token address provided in the form.
- *
- * @returns {Promise<TokenMetadata | undefined>} A promise that resolves to the token metadata if the token address is valid, or undefined otherwise.
- */
-const tokenMetadata = computedAsync<TokenMetadata | undefined>(
-  async () => {
-    const isTokenValid = isTokenDeposit.value && isValidAddr(form.token)
-    return isTokenValid ? await fetchTokenMetadata(form.token as string) : undefined
-  },
-  undefined,
-  { lazy: true },
+          isTokenDeposit.value ? isNotEmpty(tokenMetadata.value?.name) : true,
+        ),
+      },
+      amount: {
+        required: helpers.withMessage('Amount is required.', required),
+        numeric: helpers.withMessage('Amount must be numeric.', numeric),
+        aboveZero: helpers.withMessage(`Amount must be above zero.`, (amount: string) =>
+          BigNumber(amount).gt(0),
+        ),
+      },
+    }
+  }),
+  form,
 )
 
-/* The label to be displayed for the token address input field.
-If the token address is valid and the token metadata is available,
-it shows the name and symbol of the token, e.g., "USDT (Tether)".
-Otherwise, it shows nothing. */
-const tokenLabel = computed(() =>
-  isTokenDeposit.value && tokenMetadata.value
-    ? `Token: ${tokenMetadata.value.name} (${tokenMetadata.value.symbol})`
-    : `Token: -`,
-)
-
-const amountLabel = computed(() => {
-  if (isEtherDeposit.value)
-    return `Amount (in ${getTextByValue(selectedUnitValue.value)!.toLowerCase()})`
-  else if (isTokenDeposit.value && tokenMetadata.value)
-    return `Amount (in ${tokenMetadata.value.decimals} decimals)`
-  else return `Amount`
-})
+function changeDepositType(depositType: WalletDepositType) {
+  selectedDepositType.value = depositType
+  router.replace({ params: { depositType } })
+}
 
 /**
  * Resets the input fields to their default values.
@@ -221,7 +172,7 @@ const amountLabel = computed(() => {
 function resetForm() {
   form.amount = ''
   form.token = ''
-  resetSelectedUnitValue()
+  resetSelectedUnit()
 }
 
 /**
@@ -248,7 +199,7 @@ function processForm(): ProcessedForm {
   }
   if (isEtherDeposit.value) {
     processedForm.amount = BigNumber(
-      ethers.parseUnits(amount!.toString(), selectedUnitValue.value).toString(),
+      ethers.parseUnits(amount!.toString(), selectedUnit.value.value).toString(),
     )
 
     /* Set the token address to the zero address when depositing ether.
@@ -261,6 +212,11 @@ function processForm(): ProcessedForm {
     )
   }
   return processedForm
+}
+
+async function tokenOnInput() {
+  if (isTokenDeposit.value && isEthAddr(form.token)) await fetchTokenMetadata(form.token)
+  else tokenMetadata.value = undefined
 }
 
 /**
@@ -287,7 +243,8 @@ async function handleDepositSubmission() {
     await refreshWallets()
     navigateToWalletShow()
   } catch (error) {
-    showToast(ToastType.Error, 'Deposit failed.')
+    const message = error instanceof Error ? error.message : 'Deposit failed.'
+    showToast(ToastType.Error, message)
   } finally {
     stopLoading()
   }
@@ -306,7 +263,7 @@ async function handleDepositSubmission() {
 function formatDepositSuccessMessageForToast(): string {
   let message: string
   if (isEtherDeposit.value)
-    message = `Deposited ${form.amount} ${getTextByValue(selectedUnitValue.value)!.toLowerCase()} to ${formatEthAddr(form.walletAddr as string)}.`
+    message = `Deposited ${form.amount} ${selectedUnit.value.text.toLowerCase()} to ${formatEthAddr(form.walletAddr as string)}.`
   else if (isTokenDeposit.value)
     message = `Deposited ${form.amount} ${tokenMetadata.value!.symbol} to ${formatEthAddr(form.walletAddr as string)}.`
   return message!
