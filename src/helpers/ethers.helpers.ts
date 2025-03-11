@@ -71,17 +71,17 @@ export function isEthersError(error: any): error is ethers.EthersError {
 }
 
 /**
- * Resolves and throws a specific `ResolvedEthersError` based on the provided
- * `ethers.EthersError`. This function analyzes the error type and throws a
- * more descriptive error message. It supports various ethers error scenarios,
- * such as action rejection, network issues, contract-related errors, insufficient
- * funds, and invalid arguments.
+ * Resolves an EthersError by parsing the error data and converting it to a
+ * ResolvedEthersError instance. The given contract is used to parse the error
+ * data using its interface.
  *
- * @param {ethers.EthersError} error - The ethers error object to resolve.
- * @param {ethers.Contract} [contract] - Optional contract instance for parsing
- * contract errors.
- * @throws {ResolvedEthersError} Throws a resolved error with a specific message
- * based on the type of ethers error encountered.
+ * If the error is not a valid EthersError, the function returns undefined.
+ *
+ * @param {unknown} error - The error object to be resolved.
+ * @param {ethers.Contract} contract - The contract instance to use for parsing the error data.
+ * @returns {ResolvedEthersError | undefined} A ResolvedEthersError containing the parsed error
+ *                                            message, or undefined if the error is not a valid
+ *                                            EthersError.
  */
 export function resolveEthersError(
   error: unknown,
