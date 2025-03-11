@@ -104,8 +104,21 @@ export function resolveAndThrowEthersError(
       if (contract === undefined)
         throw new ResolvedEthersError('Unknown contract error occurred.', error)
       else {
+        // Attempt to parse the contract error data using the contract's interface
         const errorDescription = contract.interface.parseError(error.data)
-        const message = pascalToSentenceCase(errorDescription!.name).concat('.')
+        let message: string
+
+        // Handle the case where the error data is a standard "revert" opcode
+        if (error.data.startsWith('0x08c379a0')) {
+          // Extract the error message from the parsed error description
+          message = errorDescription!.args[0] as string
+        } else {
+          // Handle the case where the error data is a custom contract error
+          // Convert the PascalCase error name to sentence case
+          message = pascalToSentenceCase(errorDescription!.name).concat('.')
+        }
+
+        // Throw a resolved error with the parsed message
         throw new ResolvedEthersError(message, error)
       }
 
