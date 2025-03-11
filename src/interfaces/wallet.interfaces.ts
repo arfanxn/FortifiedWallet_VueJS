@@ -1,5 +1,4 @@
 import BigNumber from 'bignumber.js'
-import { EthereumAddress } from './ethereum.interfaces'
 
 export type WalletTuple = [
   string, // Wallet name
@@ -20,6 +19,8 @@ export type Wallet = {
   minimumApprovals: number
   // Total balance of the wallet in USD
   totalBalanceInUsd: number
+  // Array of transactions
+  transactions?: Transaction[]
 }
 
 export type WalletOrNull = Wallet | null
