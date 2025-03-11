@@ -24,7 +24,7 @@ export type Wallet = {
 
 export type WalletOrNull = Wallet | null
 
-export type WalletTransactionTuple = [
+export type TransactionTuple = [
   string, // Transaction hash
   string, // Token address
   string, // Recipient address
@@ -36,7 +36,7 @@ export type WalletTransactionTuple = [
   number, // Timestamp of cancellation
 ]
 
-export type WalletTransaction = {
+export type Transaction = {
   // Transaction hash
   hash: string
   // Token address

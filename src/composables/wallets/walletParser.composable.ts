@@ -1,9 +1,4 @@
-import {
-  Wallet,
-  WalletTuple,
-  WalletTransaction,
-  WalletTransactionTuple,
-} from '@/interfaces/wallet.interfaces'
+import { Wallet, WalletTuple, Transaction, TransactionTuple } from '@/interfaces/wallet.interfaces'
 import BigNumber from 'bignumber.js'
 
 export function useWalletParser() {
@@ -17,13 +12,7 @@ export function useWalletParser() {
     }
   }
 
-  return {
-    tupleToWallet,
-  }
-}
-
-export function useWalletTransactionParser() {
-  const tupleToWalletTransaction = (tuple: WalletTransactionTuple): WalletTransaction => {
+  const tupleToTransaction = (tuple: TransactionTuple): Transaction => {
     return {
       hash: tuple[0],
       token: tuple[1],
@@ -38,6 +27,7 @@ export function useWalletTransactionParser() {
   }
 
   return {
-    tupleToWalletTransaction,
+    tupleToWallet,
+    tupleToTransaction,
   }
 }
