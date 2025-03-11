@@ -3,7 +3,7 @@
     <main class="flex items-start">
       <WalletIndex @walletOnClick="(wallet) => filterTransactionByWallet(wallet)" />
       <div class="flex w-full flex-col">
-        <TransactionList />
+        <TransactionIndex />
       </div>
     </main>
   </AuthLayout>
@@ -17,7 +17,7 @@ import { library } from '@fortawesome/fontawesome-svg-core'
 import { faLink } from '@fortawesome/free-solid-svg-icons'
 import { useEthereumStore } from '@/stores/ethereum.store'
 import WalletIndex from '@/components/wallets/WalletIndex.vue'
-import TransactionList from '@/components/transactions/TransactionList.vue'
+import TransactionIndex from '@/components/transactions/TransactionIndex.vue'
 
 library.add(faLink)
 
