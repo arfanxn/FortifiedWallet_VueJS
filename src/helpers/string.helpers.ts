@@ -39,6 +39,10 @@ export function formatEthAddr(addr: EthereumAddress): string {
   return `${addr.slice(0, 6)}...${addr.slice(-4)}`
 }
 
+export function formatEthHash(hash: string): string {
+  return `${hash.slice(0, 18)}...${hash.slice(-16)}`
+}
+
 /**
  * Checks if a given Ethereum address is the zero address.
  *
