@@ -31,10 +31,10 @@
           @onClick="() => router.push({ name: RouteName.TokenIndex })"
         />
         <SidebarListItem
-          :isActive="$route.matched[0]?.name === RouteName.TransactionIndex"
+          :isActive="$route.matched[0]?.name === RouteName.Transaction"
           :icon="faRightLeft"
           text="0xTransactions"
-          @onClick="() => router.push({ name: RouteName.TransactionIndex })"
+          @onClick="() => router.push({ name: RouteName.Transaction })"
         />
       </ul>
       <footer class="inline-flex items-center justify-center px-4 md:px-4">
