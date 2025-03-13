@@ -140,3 +140,20 @@ export function isZeroEthAddr(address: string | null | undefined): address is st
   if (!address) return false
   return address === '0x0000000000000000000000000000000000000000'
 }
+
+export function isSameEthAddrs(addr1: string, addr2: string): boolean {
+  return ethers.getAddress(addr1) === ethers.getAddress(addr2)
+}
+
+export function isEthHash(hash: string | null | undefined): hash is string {
+  // Ethereum hashes are 32 bytes (64 hex characters) prefixed with '0x'
+  return isString(hash) && /^0x[0-9a-fA-F]{64}$/.test(hash)
+}
+
+export function isEq<T>(a: T, b: T): boolean {
+  return a === b
+}
+
+export function isNeq<T>(a: T, b: T): boolean {
+  return isEq(a, b) === false
+}

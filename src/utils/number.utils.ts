@@ -1,3 +1,5 @@
+import { isString } from '@/utils/boolean.utils'
+
 /**
  * Extracts all numeric characters from a given string.
  *
@@ -12,8 +14,8 @@ export function extractNumber(str: string): string {
   return str
 }
 
-export function toNumber(str: string, radix: number = 10, fallback?: number): number {
-  const number = parseInt(str, radix)
+export function toNumber(str: string | number, radix: number = 10, fallback?: number): number {
+  const number = parseInt(isString(str) ? str : str.toString(), radix)
   if (Number.isInteger(number)) return number
   else if (fallback != undefined) return fallback
   else return number
