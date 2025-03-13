@@ -129,3 +129,14 @@ export function isEthAddr(address: string | null | undefined): address is string
   // Full checksum validation
   return ethers.isAddress(address)
 }
+
+/**
+ * Checks if a given string is the zero Ethereum address.
+ *
+ * @param {string | null | undefined} address - The Ethereum address to validate
+ * @returns {boolean} True if the address is the zero address, false otherwise
+ */
+export function isZeroEthAddr(address: string | null | undefined): address is string {
+  if (!address) return false
+  return address === '0x0000000000000000000000000000000000000000'
+}
