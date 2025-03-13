@@ -7,7 +7,7 @@ import { computed, ref } from 'vue'
 export function useTokenMetadata() {
   const tokenMetadata = ref<TokenMetadata>()
 
-  const fetchTokenMetadata = async (tokenAddr: string): Promise<void> => {
+  const fetchTokenMetadata = async (tokenAddr: string): Promise<TokenMetadata | undefined> => {
     const runner = useEthereumStore().provider as ethers.BrowserProvider
     const name = await tokenService.name(tokenAddr, runner)
     const symbol = await tokenService.symbol(tokenAddr, runner)
@@ -19,6 +19,8 @@ export function useTokenMetadata() {
         symbol,
         decimals,
       }
+
+    return tokenMetadata.value
   }
 
   const tokenLabel = computed(() =>
