@@ -40,7 +40,7 @@ export function formatEthAddr(addr: EthereumAddress): string {
 }
 
 export function formatEthHash(hash: string): string {
-  return `${hash.slice(0, 18)}...${hash.slice(-16)}`
+  return `${hash.slice(0, 10)}...${hash.slice(-8)}`
 }
 
 /**
