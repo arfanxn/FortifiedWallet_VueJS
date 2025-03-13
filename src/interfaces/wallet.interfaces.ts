@@ -1,14 +1,12 @@
-import BigNumber from 'bignumber.js'
-
 export type WalletTuple = [
   string, // Wallet name
   string, // Wallet Ethereum address
   string[], // Array of Ethereum addresses of signers
   number, // Minimum number of approvals required for a transaction
-  number, // Total balance of the wallet in USD
+  bigint, // Total balance of the wallet in USD
 ]
 
-export type Wallet = {
+export interface Wallet {
   // Ethereum address of the wallet
   address: string
   // Name of the wallet
@@ -18,42 +16,7 @@ export type Wallet = {
   // Minimum number of approvals required for a transaction
   minimumApprovals: number
   // Total balance of the wallet in USD
-  totalBalanceInUsd: number
-  // Array of transactions
-  transactions?: Transaction[]
+  totalBalanceInUsd: bigint
 }
 
 export type WalletOrNull = Wallet | null
-
-export type TransactionTuple = [
-  string, // Transaction hash
-  string, // Token address
-  string, // Recipient address
-  string, // Transaction value in string format
-  string, // Approval count in string format
-  string[], // Array of approver addresses
-  number, // Timestamp of creation
-  number, // Timestamp of execution
-  number, // Timestamp of cancellation
-]
-
-export type Transaction = {
-  // Transaction hash
-  hash: string
-  // Token address
-  token: string
-  // Recipient address
-  to: string
-  // Transaction value in string format
-  value: BigNumber
-  // Approval count in string format
-  approvalCount: number
-  // Array of approver addresses
-  approvers: string[]
-  // Timestamp of creation
-  createdAt: number
-  // Timestamp of execution
-  executedAt: number
-  // Timestamp of cancellation
-  cancelledAt: number
-}

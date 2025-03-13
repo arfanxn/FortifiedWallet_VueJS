@@ -1,4 +1,5 @@
-import { Wallet, WalletTuple, Transaction, TransactionTuple } from '@/interfaces/wallet.interfaces'
+import { Wallet, WalletTuple } from '@/interfaces/wallet.interfaces'
+import { Transaction, TransactionTuple } from '@/interfaces/transaction.interfaces'
 import BigNumber from 'bignumber.js'
 
 export function useWalletParser() {
@@ -17,12 +18,13 @@ export function useWalletParser() {
       hash: tuple[0],
       token: tuple[1],
       to: tuple[2],
-      value: BigNumber(tuple[3]),
-      approvalCount: parseInt(tuple[4]),
-      approvers: tuple[5],
-      createdAt: tuple[6],
-      executedAt: tuple[7],
-      cancelledAt: tuple[8],
+      value: tuple[3],
+      valueInUsd: tuple[4],
+      approvalCount: tuple[5],
+      approvers: tuple[6],
+      createdAt: tuple[7],
+      executedAt: tuple[8],
+      cancelledAt: tuple[9],
     }
   }
 

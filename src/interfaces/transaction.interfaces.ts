@@ -4,31 +4,34 @@ export type TransactionTuple = [
   string, // Transaction hash
   string, // Token address
   string, // Recipient address
-  string, // Transaction value in string format
-  string, // Approval count in string format
+  bigint, // Transaction value in string format
+  bigint, // Transaction valueInUsd in string format
+  number, // Approval count in string format
   string[], // Array of approver addresses
-  number, // Timestamp of creation
-  number, // Timestamp of execution
-  number, // Timestamp of cancellation
+  bigint, // Timestamp of creation
+  bigint, // Timestamp of execution
+  bigint, // Timestamp of cancellation
 ]
 
-export type Transaction = {
+export interface Transaction {
   // Transaction hash
   hash: string
   // Token address
   token: string
   // Recipient address
   to: string
-  // Transaction value in string format
-  value: BigNumber
+  // Transaction value
+  value: bigint
+  // Transaction value in usd
+  valueInUsd: bigint
   // Approval count in string format
   approvalCount: number
   // Array of approver addresses
   approvers: string[]
   // Timestamp of creation
-  createdAt: number
+  createdAt: bigint
   // Timestamp of execution
-  executedAt: number
+  executedAt: bigint
   // Timestamp of cancellation
-  cancelledAt: number
+  cancelledAt: bigint
 }
