@@ -5,21 +5,31 @@
         <ButtonC
           :icon="faPlus"
           text="Deposit"
-          @onClick="() => navigateTo(WalletRouteName.Deposit)"
+          :to="{
+            name: RouteName.WalletDeposit,
+            params: { walletAddr: route.params.walletAddr },
+          }"
         />
         <ButtonC
           :icon="faRightLeft"
           text="Transfer"
-          @onClick="() => navigateTo(WalletRouteName.Transfer)"
+          :to="{
+            name: RouteName.WalletTransfer,
+            params: { walletAddr: route.params.walletAddr },
+          }"
         />
-        <ButtonC :icon="faLock" text="Lock" @onClick="() => navigateTo(WalletRouteName.Lock)" />
+        <ButtonC
+          :icon="faLock"
+          text="Lock"
+          :to="{ name: RouteName.WalletLock, params: { walletAddr: route.params.walletAddr } }"
+        />
       </div>
 
       <ButtonC
         class="ml-auto hidden! bg-transparent text-slate-700 outline-slate-700 hover:bg-transparent hover:text-slate-700 md:inline-flex!"
         :icon="faPlus"
         text="Add a wallet"
-        @onClick="() => navigateTo(WalletRouteName.Create)"
+        :to="{ name: RouteName.WalletCreate }"
       />
     </header>
   </section>
@@ -28,35 +38,17 @@
 <script setup lang="ts">
 import { defineComponent } from 'vue'
 import ButtonC from '@/components/ButtonC.vue'
-import { useRouter, useRoute } from 'vue-router'
+import { useRoute } from 'vue-router'
 import { faPlus, faRightLeft, faLock } from '@fortawesome/free-solid-svg-icons'
 import { library } from '@fortawesome/fontawesome-svg-core'
 import { isNotEmpty } from '@/utils/boolean.utils'
-import { WalletRouteName } from '@/enums/wallet.enums'
-import { useNavigation } from '@/composables/wallets/walletNavigator.composable'
+import { RouteName } from '@/enums/route.enums'
 
 library.add(faPlus, faRightLeft, faLock)
 
-const router = useRouter()
 const route = useRoute()
-const { navigateToWalletCreate } = useNavigation()
 
 defineComponent({
   name: 'WalletMenu',
 })
-
-function navigateTo(routeName: WalletRouteName) {
-  switch (routeName) {
-    case WalletRouteName.Deposit:
-    case WalletRouteName.Transfer:
-    case WalletRouteName.Lock:
-      router.push({
-        name: routeName,
-        params: { ...route.params },
-      })
-      break
-    case WalletRouteName.Create:
-      navigateToWalletCreate()
-  }
-}
 </script>
