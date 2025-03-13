@@ -17,12 +17,14 @@ export function formatUsd(
 ): string {
   // Convert the amount to a number (if it's a string) and divide by 10^18
   const bn = (amount instanceof BigNumber ? amount : BigNumber(amount.toString())).dividedBy(1e18)
-  const formatted = currency(bn.toString(), {
+  const options = {
     symbol: withSymbol ? '$' : '',
     separator: ',',
     decimal: '.',
     precision: 2,
-  }).format()
+  }
+  const currencyObj = currency(bn.toString(), options)
+  const formatted = isNaN(currencyObj.value) ? currency(0, options).format() : currencyObj.format()
   return formatted
 }
 
