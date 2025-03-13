@@ -1,6 +1,7 @@
 import { storeToRefs } from 'pinia'
 import { useEthereumStore } from '@/stores/ethereum.store'
 import { useWalletStore } from '@/stores/wallet.store'
+import { useTransactionStore } from '@/stores/transaction.store'
 import * as walletService from '@/services/wallet.service'
 import * as walletFactoryService from '@/services/walletFactory.service'
 import * as tokenService from '@/services/token.service'
@@ -11,6 +12,7 @@ import { getPaginationOffset } from '@/utils/number.utils'
 import { isNonEmptyString, isStringNumber } from '@/utils/boolean.utils'
 import { isZeroAddress } from '@/helpers/string.helpers'
 import { useWalletParser } from './walletParser.composable'
+import { Wallet } from '@/interfaces/wallet.interfaces'
 
 export function useWalletInteraction() {
   // ==========================================================================
@@ -19,7 +21,8 @@ export function useWalletInteraction() {
   const route = useRoute()
   const ethereumStore = useEthereumStore()
   const walletStore = useWalletStore()
-  const { tupleToWallet } = useWalletParser()
+  const transactionStore = useTransactionStore()
+  const { tupleToWallet, tupleToTransaction } = useWalletParser()
 
   // ==========================================================================
   //                            Internal functions
@@ -37,11 +40,11 @@ export function useWalletInteraction() {
     const keyword = isNonEmptyString(params.walletAddr) ? (params.walletAddr as string) : undefined
     walletStore.$patch({ currentPage, keyword })
     if (keyword) {
-      await fetchWalletByAddr(keyword)
-      walletStore.selectWallet(keyword)
+      const wallet = await fetchWalletByAddr(keyword)
+      walletStore.selectedWallet = wallet
     } else {
       await fetchPaginatedWallets(currentPage)
-      walletStore.selectWallet(undefined)
+      walletStore.selectedWallet = undefined
     }
   }
 
@@ -51,11 +54,11 @@ export function useWalletInteraction() {
    */
   const refreshWallets = async () => {
     if (walletStore.keyword) {
-      await fetchWalletByAddr(walletStore.keyword)
-      if (walletStore.selectedWallet) walletStore.selectWallet(walletStore.keyword)
+      const wallet = await fetchWalletByAddr(walletStore.keyword)
+      if (walletStore.selectedWallet) walletStore.selectedWallet = wallet
     } else if (walletStore.selectedWallet) {
-      await fetchWalletByAddr(walletStore.selectedWallet.address)
-      walletStore.selectWallet(walletStore.selectedWallet.address)
+      const wallet = await fetchWalletByAddr(walletStore.selectedWallet.address)
+      walletStore.selectedWallet = wallet
     } else {
       await fetchPaginatedWallets(walletStore.currentPage)
     }
@@ -79,12 +82,13 @@ export function useWalletInteraction() {
     walletStore.currentPage = page
   }
 
-  const fetchWalletByAddr = async (address: string): Promise<void> => {
+  const fetchWalletByAddr = async (address: string): Promise<Wallet | undefined> => {
     try {
       const runner = ethereumStore.provider as ethers.BrowserProvider
       const tuple = await walletFactoryService.getWallet({ address }, runner)
       const wallet = tupleToWallet(tuple)
       walletStore.wallets = [wallet]
+      return wallet
     } catch (error) {
       walletStore.wallets = []
       throw error
@@ -123,14 +127,36 @@ export function useWalletInteraction() {
     const from = walletStore.selectedWallet!.address
     const txHash = await walletService.createTransaction(
       {
-        from,
         token,
         to,
         value,
       },
+      from,
       runner,
     )
     return txHash
+  }
+
+  const fetchPaginatedTransactions = async (page: number) => {
+    const runner = ethereumStore.provider as ethers.BrowserProvider
+    const limit = 10
+    const offset = getPaginationOffset(page, limit)
+    const wallet = walletStore.selectedWallet as Wallet
+    const tuples = await walletService.getNewestTransactions(
+      { offset, limit },
+      wallet.address,
+      runner,
+    )
+    const transactions = tuples.map(tupleToTransaction)
+    transactionStore.transactions = transactions
+  }
+
+  const fetchTransaction = async (hash: string) => {
+    const runner = ethereumStore.provider as ethers.BrowserProvider
+    const wallet = walletStore.selectedWallet as Wallet
+    const tuple = await walletService.getTransaction({ hash }, wallet.address, runner)
+    const transaction = tupleToTransaction(tuple)
+    transactionStore.transactions = [transaction]
   }
 
   return {
@@ -144,6 +170,9 @@ export function useWalletInteraction() {
     refreshWallets,
     createWallet,
     depositWallet,
+
     createWalletTransaction,
+    fetchPaginatedTransactions,
+    fetchTransaction,
   }
 }

@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import type { Wallet } from '@/interfaces/wallet.interfaces'
 import { isString } from '@/utils/boolean.utils'
 
@@ -13,7 +13,24 @@ export const useWalletStore = defineStore('wallet', () => {
   //                                State
   // ==========================================================================
   const wallets = ref<Wallet[]>([])
-  const selectedWallet = ref<Wallet | undefined>()
+  const selectedWalletAddr = ref<string | undefined>()
+  const selectedWallet = computed<Wallet | undefined>({
+    get: () =>
+      selectedWalletAddr.value
+        ? wallets.value.find((wallet) => selectedWalletAddr.value === wallet.address)
+        : undefined,
+    set: (value: Wallet | undefined) => {
+      if (value === undefined) {
+        selectedWalletAddr.value = undefined
+        return
+      }
+
+      selectedWalletAddr.value = value.address
+      wallets.value.forEach((wallet, index) => {
+        if (wallet.address === value.address) wallets.value[index] = value
+      })
+    },
+  })
   const currentPage = ref<number>(1)
   const keyword = ref<string | undefined>()
 

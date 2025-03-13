@@ -132,10 +132,8 @@ function onWalletDeselected() {
 }
 
 async function navigateToPage(page: number): Promise<void> {
-  walletStore.$patch({
-    selectedWallet: undefined,
-    currentPage: page,
-  })
+  walletStore.currentPage = page
+  walletStore.selectedWallet = undefined
   window.scrollTo({
     top: 0,
     behavior: 'smooth',
@@ -193,15 +191,15 @@ async function search(): Promise<void> {
   withLoading(async () => {
     if (isEmpty(walletStore.keyword)) {
       await fetchPaginatedWallets(walletStore.currentPage)
-      walletStore.selectWallet(undefined)
+      walletStore.selectedWallet = undefined
       onWalletDeselected()
       return
     }
 
     try {
       const walletAddr = walletStore.keyword as string
-      await fetchWalletByAddr(walletAddr)
-      walletStore.selectWallet(walletStore.keyword)
+      const wallet = await fetchWalletByAddr(walletAddr)
+      walletStore.selectedWallet = wallet
       onWalletSelected(walletStore.selectedWallet as Wallet)
     } catch (error) {
       if (isInstanceOf(error, Error)) showToast(ToastType.Error, error.message)
