@@ -12,11 +12,11 @@ import { isEthAddr } from '@/utils/boolean.utils'
  * @returns {string} The formatted string, with the currency symbol and two decimal places.
  */
 export function formatUsd(
-  amount: string | number | BigNumber,
+  amount: string | number | bigint | BigNumber,
   withSymbol: boolean = false,
 ): string {
   // Convert the amount to a number (if it's a string) and divide by 10^18
-  const bn = BigNumber(amount).dividedBy(BigNumber(1e18))
+  const bn = (amount instanceof BigNumber ? amount : BigNumber(amount.toString())).dividedBy(1e18)
   const formatted = currency(bn.toString(), {
     symbol: withSymbol ? '$' : '',
     separator: ',',
