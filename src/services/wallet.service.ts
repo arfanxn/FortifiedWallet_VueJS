@@ -2,7 +2,7 @@ import { TransactionFailedError } from '@/errors/ethereum.errors'
 import { isZeroAddress } from '@/helpers/string.helpers'
 import BigNumber from 'bignumber.js'
 import { ethers } from 'ethers'
-import { WalletTransactionTuple } from '@/interfaces/wallet.interfaces'
+import { TransactionTuple } from '@/interfaces/transaction.interfaces'
 import {
   didTransactionFail,
   didTransactionSucceed,
@@ -14,8 +14,16 @@ const abis = [
   'function deposit(address token, uint256 value)',
   // createTransaction
   'function createTransaction(address token, address to, uint256 value) returns (bytes32 txHash)',
+  // approveTransaction
+  'function approveTransaction(bytes32 txHash)',
+  // revokeTransaction
+  'function revokeTransaction(bytes32 txHash)',
+  // cancelTransaction
+  'function cancelTransaction(bytes32 txHash)',
+  // executeTransaction
+  'function executeTransaction(bytes32 txHash)',
   // getNewestTransactions
-  'function getNewestTransactions(uint256 offset, uint256 limit) view returns (tuple(bytes32 hash, address token, address to, uint256 value, uint8 approvalCount, address[] approvers, uint256 createdAt, uint256 executedAt, uint256 cancelledAt)[])',
+  'function getNewestTransactions(uint256 offset, uint256 limit) view returns (tuple(bytes32 hash, address token, address to, uint256 value, uint256 valueInUsd, uint8 approvalCount, address[] approvers, uint256 createdAt, uint256 executedAt, uint256 cancelledAt)[])',
 
   // Deposited event
   'event Deposited(address indexed sender, uint256 value)',
@@ -25,10 +33,10 @@ const abis = [
   'event TransactionApproved(bytes32 indexed txHash, address indexed approver)',
   // TransactionRevoked event
   'event TransactionRevoked(bytes32 indexed txHash, address indexed revoker)',
-  // TransactionExecuted event
-  'event TransactionExecuted(bytes32 indexed txHash, address indexed executor)',
   // TransactionCancelled event
   'event TransactionCancelled(bytes32 indexed txHash, address indexed canceller)',
+  // TransactionExecuted event
+  'event TransactionExecuted(bytes32 indexed txHash, address indexed executor)',
 ]
 
 /**
@@ -65,11 +73,12 @@ export const deposit = async (
 }
 
 export const createTransaction = async (
-  params: { from: string; token: string; to: string; value: BigNumber },
+  params: { token: string; to: string; value: BigNumber },
+  walletAddr: string,
   runner: ethers.Signer,
 ): Promise<string> => {
-  const { from, token, to, value } = params
-  const contract = new ethers.Contract(from, abis, runner)
+  const { token, to, value } = params
+  const contract = new ethers.Contract(walletAddr, abis, runner)
 
   try {
     const tx: ethers.TransactionResponse = await contract.createTransaction(
@@ -96,18 +105,104 @@ export const createTransaction = async (
   }
 }
 
+export const approveTransaction = async (
+  params: { hash: string },
+  walletAddr: string,
+  runner: ethers.Signer,
+): Promise<boolean> => {
+  const { hash } = params
+  const contract = new ethers.Contract(walletAddr, abis, runner)
+  try {
+    const tx: ethers.TransactionResponse = await contract.approveTransaction(hash)
+    const receipt: ethers.TransactionReceipt | null = await tx.wait()
+
+    if (didTransactionSucceed(receipt)) return true
+    else throw new TransactionFailedError()
+  } catch (error) {
+    throw resolveEthersError(error, contract) ?? error
+  }
+}
+
+export const revokeTransaction = async (
+  params: { hash: string },
+  walletAddr: string,
+  runner: ethers.Signer,
+): Promise<boolean> => {
+  const { hash } = params
+  const contract = new ethers.Contract(walletAddr, abis, runner)
+  try {
+    const tx: ethers.TransactionResponse = await contract.revokeTransaction(hash)
+    const receipt: ethers.TransactionReceipt | null = await tx.wait()
+
+    if (didTransactionSucceed(receipt)) return true
+    else throw new TransactionFailedError()
+  } catch (error) {
+    throw resolveEthersError(error, contract) ?? error
+  }
+}
+
+export const cancelTransaction = async (
+  params: { hash: string },
+  walletAddr: string,
+  runner: ethers.Signer,
+): Promise<boolean> => {
+  const { hash } = params
+  const contract = new ethers.Contract(walletAddr, abis, runner)
+  try {
+    const tx: ethers.TransactionResponse = await contract.cancelTransaction(hash)
+    const receipt: ethers.TransactionReceipt | null = await tx.wait()
+
+    if (didTransactionSucceed(receipt)) return true
+    else throw new TransactionFailedError()
+  } catch (error) {
+    throw resolveEthersError(error, contract) ?? error
+  }
+}
+
+export const executeTransaction = async (
+  params: { hash: string },
+  walletAddr: string,
+  runner: ethers.Signer,
+): Promise<boolean> => {
+  const { hash } = params
+  const contract = new ethers.Contract(walletAddr, abis, runner)
+  try {
+    const tx: ethers.TransactionResponse = await contract.executeTransaction(hash)
+    const receipt: ethers.TransactionReceipt | null = await tx.wait()
+
+    if (didTransactionSucceed(receipt)) return true
+    else throw new TransactionFailedError()
+  } catch (error) {
+    throw resolveEthersError(error, contract) ?? error
+  }
+}
+
 export async function getNewestTransactions(
   params: { offset: number; limit: number },
-  wallet: string,
+  walletAddr: string,
   runner: ethers.BrowserProvider,
-): Promise<WalletTransactionTuple[]> {
-  const contract = new ethers.Contract(wallet, abis, runner)
+): Promise<TransactionTuple[]> {
+  const contract = new ethers.Contract(walletAddr, abis, runner)
   try {
-    const tuples: WalletTransactionTuple[] = await contract.getNewestTransactions(
+    const tuples: TransactionTuple[] = await contract.getNewestTransactions(
       params.offset,
       params.limit,
     )
     return tuples
+  } catch (error) {
+    throw resolveEthersError(error, contract) ?? error
+  }
+}
+
+export async function getTransaction(
+  params: { hash: string },
+  walletAddr: string,
+  runner: ethers.BrowserProvider,
+) {
+  const contract = new ethers.Contract(walletAddr, abis, runner)
+  try {
+    const tuple: TransactionTuple = await contract.getTransaction(params.hash)
+    return tuple
   } catch (error) {
     throw resolveEthersError(error, contract) ?? error
   }
