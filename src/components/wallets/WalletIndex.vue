@@ -44,12 +44,12 @@
       <div v-if="!selectedWallet" class="flex items-center justify-end gap-x-2 px-4">
         <span class="mr-auto text-sm font-semibold">Page: {{ currentPage }}</span>
         <PaginationButtonC
-          :direction="PaginationButtonDirection.Prev"
+          direction="prev"
           :disabled="currentPage === 1"
           @onClick="() => onPaginate(currentPage - 1)"
         />
         <PaginationButtonC
-          :direction="PaginationButtonDirection.Next"
+          direction="next"
           :disabled="wallets.length === 0"
           @onClick="() => onPaginate(currentPage + 1)"
         />
@@ -74,7 +74,6 @@ import TextFieldC from '../TextFieldC.vue'
 import WalletListItemC from './WalletListItemC.vue'
 import PaginationButtonC from '../PaginationButtonC.vue'
 import type { Wallet } from '@/interfaces/wallet.interfaces'
-import { PaginationButtonDirection } from '@/enums/component.enums'
 import { RouteName } from '@/enums/route.enums'
 import { isEmpty, isEthAddr, isInstanceOf } from '@/utils/boolean.utils'
 import { showToast } from '@/helpers/toast.helpers'
