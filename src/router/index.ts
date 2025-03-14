@@ -53,12 +53,19 @@ const router = createRouter({
     // Transaction page
     {
       path: '/transactions',
-      name: RouteName.TransactionIndex,
+      name: RouteName.Transaction,
       component: () => import('../views/TransactionView.vue'),
       meta: {
         requiresWallet: true,
         title: 'Transactions',
       },
+      children: [
+        {
+          path: '/wallets/:walletAddr/transactions/:transactionHash?',
+          name: RouteName.TransactionIndex,
+          component: () => import('../components/transactions/TransactionIndex.vue'),
+        },
+      ],
     },
 
     // Connect page
