@@ -62,7 +62,7 @@ export const useTransactionStore = defineStore('transaction', () => {
   return {
     // ============================== State variables ==============================
     transactions,
-    // selectedTransaction,
+    selectedTransaction,
     currentPage,
     keyword,
     // ================================= Methods ===================================
