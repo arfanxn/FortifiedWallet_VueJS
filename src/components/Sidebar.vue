@@ -22,7 +22,7 @@
           :isActive="$route.matched[0]?.name === RouteName.Dashboard"
           :icon="faHouse"
           text="0xDashboard"
-          @onClick="() => navigateToDashboard()"
+          @onClick="() => router.push({ name: RouteName.Dashboard })"
         />
         <SidebarListItem
           :isActive="$route.matched[0]?.name === RouteName.TokenIndex"
@@ -64,10 +64,4 @@ defineComponent({
 })
 
 const uiStore = useUIStore()
-const { fillWalletStoreFromRoute } = useWalletInteraction()
-
-async function navigateToDashboard() {
-  await router.push({ name: RouteName.Dashboard, query: { page: 1 } })
-  await fillWalletStoreFromRoute()
-}
 </script>
