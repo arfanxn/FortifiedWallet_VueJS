@@ -33,8 +33,11 @@ export function useWalletNavigator() {
     stopLoading()
   }
 
-  const navigateToWalletCreate = () => {
-    walletStore.selectedWallet = undefined
+  const navigateToWalletCreate = async () => {
+    if (walletStore.selectedWallet) {
+      walletStore.selectedWallet = undefined
+      await fetchPaginatedWallets(walletStore.currentPage)
+    }
     router.push({ name: RouteName.WalletCreate })
   }
 
@@ -65,7 +68,7 @@ export function useWalletNavigator() {
     })
   }
 
-  const navigatToWalletTransfer = () => {
+  const navigateToWalletTransfer = () => {
     router.push({
       name: RouteName.WalletTransfer,
       params: { walletAddr: walletStore.selectedWallet!.address },
@@ -85,7 +88,7 @@ export function useWalletNavigator() {
     navigateToWalletCreate,
     navigateToWalletShow,
     navigatToWalletDeposit,
-    navigatToWalletTransfer,
+    navigateToWalletTransfer,
     navigatToWalletLock,
   }
 }

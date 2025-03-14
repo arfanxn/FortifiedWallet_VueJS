@@ -38,7 +38,7 @@ export function useTransactionNavigator() {
   const navigateToTransaction = async () => {
     startLoading()
     await fetchPaginatedWallets(walletStore.currentPage)
-    router.push({ name: RouteName.Transaction })
+    router.push({ name: RouteName.Transaction, query: { page: walletStore.currentPage } })
     stopLoading()
   }
 
@@ -64,6 +64,7 @@ export function useTransactionNavigator() {
         router.push({
           name: RouteName.TransactionIndex,
           params: { walletAddr: walletStore.selectedWallet!.address },
+          query: { page: transactionStore.currentPage },
         })
       }
     } catch (error) {
