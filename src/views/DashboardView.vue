@@ -6,11 +6,11 @@
         v-model:keyword="walletStore.keyword"
         v-model:currentPage="walletStore.currentPage"
         v-model:selectedWallet="walletStore.selectedWallet"
-        v-bind:wallets="walletStore.wallets"
-        @onSelect="() => navigateToWalleShow()"
-        @onDeselect="() => navigateToDashboard()"
-        @onPaginate="() => navigateToDashboard()"
-        @onFind="() => fetchAndNavigateToWalletShow()"
+        :wallets="walletStore.wallets"
+        @onSelect="navigateToWalletShow"
+        @onDeselect="navigateToDashboard"
+        @onPaginate="navigateToDashboard"
+        @onFind="fetchAndNavigateToWalletShow"
       />
       <div class="flex w-full flex-col md:basis-3/4">
         <WalletMenu />
@@ -36,47 +36,80 @@ import { showToast } from '@/helpers/toast.helpers'
 import { ToastType } from '@/enums/toast.enums'
 import { useAppUI } from '@/composables/appUI.composable'
 
+// Initialize FontAwesome library
 library.add(faLink)
 
+// ----------------------------
+// Dependency Injection
+// ----------------------------
 const walletStore = useWalletStore()
 const route = useRoute()
 const router = useRouter()
 const { withLoading, startLoading, stopLoading } = useAppUI()
-const { syncWalletStoreWithRoute, fetchPaginatedWallets, fetchWalletByAddr } =
-  useWalletInteraction()
+const { syncWalletStoreWithRoute, fetchWalletByAddr } = useWalletInteraction()
 
+// TODO: fix bug multiple calls to fetch actions
+
+// ----------------------------
+// Route Watcher
+// ----------------------------
 watch(
   () => [route.name, route.query.page],
-  async ([routeName, page]) => {
-    if (routeName === RouteName.Dashboard) {
-      withLoading(async () => await syncWalletStoreWithRoute())
-    } else if (routeName === RouteName.WalletCreate) walletStore.selectedWallet = undefined
+  async (values, prevValues) => {
+    const [routeName] = values
+    const [prevRouteName] = prevValues ?? []
+
+    if (typeof routeName !== 'string') return
+
+    // Initial load handling
+    if (!prevRouteName) {
+      await withLoading(syncWalletStoreWithRoute)
+      return
+    }
+
+    // Route-specific handling
+    switch (routeName) {
+      case RouteName.Dashboard:
+        await withLoading(syncWalletStoreWithRoute)
+        break
+      case RouteName.WalletCreate:
+        walletStore.selectedWallet = undefined
+        break
+    }
   },
   { immediate: true, deep: true },
 )
 
-function navigateToWalleShow() {
+// ----------------------------
+// Navigation Handlers
+// ----------------------------
+const navigateToWalletShow = (): void => {
+  if (!walletStore.selectedWallet) return
   router.push({
     name: RouteName.WalletShow,
-    params: { walletAddr: walletStore.selectedWallet!.address },
+    params: { walletAddr: walletStore.selectedWallet.address },
   })
 }
 
-async function navigateToDashboard() {
-  console.log('passed 1')
-  router.push({ name: RouteName.Dashboard, query: { page: walletStore.currentPage } })
-  console.log('passed 2')
+const navigateToDashboard = (): void => {
+  router.push({
+    name: RouteName.Dashboard,
+    query: { page: walletStore.currentPage },
+  })
 }
 
-async function fetchAndNavigateToWalletShow() {
+// ----------------------------
+// Data Fetching
+// ----------------------------
+const fetchAndNavigateToWalletShow = async (): Promise<void> => {
   try {
     startLoading()
     const wallet = await fetchWalletByAddr(walletStore.keyword!)
     walletStore.selectedWallet = wallet
-    navigateToWalleShow()
+    navigateToWalletShow()
   } catch (error) {
     if (isInstanceOf(error, Error)) showToast(ToastType.Error, error.message)
-    else throw Error
+    else throw error
   } finally {
     stopLoading()
   }
