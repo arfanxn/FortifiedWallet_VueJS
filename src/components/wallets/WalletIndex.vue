@@ -97,6 +97,10 @@ const currentPage = defineModel<number>('currentPage', { required: true })
 const selectedWallet = defineModel<Wallet | undefined>('selectedWallet', { required: true })
 const props = defineProps<{ wallets: Wallet[] }>()
 
+const keywordSchema = string()
+  .optional()
+  .test('ethereum-address', 'Invalid ethereum address.', (value) => !value || isEthAddr(value))
+
 function onSelect(wallet: Wallet) {
   selectedWallet.value = wallet
   emit('onSelect', wallet)
@@ -134,9 +138,6 @@ function handleWalletSelection(wallet?: Wallet): void {
 
 async function handleFindSubmission() {
   try {
-    const keywordSchema = string()
-      .optional()
-      .test('ethereum-address', 'Invalid ethereum address.', (value) => !value || isEthAddr(value))
     keywordSchema.validateSync(keyword.value)
 
     if (isEmpty(keyword.value)) onPaginate(currentPage.value)
