@@ -22,7 +22,7 @@
           :isActive="$route.matched[0]?.name === RouteName.Dashboard"
           :icon="faHouse"
           text="0xDashboard"
-          @onClick="() => router.push({ name: RouteName.Dashboard })"
+          @onClick="() => navigateToDashboard()"
         />
         <SidebarListItem
           :isActive="$route.matched[0]?.name === RouteName.TokenIndex"
@@ -34,7 +34,7 @@
           :isActive="$route.matched[0]?.name === RouteName.Transaction"
           :icon="faRightLeft"
           text="0xTransactions"
-          @onClick="() => router.push({ name: RouteName.Transaction })"
+          @onClick="() => navigateToTransaction()"
         />
       </ul>
       <footer class="inline-flex items-center justify-center px-4 md:px-4">
@@ -54,14 +54,17 @@ import { useUIStore } from '@/stores/ui.store'
 import SidebarListItem from '@/components/SidebarListItem.vue'
 import { RouteName } from '@/enums/route.enums'
 import { useWalletInteraction } from '@/composables/wallets/walletInteraction.composable'
+import { useWalletNavigator } from '@/composables/wallets/useWalletNavigator'
+import { useTransactionNavigator } from '@/composables/transactions/useTransactionNavigator'
 
 const router = useRouter()
+const uiStore = useUIStore()
+const { navigateToDashboard } = useWalletNavigator()
+const { navigateToTransaction } = useTransactionNavigator()
 
 library.add(faWallet, faHouse, faCoins, faRightLeft, faXmark)
 
 defineComponent({
   name: 'Sidebar',
 })
-
-const uiStore = useUIStore()
 </script>

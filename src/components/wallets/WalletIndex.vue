@@ -3,9 +3,9 @@
     <!-- Header section with title and create wallet button -->
     <header class="inline-flex items-center justify-between bg-slate-300 px-4 pt-4 md:px-4">
       <h2 class="text-lg font-bold">Wallets</h2>
-      <router-link class="cursor-pointer" :to="{ name: RouteName.WalletCreate }">
+      <button class="cursor-pointer" @click="() => navigateToWalletCreate()">
         <FontAwesomeIcon :icon="faPlus" class="text-xl" />
-      </router-link>
+      </button>
     </header>
 
     <!-- Main section for wallet management -->
@@ -80,6 +80,7 @@ import { showToast } from '@/helpers/toast.helpers'
 import { ToastType } from '@/enums/toast.enums'
 import { useAppUI } from '@/composables/appUI.composable'
 import { useEthereumStore } from '@/stores/ethereum.store'
+import { useWalletNavigator } from '@/composables/wallets/useWalletNavigator'
 library.add(faSquareCaretLeft, faSquareCaretRight, faDollarSign, faPlus, faUser)
 
 defineComponent({
@@ -89,6 +90,7 @@ defineComponent({
 const emit = defineEmits(['onSelect', 'onDeselect', 'onPaginate', 'onFind'])
 
 const ethereumStore = useEthereumStore()
+const { navigateToWalletCreate } = useWalletNavigator()
 const { isLoading } = useAppUI()
 
 const keyword = defineModel<string | undefined>('keyword', { required: true })

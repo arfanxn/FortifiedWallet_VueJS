@@ -106,7 +106,7 @@ defineComponent({
 })
 
 const { startLoading, stopLoading } = useAppUI()
-const { refreshWallets, createWalletTransaction } = useWalletInteraction()
+const { createWalletTransaction } = useWalletInteraction()
 const { tokenMetadata, tokenLabel, tokenAmountLabel, fetchTokenMetadata } = useTokenMetadata()
 const { units, selectedUnit, selectedUnitValue, resetSelectedUnit, parseBySelectedUnit } =
   useEthereumUnit()
