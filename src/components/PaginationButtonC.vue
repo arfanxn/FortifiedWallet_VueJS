@@ -8,9 +8,7 @@
     @click="onClick"
   >
     <FontAwesomeIcon
-      :icon="
-        props.direction === PaginationButtonDirection.Prev ? faSquareCaretLeft : faSquareCaretRight
-      "
+      :icon="props.direction === 'prev' ? faSquareCaretLeft : faSquareCaretRight"
       class="text-xl"
     />
   </button>
@@ -20,7 +18,6 @@
 import { defineProps, defineEmits, computed, withDefaults } from 'vue'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 import { faSquareCaretLeft, faSquareCaretRight } from '@fortawesome/free-solid-svg-icons'
-import { PaginationButtonDirection } from '@/enums/component.enums'
 
 const emit = defineEmits(['onClick'])
 
@@ -30,7 +27,7 @@ function onClick() {
 
 const props = withDefaults(
   defineProps<{
-    direction: PaginationButtonDirection
+    direction: 'prev' | 'next'
     disabled: boolean
   }>(),
   {
