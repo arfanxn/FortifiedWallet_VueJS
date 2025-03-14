@@ -141,8 +141,12 @@ export function isZeroEthAddr(address: string | null | undefined): address is st
   return address === '0x0000000000000000000000000000000000000000'
 }
 
-export function isSameEthAddrs(addr1: string, addr2: string): boolean {
-  return ethers.getAddress(addr1) === ethers.getAddress(addr2)
+export function areSameEthAddrs(
+  addr1: string | null | undefined,
+  addr2: string | null | undefined,
+): boolean {
+  if (!isEthAddr(addr1) || !isEthAddr(addr2)) return false
+  return ethers.getAddress(addr1 as string) === ethers.getAddress(addr2 as string)
 }
 
 export function isEthHash(hash: string | null | undefined): hash is string {
