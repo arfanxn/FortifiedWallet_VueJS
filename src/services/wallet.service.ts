@@ -9,7 +9,13 @@ import {
   resolveEthersError,
 } from '@/helpers/ethers.helpers'
 
+const transactionViewAbi =
+  'tuple(bytes32 hash, address token, address to, uint256 value, uint256 valueInUsd, uint8 approvalCount, address[] approvers, uint256 createdAt, uint256 executedAt, uint256 cancelledAt)'
+
 const abis = [
+  // ==========================================================================
+  //                                  Functions
+  // ==========================================================================
   // deposit
   'function deposit(address token, uint256 value)',
   // createTransaction
@@ -23,8 +29,13 @@ const abis = [
   // executeTransaction
   'function executeTransaction(bytes32 txHash)',
   // getNewestTransactions
-  'function getNewestTransactions(uint256 offset, uint256 limit) view returns (tuple(bytes32 hash, address token, address to, uint256 value, uint256 valueInUsd, uint8 approvalCount, address[] approvers, uint256 createdAt, uint256 executedAt, uint256 cancelledAt)[])',
+  `function getNewestTransactions(uint256 offset, uint256 limit) view returns (${transactionViewAbi}[])`,
+  // getTransaction
+  `function getTransaction(bytes32 txHash) view returns (${transactionViewAbi})`,
 
+  // ==========================================================================
+  //                                  Events
+  // ==========================================================================
   // Deposited event
   'event Deposited(address indexed sender, uint256 value)',
   // TransactionCreated event
@@ -37,6 +48,37 @@ const abis = [
   'event TransactionCancelled(bytes32 indexed txHash, address indexed canceller)',
   // TransactionExecuted event
   'event TransactionExecuted(bytes32 indexed txHash, address indexed executor)',
+
+  // ==========================================================================
+  //                                  Errors
+  // ==========================================================================
+  // Errors related to validation
+  'error MustUseFunctionCall()',
+  'error MustBeGreaterThanZero()',
+  'error MustBeNonZeroAddress()',
+  'error MustMatchEtherValue()',
+  // Errors related to wallet configuration
+  'error InsufficientSigners()',
+  'error ExcessiveSigners()',
+  'error DuplicateSigners()',
+  'error OnlySigner()',
+  'error InvalidPasswordHashLength()',
+  'error PasswordHashMismatch()',
+  // Errors related to transactions
+  'error DepositFailed()',
+  'error TransactionDoesNotExist()',
+  'error TransactionAlreadyApproved()',
+  'error TransactionNotApproved()',
+  'error TransactionAlreadyRevoked()',
+  'error TransactionNotRevoked()',
+  'error TransactionAlreadyExecuted()',
+  'error TransactionNotExecuted()',
+  'error TransactionAlreadyCancelled()',
+  'error TransactionNotCancelled()',
+  'error TransactionLacksApprovals()',
+  'error TransactionInsufficientBalance()',
+  'error TransactionInsufficientUnlockedBalance()',
+  'error TransactionFailed()',
 ]
 
 /**
