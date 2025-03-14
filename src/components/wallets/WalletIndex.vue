@@ -3,9 +3,9 @@
     <!-- Header section with title and create wallet button -->
     <header class="inline-flex items-center justify-between bg-slate-300 px-4 pt-4 md:px-4">
       <h2 class="text-lg font-bold">Wallets</h2>
-      <button class="cursor-pointer" @click="navigateToWalletCreate()">
+      <router-link class="cursor-pointer" :to="{ name: RouteName.WalletCreate }">
         <FontAwesomeIcon :icon="faPlus" class="text-xl" />
-      </button>
+      </router-link>
     </header>
 
     <!-- Main section for wallet management -->
@@ -15,46 +15,43 @@
         class="px-2"
         name="keyword"
         placeholder="Wallet Address (0x...)"
-        v-model="walletStore.keyword"
-        @onKeyupEnter="async () => await search()"
+        v-model="keyword"
+        @onKeyupEnter="(event) => handleFindSubmission()"
       />
 
       <!-- Message displayed when no wallets are found -->
       <div
-        v-if="walletStore.wallets.length === 0 && !isLoading"
+        v-if="wallets.length === 0 && !isLoading && ethereumStore.isConnected"
         class="flex items-center justify-center"
       >
         <span class="text-lg font-semibold">No Wallet(s) Found.</span>
       </div>
 
       <!-- List of wallet items -->
-      <ul v-show="walletStore.wallets.length > 0" class="flex flex-col gap-y-4">
+      <ul v-show="wallets.length > 0" class="flex flex-col gap-y-4">
         <!-- Loop through and display all wallets -->
         <WalletListItemC
-          v-for="(wallet, index) in walletStore.wallets"
+          v-for="(wallet, index) in wallets"
           :key="index"
           :wallet="wallet"
-          :isSelected="walletStore.selectedWallet?.address === wallet.address"
-          v-show="
-            walletStore.selectedWallet === undefined ||
-            walletStore.selectedWallet.address === wallet.address
-          "
-          @onClick="() => toggleSelectWallet(wallet)"
+          :isSelected="selectedWallet?.address === wallet.address"
+          v-show="selectedWallet === undefined || selectedWallet.address === wallet.address"
+          @onClick="() => handleWalletSelection(wallet)"
         />
       </ul>
 
       <!-- Pagination controls -->
-      <div v-if="!walletStore.selectedWallet" class="flex items-center justify-end gap-x-2 px-4">
-        <span class="mr-auto text-sm font-semibold">Page: {{ walletStore.currentPage }}</span>
+      <div v-if="!selectedWallet" class="flex items-center justify-end gap-x-2 px-4">
+        <span class="mr-auto text-sm font-semibold">Page: {{ currentPage }}</span>
         <PaginationButtonC
           :direction="PaginationButtonDirection.Prev"
-          :disabled="walletStore.currentPage === 1"
-          @onClick="() => navigateToPage(walletStore.currentPage - 1)"
+          :disabled="currentPage === 1"
+          @onClick="() => onPaginate(currentPage - 1)"
         />
         <PaginationButtonC
           :direction="PaginationButtonDirection.Next"
-          :disabled="walletStore.wallets.length === 0"
-          @onClick="() => navigateToPage(walletStore.currentPage + 1)"
+          :disabled="wallets.length === 0"
+          @onClick="() => onPaginate(currentPage + 1)"
         />
       </div>
     </main>
@@ -62,7 +59,8 @@
 </template>
 
 <script setup lang="ts">
-import { defineComponent, onMounted } from 'vue'
+import { defineComponent } from 'vue'
+import { string } from 'yup'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 import { library } from '@fortawesome/fontawesome-svg-core'
 import {
@@ -72,140 +70,80 @@ import {
   faPlus,
   faUser,
 } from '@fortawesome/free-solid-svg-icons'
-import { useWalletInteraction } from '@/composables/wallets/walletInteraction.composable'
-import { useRouter } from 'vue-router'
 import TextFieldC from '../TextFieldC.vue'
 import WalletListItemC from './WalletListItemC.vue'
 import PaginationButtonC from '../PaginationButtonC.vue'
-import { helpers } from '@vuelidate/validators'
-import { validateAndToast } from '@/helpers/validator.helpers'
-import useVuelidate from '@vuelidate/core'
-import { isEmpty, isEthAddr, isInstanceOf } from '@/utils/boolean.utils'
-import { showToast } from '@/helpers/toast.helpers'
-import { useWalletStore } from '@/stores/wallet.store'
-import { ToastType } from '@/enums/toast.enums'
 import type { Wallet } from '@/interfaces/wallet.interfaces'
 import { PaginationButtonDirection } from '@/enums/component.enums'
+import { RouteName } from '@/enums/route.enums'
+import { isEmpty, isEthAddr, isInstanceOf } from '@/utils/boolean.utils'
+import { showToast } from '@/helpers/toast.helpers'
+import { ToastType } from '@/enums/toast.enums'
 import { useAppUI } from '@/composables/appUI.composable'
-import { storeToRefs } from 'pinia'
-import { useNavigation } from '@/composables/wallets/walletNavigator.composable'
+import { useEthereumStore } from '@/stores/ethereum.store'
 library.add(faSquareCaretLeft, faSquareCaretRight, faDollarSign, faPlus, faUser)
 
 defineComponent({
   name: 'WalletIndex',
 })
 
-const emit = defineEmits(['onWalletSelected', 'onWalletDeselected'])
+const emit = defineEmits(['onSelect', 'onDeselect', 'onPaginate', 'onFind'])
 
-const router = useRouter()
+const ethereumStore = useEthereumStore()
+const { isLoading } = useAppUI()
 
-const walletStore = useWalletStore()
-const { fillWalletStoreFromRoute, fetchPaginatedWallets, fetchWalletByAddr } =
-  useWalletInteraction()
-const { navigateToWalletCreate } = useNavigation()
-const { isLoading, withLoading } = useAppUI()
+const keyword = defineModel<string | undefined>('keyword', { required: true })
+const currentPage = defineModel<number>('currentPage', { required: true })
+const selectedWallet = defineModel<Wallet | undefined>('selectedWallet', { required: true })
+const props = defineProps<{ wallets: Wallet[] }>()
 
-onMounted(async () => {
-  withLoading(async () => await fillWalletStoreFromRoute())
-})
-
-const v$ = useVuelidate(
-  {
-    keyword: {
-      validAddrIf: helpers.withMessage(
-        'Wallet address is not valid.',
-        (addr: string) => isEmpty(addr) || isEthAddr(addr),
-      ),
-    },
-  },
-  { keyword: storeToRefs(walletStore).keyword },
-)
-
-function onWalletSelected(wallet: Wallet) {
-  emit('onWalletSelected', wallet)
+function onSelect(wallet: Wallet) {
+  selectedWallet.value = wallet
+  emit('onSelect', wallet)
 }
 
-function onWalletDeselected() {
-  withLoading(async () => await fetchPaginatedWallets(walletStore.currentPage))
-  walletStore.keyword = undefined
-  emit('onWalletDeselected')
+function onDeselect() {
+  selectedWallet.value = undefined
+  emit('onDeselect')
 }
 
-async function navigateToPage(page: number): Promise<void> {
-  walletStore.currentPage = page
-  walletStore.selectedWallet = undefined
-  window.scrollTo({
-    top: 0,
-    behavior: 'smooth',
-  })
-  router.replace({ query: { page } })
-  fetchPaginatedWallets(page)
+function onPaginate(page: number) {
+  currentPage.value = page
+  emit('onPaginate', page)
+}
+
+function onFind(keyword: string | undefined) {
+  emit('onFind', keyword)
 }
 
 /**
- * Toggles the selection of a given wallet.
+ * Handles the selection of a wallet.
  *
- * If the given wallet is undefined, or if the given wallet is different from the currently selected wallet,
- * the given wallet is selected. Otherwise, the currently selected wallet is deselected.
- * @param {Wallet} [wallet] - The wallet to toggle selection on.
+ * If a wallet is provided and the currently selected wallet is different, it selects the new wallet.
+ * If no wallet is provided, or the provided wallet is the same as the currently selected one, it deselects the wallet.
+ *
+ * @param {Wallet} [wallet] - The wallet to select or deselect.
  */
-function toggleSelectWallet(wallet?: Wallet): void {
-  // Toggles the selection of a given wallet.
-  // If the given wallet is undefined, or if the given wallet is different from the currently selected wallet,
-  // the given wallet is selected. Otherwise, the currently selected wallet is deselected.
-  if (walletStore.selectedWallet && wallet) {
-    // If the given wallet is the same as the currently selected wallet, toggle to not selected.
-    if (walletStore.selectedWallet.address === wallet.address)
-      walletStore.selectedWallet = undefined
-    // Otherwise, select the given wallet.
-    else walletStore.selectedWallet = wallet
-  } else {
-    // If the given wallet is undefined, or if the given wallet is different from the currently selected wallet,
-    // select the given wallet.
-    walletStore.selectedWallet = wallet
-  }
-
-  // If the wallet is selected, emit the onWalletSelected event.
-  // Otherwise, emit the onWalletDeselected event and fetch the wallets for the current page.
-  const selectedWallet = walletStore.selectedWallet
-  const isWalletSelected = selectedWallet !== undefined
-  if (isWalletSelected) {
-    // Emit the onWalletSelected event.
-    onWalletSelected(selectedWallet)
-  } else {
-    // Emit the onWalletDeselected event and fetch the wallets for the current page.
-    onWalletDeselected()
-  }
+function handleWalletSelection(wallet?: Wallet): void {
+  if (selectedWallet.value)
+    if (wallet && selectedWallet.value.address !== wallet.address) onSelect(wallet)
+    else onDeselect()
+  else if (wallet) onSelect(wallet)
+  else onDeselect()
 }
 
-/**
- * Performs a search for a wallet by its address.
- *
- * If the user enters an empty string, the currently selected wallet is deselected and the wallets for the current page are refetched.
- * If the user enters a valid Ethereum address, the wallet with the given address is fetched and selected.
- * If the user enters an invalid Ethereum address, an error message is displayed and the function returns.
- */
-async function search(): Promise<void> {
-  if (!(await validateAndToast(v$))) return
+async function handleFindSubmission() {
+  try {
+    const keywordSchema = string()
+      .optional()
+      .test('ethereum-address', 'Invalid ethereum address.', (value) => !value || isEthAddr(value))
+    keywordSchema.validateSync(keyword.value)
 
-  withLoading(async () => {
-    if (isEmpty(walletStore.keyword)) {
-      await fetchPaginatedWallets(walletStore.currentPage)
-      walletStore.selectedWallet = undefined
-      onWalletDeselected()
-      return
-    }
-
-    try {
-      const walletAddr = walletStore.keyword as string
-      const wallet = await fetchWalletByAddr(walletAddr)
-      walletStore.selectedWallet = wallet
-      onWalletSelected(walletStore.selectedWallet as Wallet)
-    } catch (error) {
-      if (isInstanceOf(error, Error)) showToast(ToastType.Error, error.message)
-
-      throw Error
-    }
-  })
+    if (isEmpty(keyword.value)) onPaginate(currentPage.value)
+    else onFind(keyword.value)
+  } catch (error) {
+    if (isInstanceOf(error, Error)) showToast(ToastType.Error, error.message)
+    else throw Error
+  }
 }
 </script>

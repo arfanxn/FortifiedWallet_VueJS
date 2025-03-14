@@ -82,6 +82,7 @@ import { WalletDepositType } from '@/enums/wallet.enums'
 import { useAppUI } from '@/composables/appUI.composable'
 import { useNavigation } from '@/composables/wallets/walletNavigator.composable'
 import { useEthereumAssetType } from '@/composables/ethereums/ethereumAssetType.composable'
+import { useWalletStore } from '@/stores/wallet.store'
 
 library.add(faPlus, faRotateLeft)
 
@@ -92,8 +93,9 @@ defineComponent({
 const router = useRouter()
 const route = useRoute()
 
+const walletStore = useWalletStore()
 const { startLoading, stopLoading } = useAppUI()
-const { refreshWallets, depositWallet } = useWalletInteraction()
+const { fetchWalletByAddr, depositWallet } = useWalletInteraction()
 const { tokenMetadata, tokenLabel, tokenAmountLabel, fetchTokenMetadata } = useTokenMetadata()
 const { units, selectedUnit, selectedUnitValue, resetSelectedUnit } = useEthereumUnit()
 const {
@@ -240,7 +242,7 @@ async function handleDepositSubmission() {
     // Navigate to the "show" menu with the wallet as the active wallet
     // Refresh the wallets to display the updated balance
     showToast(ToastType.Success, formatDepositSuccessMessageForToast(), 10 * 1000)
-    await refreshWallets()
+    walletStore.selectedWallet = await fetchWalletByAddr(processedForm.walletAddr)
     navigateToWalletShow()
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Deposit failed.'
