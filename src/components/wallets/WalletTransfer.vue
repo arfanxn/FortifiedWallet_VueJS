@@ -61,7 +61,7 @@
           :icon="faRotateLeft"
           class="bg-red-700! text-slate-200! hover:bg-red-600! hover:text-slate-100!"
         />
-        <ButtonC :text="'Deposit'" />
+        <ButtonC :text="'Transfer'" />
       </div>
     </form>
   </section>
@@ -139,7 +139,7 @@ interface Form {
   amount: string
 }
 const form = reactive<Form>({
-  from: computed(() => ethereumStore.activeAccount),
+  from: computed(() => (route.params?.walletAddr as string) ?? ''),
   to: '',
   token: '',
   amount: '',
