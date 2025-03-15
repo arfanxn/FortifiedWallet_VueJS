@@ -43,6 +43,12 @@ export const useTransactionStore = defineStore('transaction', () => {
   // ==========================================================================
   //                                Actions
   // ==========================================================================
+  const reset = () => {
+    transactions.value = []
+    selectedTransactionHash.value = undefined
+    currentPage.value = 1
+    keyword.value = undefined
+  }
 
   // /**
   //  * Finds a transaction in the `transactions` array by its address.
@@ -66,5 +72,6 @@ export const useTransactionStore = defineStore('transaction', () => {
     currentPage,
     keyword,
     // ================================= Methods ===================================
+    reset,
   }
 })
