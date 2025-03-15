@@ -8,6 +8,7 @@ import { useWalletInteraction } from '../wallets/walletInteraction.composable'
 import { isInstanceOf } from '@/utils/boolean.utils'
 import { showToast } from '@/helpers/toast.helpers'
 import { ToastType } from '@/enums/toast.enums'
+import { Wallet } from '@/interfaces/wallet.interfaces'
 
 export function useTransactionNavigator() {
   // ==========================================================================
@@ -38,19 +39,28 @@ export function useTransactionNavigator() {
   const navigateToTransaction = async () => {
     startLoading()
     await fetchPaginatedWallets(walletStore.currentPage)
+    walletStore.selectedWallet = undefined
     router.push({ name: RouteName.Transaction, query: { page: walletStore.currentPage } })
     stopLoading()
   }
 
-  const navigateToTransactionIndex = async () => {
+  const navigateToTransactionIndex = async (params?: { wallet?: Wallet; walletAddr?: string }) => {
     try {
       startLoading()
 
-      const wallet = await fetchWalletByAddr(walletStore.keyword as string)
+      const walletAddr =
+        params?.wallet?.address ??
+        params?.walletAddr ??
+        walletStore.selectedWallet?.address ??
+        route.params.walletAddr
+
+      const wallet = await fetchWalletByAddr(walletAddr as string)
+      if (!wallet) return
+
       walletStore.selectedWallet = wallet
 
       if (transactionStore.keyword) {
-        const transaction = await fetchTransactionByHash(transactionStore.keyword as string)
+        const transaction = await fetchTransactionByHash(transactionStore.keyword)
         transactionStore.selectedTransaction = transaction
         router.push({
           name: RouteName.TransactionIndex,
@@ -61,6 +71,7 @@ export function useTransactionNavigator() {
         })
       } else {
         await fetchPaginatedTransactions(transactionStore.currentPage)
+        transactionStore.selectedTransaction = undefined
         router.push({
           name: RouteName.TransactionIndex,
           params: { walletAddr: walletStore.selectedWallet!.address },
