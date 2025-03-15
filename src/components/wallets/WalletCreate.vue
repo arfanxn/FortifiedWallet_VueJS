@@ -73,15 +73,15 @@ import { ToastType } from '@/enums/toast.enums'
 import TextFieldC from '@/components/TextFieldC.vue'
 import ButtonC from '@/components/ButtonC.vue'
 import { useAppUI } from '@/composables/appUI.composable'
-import { useNavigation } from '@/composables/wallets/walletNavigator.composable'
 import { toSolidityPackedKeccak256Hash } from '@/helpers/ethers.helpers'
+import { useWalletNavigator } from '@/composables/wallets/useWalletNavigator'
 
 library.add(faPlus, faRotateLeft)
 
 const ethereumStore = useEthereumStore()
 const { startLoading, stopLoading } = useAppUI()
 const { createWallet, fetchWalletByAddr } = useWalletInteraction()
-const { navigateToWalletShow } = useNavigation()
+const { navigateToWalletShow } = useWalletNavigator()
 
 defineComponent({
   name: 'WalletCreate',
@@ -261,8 +261,7 @@ async function handleCreateSubmission() {
     const walletAddr = await createWallet(name, signers, minimumApprovals, passwordHash)
     const message = `Wallet created with address "${formatEthAddr(walletAddr)}".`
     showToast(ToastType.Success, message, 10 * 1000)
-    await fetchWalletByAddr(walletAddr)
-    navigateToWalletShow()
+    navigateToWalletShow({ walletAddr })
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Wallet creation failed.'
     showToast(ToastType.Error, message)
