@@ -108,6 +108,7 @@ function onSelect(wallet: Wallet) {
 }
 
 function onDeselect() {
+  if (selectedWallet.value?.address === keyword.value) keyword.value = undefined
   selectedWallet.value = undefined
   emit('onDeselect')
 }
