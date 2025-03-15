@@ -1,5 +1,5 @@
 import { useEthereumStore } from '@/stores/useEthereumStore'
-import * as ethereumService from '@/services/ethereum.service'
+import * as ethereumService from '@/services/ethereumServices'
 import { markRaw, ref } from 'vue'
 import { ethers } from 'ethers'
 import { storeToRefs } from 'pinia'

@@ -1,5 +1,5 @@
 import { useEthereumStore } from '@/stores/useEthereumStore'
-import * as tokenService from '@/services/token.service'
+import * as tokenService from '@/services/tokenServices'
 import { TokenMetadata } from '@/interfaces/tokenInterfaces'
 import { ethers } from 'ethers'
 import { computed, ref } from 'vue'
