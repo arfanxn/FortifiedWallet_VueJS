@@ -1,4 +1,3 @@
-import { storeToRefs } from 'pinia'
 import { useEthereumStore } from '@/stores/ethereum.store'
 import { useWalletStore } from '@/stores/wallet.store'
 import { useTransactionStore } from '@/stores/transaction.store'
@@ -13,6 +12,7 @@ import { isNonEmptyString, isStringNumber } from '@/utils/boolean.utils'
 import { isZeroAddress } from '@/helpers/string.helpers'
 import { useWalletParser } from './walletParser.composable'
 import { Wallet } from '@/interfaces/wallet.interfaces'
+import { Transaction } from '@/interfaces/transaction.interfaces'
 
 export function useWalletInteraction() {
   // ==========================================================================
@@ -33,7 +33,7 @@ export function useWalletInteraction() {
   //                            External functions
   // ==========================================================================
 
-  const fillWalletStoreFromRoute = async () => {
+  const syncWalletStoreWithRoute = async () => {
     const params = route.params
     const query = route.query
     const currentPage = isStringNumber(query.page) ? parseInt(query.page as string) : 1
@@ -45,22 +45,6 @@ export function useWalletInteraction() {
     } else {
       await fetchPaginatedWallets(currentPage)
       walletStore.selectedWallet = undefined
-    }
-  }
-
-  /**
-   * Refreshes the list of wallets, either by refetching a single wallet by address
-   * or by refetching the paginated list of wallets.
-   */
-  const refreshWallets = async () => {
-    if (walletStore.keyword) {
-      const wallet = await fetchWalletByAddr(walletStore.keyword)
-      if (walletStore.selectedWallet) walletStore.selectedWallet = wallet
-    } else if (walletStore.selectedWallet) {
-      const wallet = await fetchWalletByAddr(walletStore.selectedWallet.address)
-      walletStore.selectedWallet = wallet
-    } else {
-      await fetchPaginatedWallets(walletStore.currentPage)
     }
   }
 
@@ -122,24 +106,70 @@ export function useWalletInteraction() {
     await walletService.deposit({ to, token, value }, runner)
   }
 
+  const syncTransactionStoreWithRoute = async () => {
+    const params = route.params
+    const query = route.query
+    const currentPage = isStringNumber(query.page) ? parseInt(query.page as string) : 1
+    const keyword = isNonEmptyString(params.transactionHash)
+      ? (params.transactionHash as string)
+      : undefined
+    const walletAddr = isNonEmptyString(params.walletAddr)
+      ? (params.walletAddr as string)
+      : undefined
+    transactionStore.$patch({ currentPage, keyword })
+    if (walletAddr) {
+      if (keyword) {
+        const transaction = await fetchTransactionByHash(keyword)
+        transactionStore.selectedTransaction = transaction
+      } else {
+        await fetchPaginatedTransactions(currentPage)
+        transactionStore.selectedTransaction = undefined
+      }
+    }
+  }
+
   const createWalletTransaction = async (token: string, to: string, value: BigNumber) => {
     const runner = await ethereumStore.provider!.getSigner()
-    const from = walletStore.selectedWallet!.address
+    const walletAddr = walletStore.selectedWallet!.address
     const txHash = await walletService.createTransaction(
       {
         token,
         to,
         value,
       },
-      from,
+      walletAddr,
       runner,
     )
     return txHash
   }
 
+  const approveWalletTransaction = async (hash: string): Promise<boolean> => {
+    const runner = await ethereumStore.provider!.getSigner()
+    const walletAddr = walletStore.selectedWallet!.address
+    return await walletService.approveTransaction({ hash }, walletAddr, runner)
+  }
+
+  const revokeWalletTransaction = async (hash: string): Promise<boolean> => {
+    const runner = await ethereumStore.provider!.getSigner()
+    const walletAddr = walletStore.selectedWallet!.address
+    return await walletService.revokeTransaction({ hash }, walletAddr, runner)
+  }
+
+  const cancelWalletTransaction = async (hash: string): Promise<boolean> => {
+    const runner = await ethereumStore.provider!.getSigner()
+    const walletAddr = walletStore.selectedWallet!.address
+    return await walletService.cancelTransaction({ hash }, walletAddr, runner)
+  }
+
+  const executeWalletTransaction = async (hash: string): Promise<boolean> => {
+    const runner = await ethereumStore.provider!.getSigner()
+    const walletAddr = walletStore.selectedWallet!.address
+    return await walletService.executeTransaction({ hash }, walletAddr, runner)
+  }
+
   const fetchPaginatedTransactions = async (page: number) => {
     const runner = ethereumStore.provider as ethers.BrowserProvider
-    const limit = 10
+    const limit = 5
     const offset = getPaginationOffset(page, limit)
     const wallet = walletStore.selectedWallet as Wallet
     const tuples = await walletService.getNewestTransactions(
@@ -151,12 +181,13 @@ export function useWalletInteraction() {
     transactionStore.transactions = transactions
   }
 
-  const fetchTransaction = async (hash: string) => {
+  const fetchTransactionByHash = async (hash: string): Promise<Transaction> => {
     const runner = ethereumStore.provider as ethers.BrowserProvider
     const wallet = walletStore.selectedWallet as Wallet
     const tuple = await walletService.getTransaction({ hash }, wallet.address, runner)
     const transaction = tupleToTransaction(tuple)
     transactionStore.transactions = [transaction]
+    return transaction
   }
 
   return {
@@ -164,15 +195,24 @@ export function useWalletInteraction() {
     //
 
     // ================================== Methods ==================================
-    fillWalletStoreFromRoute,
-    fetchPaginatedWallets,
-    fetchWalletByAddr,
-    refreshWallets,
+    // Interact wallet store
+    syncWalletStoreWithRoute,
+    // Interact wallet(s)
     createWallet,
     depositWallet,
-
+    // Populate wallet(s)
+    fetchPaginatedWallets,
+    fetchWalletByAddr,
+    // Interact transaction store
+    syncTransactionStoreWithRoute,
+    // Interact wallet transaction(s)
     createWalletTransaction,
+    approveWalletTransaction,
+    revokeWalletTransaction,
+    cancelWalletTransaction,
+    executeWalletTransaction,
+    // Populate wallet transaction(s)
     fetchPaginatedTransactions,
-    fetchTransaction,
+    fetchTransactionByHash,
   }
 }
