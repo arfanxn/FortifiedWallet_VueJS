@@ -1,6 +1,5 @@
-import { Wallet, WalletTuple } from '@/interfaces/wallet.interfaces'
-import { Transaction, TransactionTuple } from '@/interfaces/transaction.interfaces'
-import BigNumber from 'bignumber.js'
+import { Wallet, WalletTuple } from '@/interfaces/walletInterfaces'
+import { Transaction, TransactionTuple } from '@/interfaces/transactionInterfaces'
 
 export function useWalletParser() {
   const tupleToWallet = (tuple: WalletTuple): Wallet => {

@@ -61,19 +61,19 @@ import {
   minLength,
   helpers,
 } from '@vuelidate/validators'
-import { useEthereumStore } from '@/stores/ethereum.store'
-import { validateAndToast } from '@/helpers/validator.helpers'
-import { isEmpty, isEthAddr, isNotEmpty } from '@/utils/boolean.utils'
+import { useEthereumStore } from '@/stores/useEthereumStore'
+import { validateAndToast } from '@/helpers/validatorHelpers'
+import { isEmpty, isEthAddr, isNotEmpty } from '@/utils/booleanUtils'
 import { faPlus, faRotateLeft } from '@fortawesome/free-solid-svg-icons'
 import { library } from '@fortawesome/fontawesome-svg-core'
-import { useWalletInteraction } from '@/composables/wallets/walletInteraction.composable'
-import { showToast } from '@/helpers/toast.helpers'
-import { formatEthAddr } from '@/helpers/string.helpers'
-import { ToastType } from '@/enums/toast.enums'
+import { useWalletInteraction } from '@/composables/wallets/useWalletInteraction'
+import { showToast } from '@/helpers/toastHelpers'
+import { formatEthAddr } from '@/helpers/stringHelpers'
+import { ToastType } from '@/enums/toastEnums'
 import TextFieldC from '@/components/TextFieldC.vue'
 import ButtonC from '@/components/ButtonC.vue'
-import { useAppUI } from '@/composables/appUI.composable'
-import { toSolidityPackedKeccak256Hash } from '@/helpers/ethers.helpers'
+import { useAppUI } from '@/composables/useAppUI'
+import { toSolidityPackedKeccak256Hash } from '@/helpers/ethersHelpers'
 import { useWalletNavigator } from '@/composables/wallets/useWalletNavigator'
 
 library.add(faPlus, faRotateLeft)

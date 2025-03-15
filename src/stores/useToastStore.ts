@@ -1,7 +1,7 @@
 // stores/ethers.ts
 import { ref } from 'vue'
 import { defineStore } from 'pinia'
-import { ToastType } from '@/enums/toast.enums'
+import { ToastType } from '@/enums/toastEnums'
 
 interface Toast {
   id: string
@@ -36,7 +36,7 @@ export const useToastStore = defineStore('toast', () => {
    * @param {number} [disappearIn=3000] - The duration in milliseconds before the toast automatically disappears.
    *                                      This value is adjusted based on the duration of the previous toast if one exists.
    */
-  const addToast = (type: ToastType, message: string, disappearIn: Miliseconds = 3000) => {
+  const addToast = (type: ToastType, message: string, disappearIn: number = 3000) => {
     const id = crypto.randomUUID()
 
     const toastsLength = toasts.value.length

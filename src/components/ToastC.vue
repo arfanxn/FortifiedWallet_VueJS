@@ -30,8 +30,8 @@ import {
   faCircleExclamation,
 } from '@fortawesome/free-solid-svg-icons'
 import { library } from '@fortawesome/fontawesome-svg-core'
-import { useToastStore } from '@/stores/toast.store'
-import { ToastType } from '@/enums/toast.enums'
+import { useToastStore } from '@/stores/useToastStore'
+import { ToastType } from '@/enums/toastEnums'
 
 defineComponent({
   name: 'ToastC',

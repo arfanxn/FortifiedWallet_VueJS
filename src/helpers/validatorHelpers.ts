@@ -1,7 +1,7 @@
 import type { Ref } from 'vue'
 import type { ErrorObject, Validation } from '@vuelidate/core'
-import { showToast } from '@/helpers/toast.helpers'
-import { ToastType } from '@/enums/toast.enums'
+import { showToast } from '@/helpers/toastHelpers'
+import { ToastType } from '@/enums/toastEnums'
 
 /**
  * Validates the given Vuelidate validation object and shows a toast for each

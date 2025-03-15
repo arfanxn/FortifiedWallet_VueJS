@@ -34,10 +34,10 @@ import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 import NavbarDropdownItem from '@/components/NavbarDropdownItem.vue'
 import { library } from '@fortawesome/fontawesome-svg-core'
 import { faBell, faGear, faLinkSlash, faUser, faBars } from '@fortawesome/free-solid-svg-icons'
-import { showToast } from '@/helpers/toast.helpers'
-import { ToastType } from '@/enums/toast.enums'
-import { useEthereumInteraction } from '@/composables/ethereums/ethereumInteraction.composable'
-import { useNavigation } from '@/composables/wallets/walletNavigator.composable'
+import { showToast } from '@/helpers/toastHelpers'
+import { ToastType } from '@/enums/toastEnums'
+import { useEthereumInteraction } from '@/composables/ethereums/useEthereumInteraction'
+import { useEthereumNavigator } from '@/composables/ethereums/useEthereumNavigator'
 
 library.add(faBell, faUser, faGear, faLinkSlash, faBars)
 
@@ -48,7 +48,7 @@ defineComponent({
 let router = useRouter()
 
 const { disconnect } = useEthereumInteraction()
-const { navigateToConnect } = useNavigation()
+const { navigateToConnect } = useEthereumNavigator()
 
 const isDropdownOpened = ref(false)
 

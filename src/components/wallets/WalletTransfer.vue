@@ -71,30 +71,27 @@
 import { defineComponent, reactive, computed, onMounted, type ComputedRef, toRaw } from 'vue'
 import { useVuelidate } from '@vuelidate/core'
 import { numeric, helpers, requiredIf, required } from '@vuelidate/validators'
-import { validateAndToast } from '@/helpers/validator.helpers'
-import { isEthAddr, isNotEmpty, isStringNumber } from '@/utils/boolean.utils'
+import { validateAndToast } from '@/helpers/validatorHelpers'
+import { isEthAddr, isNotEmpty, isStringNumber } from '@/utils/booleanUtils'
 import { faPlus, faRotateLeft } from '@fortawesome/free-solid-svg-icons'
 import { library } from '@fortawesome/fontawesome-svg-core'
 import TextFieldC from '@/components/TextFieldC.vue'
 import SelectFieldC from '../SelectFieldC.vue'
 import ButtonC from '@/components/ButtonC.vue'
 import SwitchEthereumAssetType from '@/components/SwitchEthereumAssetType.vue'
-import { useEthereumStore } from '@/stores/ethereum.store'
+import { useEthereumStore } from '@/stores/useEthereumStore'
 import BigNumber from 'bignumber.js'
-import { useWalletInteraction } from '@/composables/wallets/walletInteraction.composable'
-import { WalletTransactionType } from '@/enums/wallet.enums'
+import { useWalletInteraction } from '@/composables/wallets/useWalletInteraction'
+import { WalletTransactionType } from '@/enums/walletEnums'
 import { useRoute, useRouter } from 'vue-router'
-import { tryOrElse } from '@/utils/object.utils'
-import { computedAsync } from '@vueuse/core'
-import { TokenMetadata } from '@/interfaces/token.interfaces'
-import { useAppUI } from '@/composables/appUI.composable'
-import { useTokenMetadata } from '@/composables/tokens/tokenMetadata.composable'
-import { useEthereumUnit } from '@/composables/ethereums/ethereumUnit.composable'
-import { useNavigation } from '@/composables/wallets/walletNavigator.composable'
-import { useEthereumAssetType } from '@/composables/ethereums/ethereumAssetType.composable'
+import { useAppUI } from '@/composables/useAppUI'
+import { useTokenMetadata } from '@/composables/tokens/useTokenMetadata'
+import { useEthereumUnit } from '@/composables/ethereums/useEthereumUnit'
+import { useEthereumAssetType } from '@/composables/ethereums/useEthereumAssetType'
 import { ethers } from 'ethers'
-import { showToast } from '@/helpers/toast.helpers'
-import { ToastType } from '@/enums/toast.enums'
+import { showToast } from '@/helpers/toastHelpers'
+import { ToastType } from '@/enums/toastEnums'
+import { useWalletNavigator } from '@/composables/wallets/useWalletNavigator'
 
 library.add(faPlus, faRotateLeft)
 
@@ -116,7 +113,7 @@ const {
   isToken: isTokenTransaction,
   resolveAssetType: resolveTransactionType,
 } = useEthereumAssetType()
-const { navigateToWalletShow } = useNavigation()
+const { navigateToWalletShow } = useWalletNavigator()
 const ethereumStore = useEthereumStore()
 
 onMounted(() => {
@@ -256,7 +253,7 @@ async function handleCreateWalletTransactionSubmission() {
     )
     const message = `Transaction created with transaction hash "${txHash}".`
     showToast(ToastType.Success, message, 15 * 1000)
-    navigateToWalletShow()
+    navigateToWalletShow({ walletAddr: processedForm.from })
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Transaction creation failed.'
     showToast(ToastType.Error, message, 5 * 1000)

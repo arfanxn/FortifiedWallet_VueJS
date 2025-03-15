@@ -1,6 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import { RouteName } from '@/enums/route.enums'
-import { useEthereumInteraction } from '@/composables/ethereums/ethereumInteraction.composable'
+import { RouteName } from '@/enums/routeEnums'
+import { useEthereumInteraction } from '@/composables/ethereums/useEthereumInteraction'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),

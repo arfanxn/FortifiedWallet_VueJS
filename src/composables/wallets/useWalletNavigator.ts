@@ -1,12 +1,12 @@
 import { useRoute, useRouter } from 'vue-router'
-import { useWalletStore } from '@/stores/wallet.store'
-import { useWalletInteraction } from '@/composables/wallets/walletInteraction.composable'
-import { RouteName } from '@/enums/route.enums'
-import { useAppUI } from '@/composables/appUI.composable'
-import { isInstanceOf } from '@/utils/boolean.utils'
-import { showToast } from '@/helpers/toast.helpers'
-import { ToastType } from '@/enums/toast.enums'
-import { Wallet } from '@/interfaces/wallet.interfaces'
+import { useWalletStore } from '@/stores/useWalletStore'
+import { useWalletInteraction } from '@/composables/wallets/useWalletInteraction'
+import { RouteName } from '@/enums/routeEnums'
+import { useAppUI } from '@/composables/useAppUI'
+import { isInstanceOf } from '@/utils/booleanUtils'
+import { showToast } from '@/helpers/toastHelpers'
+import { ToastType } from '@/enums/toastEnums'
+import { Wallet } from '@/interfaces/walletInterfaces'
 
 export function useWalletNavigator() {
   // ==========================================================================

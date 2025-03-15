@@ -23,15 +23,15 @@ import GuestLayout from '@/layouts/GuestLayout.vue'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 import { library } from '@fortawesome/fontawesome-svg-core'
 import { faLink } from '@fortawesome/free-solid-svg-icons'
-import { showToast } from '@/helpers/toast.helpers'
-import { ToastType } from '@/enums/toast.enums'
-import { useEthereumInteraction } from '@/composables/ethereums/ethereumInteraction.composable'
-import { useNavigation } from '@/composables/wallets/walletNavigator.composable'
+import { showToast } from '@/helpers/toastHelpers'
+import { ToastType } from '@/enums/toastEnums'
+import { useEthereumInteraction } from '@/composables/ethereums/useEthereumInteraction'
+import { useWalletNavigator } from '@/composables/wallets/useWalletNavigator'
 
 library.add(faLink)
 
 const { isConnected, connect } = useEthereumInteraction()
-const { navigateToDashboard } = useNavigation()
+const { navigateToDashboard } = useWalletNavigator()
 
 onMounted(() => {
   if (!isConnected) showToast(ToastType.Info, 'Please connect to your wallet.')

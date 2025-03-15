@@ -1,7 +1,7 @@
-import { TransactionFailedError } from '@/errors/ethereum.errors'
+import { TransactionFailedError } from '@/errors/ethereumErrors'
 import { ethers } from 'ethers'
-import { WalletTuple } from '@/interfaces/wallet.interfaces'
-import { didTransactionSucceed, resolveEthersError } from '@/helpers/ethers.helpers'
+import { WalletTuple } from '@/interfaces/walletInterfaces'
+import { didTransactionSucceed, resolveEthersError } from '@/helpers/ethersHelpers'
 
 const _walletFactoryContractAddr = () => import.meta.env.VITE__WALLET_FACTORY_CONTRACT_ADDRESS
 

@@ -1,13 +1,13 @@
-import { TransactionFailedError } from '@/errors/ethereum.errors'
-import { isZeroAddress } from '@/helpers/string.helpers'
+import { TransactionFailedError } from '@/errors/ethereumErrors'
+import { isZeroAddress } from '@/helpers/stringHelpers'
 import BigNumber from 'bignumber.js'
 import { ethers } from 'ethers'
-import { TransactionTuple } from '@/interfaces/transaction.interfaces'
+import { TransactionTuple } from '@/interfaces/transactionInterfaces'
 import {
   didTransactionFail,
   didTransactionSucceed,
   resolveEthersError,
-} from '@/helpers/ethers.helpers'
+} from '@/helpers/ethersHelpers'
 
 const transactionViewAbi =
   'tuple(bytes32 hash, address token, address to, uint256 value, uint256 valueInUsd, uint8 approvalCount, address[] approvers, uint256 createdAt, uint256 executedAt, uint256 cancelledAt)'

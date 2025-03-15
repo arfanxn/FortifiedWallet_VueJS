@@ -1,6 +1,6 @@
-import { useEthereumStore } from '@/stores/ethereum.store'
+import { useEthereumStore } from '@/stores/useEthereumStore'
 import * as tokenService from '@/services/token.service'
-import { TokenMetadata } from '@/interfaces/token.interfaces'
+import { TokenMetadata } from '@/interfaces/tokenInterfaces'
 import { ethers } from 'ethers'
 import { computed, ref } from 'vue'
 

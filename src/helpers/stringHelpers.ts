@@ -1,8 +1,8 @@
 import BigNumber from 'bignumber.js'
 import currency from 'currency.js'
 import { ethers } from 'ethers'
-import { EthereumAddress } from '@/interfaces/ethereum.interfaces'
-import { isEthAddr } from '@/utils/boolean.utils'
+import { EthereumAddress } from '@/interfaces/ethereumInterfaces'
+import { isEthAddr } from '@/utils/booleanUtils'
 
 /**
  * Formats a given amount of Ether as a string in USD format.

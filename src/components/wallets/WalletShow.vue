@@ -66,11 +66,11 @@
 import { defineComponent } from 'vue'
 import { faDollarSign } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
-import { useWalletStore } from '@/stores/wallet.store'
+import { useWalletStore } from '@/stores/useWalletStore'
 import { library } from '@fortawesome/fontawesome-svg-core'
 import { useRoute } from 'vue-router'
-import { formatUsd } from '@/helpers/string.helpers'
-import { useAppUI } from '@/composables/appUI.composable'
+import { formatUsd } from '@/helpers/stringHelpers'
+import { useAppUI } from '@/composables/useAppUI'
 
 library.add(faDollarSign)
 

@@ -20,11 +20,11 @@
 <script setup lang="ts">
 import { defineProps } from 'vue'
 import { useRoute } from 'vue-router'
-import { formatEthAddr, formatUsd } from '@/helpers/string.helpers'
+import { formatEthAddr, formatUsd } from '@/helpers/stringHelpers'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 import { faDollarSign, faUser } from '@fortawesome/free-solid-svg-icons'
 import { library } from '@fortawesome/fontawesome-svg-core'
-import type { Wallet } from '@/interfaces/wallet.interfaces'
+import type { Wallet } from '@/interfaces/walletInterfaces'
 
 library.add(faDollarSign, faUser)
 

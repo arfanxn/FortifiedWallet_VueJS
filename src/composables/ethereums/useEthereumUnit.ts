@@ -1,5 +1,5 @@
 import { computed, Ref, ref, WritableComputedRef } from 'vue'
-import { EthereumUnit } from '@/interfaces/ethereum.interfaces'
+import { EthereumUnit } from '@/interfaces/ethereumInterfaces'
 import BigNumber from 'bignumber.js'
 import { ethers } from 'ethers'
 

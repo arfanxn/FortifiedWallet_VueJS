@@ -1,17 +1,17 @@
-import { useEthereumStore } from '@/stores/ethereum.store'
+import { useEthereumStore } from '@/stores/useEthereumStore'
 import * as ethereumService from '@/services/ethereum.service'
 import { markRaw, ref } from 'vue'
 import { ethers } from 'ethers'
 import { storeToRefs } from 'pinia'
-import { useNavigation } from '../wallets/walletNavigator.composable'
-import { showToast } from '@/helpers/toast.helpers'
-import { ToastType } from '@/enums/toast.enums'
+import { useEthereumNavigator } from './useEthereumNavigator'
+import { showToast } from '@/helpers/toastHelpers'
+import { ToastType } from '@/enums/toastEnums'
 
 const hasListened = ref<boolean>(false)
 
 export function useEthereumInteraction() {
   const ethereumStore = useEthereumStore()
-  const { navigateToConnect } = useNavigation()
+  const { navigateToConnect } = useEthereumNavigator()
   const { isConnected } = storeToRefs(ethereumStore)
 
   const connect = async (): Promise<void> => {

@@ -2,7 +2,7 @@
 import { ref, computed } from 'vue'
 import { defineStore } from 'pinia'
 import { ethers } from 'ethers'
-import { EthereumAddress } from '@/interfaces/ethereum.interfaces'
+import { EthereumAddress } from '@/interfaces/ethereumInterfaces'
 
 export const useEthereumStore = defineStore('ethereum', () => {
   // ==========================================================================

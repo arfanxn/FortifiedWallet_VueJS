@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
-import type { Token } from '@/interfaces/token.interfaces'
+import type { Token } from '@/interfaces/tokenInterfaces'
 
 export const useTokenStore = defineStore('token', () => {
   // ==========================================================================

@@ -1,4 +1,4 @@
-import { EthereumAssetType } from '@/enums/ethereum.enums'
+import { EthereumAssetType } from '@/enums/ethereumEnums'
 
 export enum WalletDepositType {
   Token = EthereumAssetType.Token,

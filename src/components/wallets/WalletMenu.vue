@@ -23,8 +23,8 @@ import ButtonC from '@/components/ButtonC.vue'
 import { useRoute } from 'vue-router'
 import { faPlus, faRightLeft, faLock } from '@fortawesome/free-solid-svg-icons'
 import { library } from '@fortawesome/fontawesome-svg-core'
-import { isNotEmpty } from '@/utils/boolean.utils'
-import { RouteName } from '@/enums/route.enums'
+import { isNotEmpty } from '@/utils/booleanUtils'
+import { RouteName } from '@/enums/routeEnums'
 import { useWalletNavigator } from '@/composables/wallets/useWalletNavigator'
 
 library.add(faPlus, faRightLeft, faLock)

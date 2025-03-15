@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
-import { Transaction } from '@/interfaces/transaction.interfaces'
+import { Transaction } from '@/interfaces/transactionInterfaces'
 
 export const useTransactionStore = defineStore('transaction', () => {
   // ==========================================================================

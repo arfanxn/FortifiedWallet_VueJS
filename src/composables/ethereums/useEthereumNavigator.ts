@@ -1,6 +1,6 @@
 import { useRoute, useRouter } from 'vue-router'
-import { RouteName } from '@/enums/route.enums'
-import { useAppUI } from '@/composables/appUI.composable'
+import { RouteName } from '@/enums/routeEnums'
+import { useAppUI } from '@/composables/useAppUI'
 
 export function useEthereumNavigator() {
   // ==========================================================================

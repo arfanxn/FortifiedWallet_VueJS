@@ -65,24 +65,24 @@ import { ethers } from 'ethers'
 import { helpers, numeric, required, requiredIf } from '@vuelidate/validators'
 import { useRoute, useRouter } from 'vue-router'
 import { useVuelidate } from '@vuelidate/core'
-import { useWalletInteraction } from '@/composables/wallets/walletInteraction.composable'
-import { useTokenMetadata } from '@/composables/tokens/tokenMetadata.composable'
-import { isNotEmpty, isEthAddr } from '@/utils/boolean.utils'
-import { validateAndToast } from '@/helpers/validator.helpers'
+import { useWalletInteraction } from '@/composables/wallets/useWalletInteraction'
+import { useTokenMetadata } from '@/composables/tokens/useTokenMetadata'
+import { isNotEmpty, isEthAddr } from '@/utils/booleanUtils'
+import { validateAndToast } from '@/helpers/validatorHelpers'
 import ButtonC from '@/components/ButtonC.vue'
 import SelectFieldC from '@/components/SelectFieldC.vue'
 import TextFieldC from '@/components/TextFieldC.vue'
 import SwitchEthereumAssetType from '@/components/SwitchEthereumAssetType.vue'
-import { showToast } from '@/helpers/toast.helpers'
-import { formatEthAddr } from '@/helpers/string.helpers'
-import { useEthereumUnit } from '@/composables/ethereums/ethereumUnit.composable'
-import { ToastType } from '@/enums/toast.enums'
+import { showToast } from '@/helpers/toastHelpers'
+import { formatEthAddr } from '@/helpers/stringHelpers'
+import { useEthereumUnit } from '@/composables/ethereums/useEthereumUnit'
+import { ToastType } from '@/enums/toastEnums'
 import BigNumber from 'bignumber.js'
-import { WalletDepositType } from '@/enums/wallet.enums'
-import { useAppUI } from '@/composables/appUI.composable'
-import { useNavigation } from '@/composables/wallets/walletNavigator.composable'
-import { useEthereumAssetType } from '@/composables/ethereums/ethereumAssetType.composable'
-import { useWalletStore } from '@/stores/wallet.store'
+import { WalletDepositType } from '@/enums/walletEnums'
+import { useAppUI } from '@/composables/useAppUI'
+import { useEthereumAssetType } from '@/composables/ethereums/useEthereumAssetType'
+import { useWalletStore } from '@/stores/useWalletStore'
+import { useWalletNavigator } from '@/composables/wallets/useWalletNavigator'
 
 library.add(faPlus, faRotateLeft)
 
@@ -104,7 +104,7 @@ const {
   isToken: isTokenDeposit,
   resolveAssetType: resolveDepositType,
 } = useEthereumAssetType()
-const { navigateToWalletShow } = useNavigation()
+const { navigateToWalletShow } = useWalletNavigator()
 
 onMounted(() => {
   selectedDepositType.value = resolveDepositType(
@@ -242,8 +242,7 @@ async function handleDepositSubmission() {
     // Navigate to the "show" menu with the wallet as the active wallet
     // Refresh the wallets to display the updated balance
     showToast(ToastType.Success, formatDepositSuccessMessageForToast(), 10 * 1000)
-    walletStore.selectedWallet = await fetchWalletByAddr(processedForm.walletAddr)
-    navigateToWalletShow()
+    navigateToWalletShow({ walletAddr: processedForm.walletAddr })
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Deposit failed.'
     showToast(ToastType.Error, message)

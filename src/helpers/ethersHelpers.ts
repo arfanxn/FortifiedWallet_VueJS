@@ -1,6 +1,6 @@
-import { EthersErrorCode } from '@/enums/ethers.enums'
-import { ResolvedEthersError } from '@/errors/ethers.error'
-import { pascalToSentenceCase } from '@/utils/string.utils'
+import { EthersErrorCode } from '@/enums/ethersEnums'
+import { ResolvedEthersError } from '@/errors/ResolvedEthersError'
+import { pascalToSentenceCase } from '@/utils/stringUtils'
 import { ethers } from 'ethers'
 
 // ==========================================================================

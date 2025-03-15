@@ -1,4 +1,4 @@
-import { useUIStore } from '@/stores/ui.store'
+import { useUIStore } from '@/stores/useUIStore'
 import { storeToRefs } from 'pinia'
 
 export function useAppUI() {

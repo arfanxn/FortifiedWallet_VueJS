@@ -32,7 +32,7 @@ import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 import NavbarDropdown from '@/components/NavbarDropdown.vue'
 import { library } from '@fortawesome/fontawesome-svg-core'
 import { faBell, faUser, faGear, faLinkSlash, faBars } from '@fortawesome/free-solid-svg-icons'
-import { useUIStore } from '@/stores/ui.store'
+import { useUIStore } from '@/stores/useUIStore'
 
 library.add(faBell, faUser, faGear, faLinkSlash, faBars)
 

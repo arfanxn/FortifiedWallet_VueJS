@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
-import type { Wallet } from '@/interfaces/wallet.interfaces'
-import { isString } from '@/utils/boolean.utils'
+import type { Wallet } from '@/interfaces/walletInterfaces'
+import { isString } from '@/utils/booleanUtils'
 
 export const useWalletStore = defineStore('wallet', () => {
   // ==========================================================================

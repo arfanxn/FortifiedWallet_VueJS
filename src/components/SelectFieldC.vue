@@ -24,7 +24,7 @@
 
 <script setup lang="ts">
 import { defineComponent, defineModel, defineEmits, onMounted, Ref, ref } from 'vue'
-import { SelectFieldComponent } from '@/interfaces/component.interfaces'
+import { SelectFieldComponent } from '@/interfaces/componentInterfaces'
 
 defineComponent({
   name: 'SelectFieldC',

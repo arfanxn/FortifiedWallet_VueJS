@@ -1,5 +1,5 @@
 // services/ethereumService.ts
-import { MetamaskNotInstalledError } from '../errors/ethereum.errors'
+import { MetamaskNotInstalledError } from '../errors/ethereumErrors'
 import { ethers } from 'ethers'
 
 /**

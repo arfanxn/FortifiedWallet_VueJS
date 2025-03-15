@@ -1,5 +1,3 @@
-import BigNumber from 'bignumber.js'
-
 export type TransactionTuple = [
   string, // Transaction hash
   string, // Token address

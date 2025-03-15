@@ -31,10 +31,10 @@ import { library } from '@fortawesome/fontawesome-svg-core'
 import { faLink } from '@fortawesome/free-solid-svg-icons'
 import AuthLayout from '@/layouts/AuthLayout.vue'
 import WalletIndex from '@/components/wallets/WalletIndex.vue'
-import { useWalletStore } from '@/stores/wallet.store'
-import { useWalletInteraction } from '@/composables/wallets/walletInteraction.composable'
+import { useWalletStore } from '@/stores/useWalletStore'
+import { useWalletInteraction } from '@/composables/wallets/useWalletInteraction'
 import { useTransactionNavigator } from '@/composables/transactions/useTransactionNavigator'
-import { useAppUI } from '@/composables/appUI.composable'
+import { useAppUI } from '@/composables/useAppUI'
 
 library.add(faLink)
 

@@ -1,8 +1,8 @@
-import { TransactionFailedError } from '@/errors/ethereum.errors'
-import { didTransactionFail, resolveEthersError } from '@/helpers/ethers.helpers'
+import { TransactionFailedError } from '@/errors/ethereumErrors'
+import { didTransactionFail, resolveEthersError } from '@/helpers/ethersHelpers'
 import BigNumber from 'bignumber.js'
 import { ethers } from 'ethers'
-import { EthereumAddress } from '@/interfaces/ethereum.interfaces'
+import { EthereumAddress } from '@/interfaces/ethereumInterfaces'
 
 const tokenAbis: ethers.InterfaceAbi = [
   // name

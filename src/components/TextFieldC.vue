@@ -20,7 +20,7 @@
 </template>
 
 <script setup lang="ts">
-import { isNotEmpty } from '../utils/boolean.utils'
+import { isNotEmpty } from '../utils/booleanUtils'
 import { defineComponent, defineModel, defineEmits, computed } from 'vue'
 
 defineComponent({

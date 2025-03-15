@@ -1,4 +1,4 @@
-import { isNotEmpty } from '@/utils/boolean.utils'
+import { isNotEmpty } from '@/utils/booleanUtils'
 import {
   useRoute,
   RouteLocationMatched,

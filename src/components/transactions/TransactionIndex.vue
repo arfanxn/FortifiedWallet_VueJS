@@ -66,17 +66,17 @@
 <script setup lang="ts">
 import { defineComponent, onMounted, onUnmounted, ref } from 'vue'
 import { string } from 'yup'
-import { isEthHash } from '@/utils/boolean.utils'
+import { isEthHash } from '@/utils/booleanUtils'
 import { library } from '@fortawesome/fontawesome-svg-core'
-import { useAppUI } from '@/composables/appUI.composable'
-import { useTransactionStore } from '@/stores/transaction.store'
-import { useWalletStore } from '@/stores/wallet.store'
+import { useAppUI } from '@/composables/useAppUI'
+import { useTransactionStore } from '@/stores/useTransactionStore'
+import { useWalletStore } from '@/stores/useWalletStore'
 import ButtonC from '@/components/ButtonC.vue'
 import TextFieldC from '@/components/TextFieldC.vue'
 import TransactionListItem from '@/components/transactions/TransactionListItem.vue'
 import PaginationButtonC from '@/components/PaginationButtonC.vue'
-import { showToast } from '@/helpers/toast.helpers'
-import { ToastType } from '@/enums/toast.enums'
+import { showToast } from '@/helpers/toastHelpers'
+import { ToastType } from '@/enums/toastEnums'
 import {
   faArrowRightArrowLeft,
   faArrowRightLong,
@@ -86,7 +86,7 @@ import {
   faHashtag,
   faMinus,
 } from '@fortawesome/free-solid-svg-icons'
-import { useEthereumStore } from '@/stores/ethereum.store'
+import { useEthereumStore } from '@/stores/useEthereumStore'
 import { useTransactionNavigator } from '@/composables/transactions/useTransactionNavigator'
 
 library.add(

@@ -27,10 +27,10 @@ import { faLink } from '@fortawesome/free-solid-svg-icons'
 import AuthLayout from '@/layouts/AuthLayout.vue'
 import WalletIndex from '@/components/wallets/WalletIndex.vue'
 import WalletMenu from '@/components/wallets/WalletMenu.vue'
-import { useWalletStore } from '@/stores/wallet.store'
-import { useWalletInteraction } from '@/composables/wallets/walletInteraction.composable'
+import { useWalletStore } from '@/stores/useWalletStore'
+import { useWalletInteraction } from '@/composables/wallets/useWalletInteraction'
 import { useWalletNavigator } from '@/composables/wallets/useWalletNavigator'
-import { useAppUI } from '@/composables/appUI.composable'
+import { useAppUI } from '@/composables/useAppUI'
 
 // Initialize FontAwesome library
 library.add(faLink)
