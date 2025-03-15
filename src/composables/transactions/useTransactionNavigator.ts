@@ -9,6 +9,7 @@ import { isInstanceOf } from '@/utils/boolean.utils'
 import { showToast } from '@/helpers/toast.helpers'
 import { ToastType } from '@/enums/toast.enums'
 import { Wallet } from '@/interfaces/wallet.interfaces'
+import { Transaction } from '@/interfaces/transaction.interfaces'
 
 export function useTransactionNavigator() {
   // ==========================================================================
@@ -44,7 +45,12 @@ export function useTransactionNavigator() {
     stopLoading()
   }
 
-  const navigateToTransactionIndex = async (params?: { wallet?: Wallet; walletAddr?: string }) => {
+  const navigateToTransactionIndex = async (params?: {
+    wallet?: Wallet
+    walletAddr?: string
+    transaction?: Transaction
+    transactionHash?: string
+  }) => {
     try {
       startLoading()
 
@@ -57,10 +63,16 @@ export function useTransactionNavigator() {
       const wallet = await fetchWalletByAddr(walletAddr as string)
       if (!wallet) return
 
+      const transactionHash =
+        params?.transaction?.hash ??
+        params?.transactionHash ??
+        transactionStore.keyword ??
+        route.params.transactionHash
+
       walletStore.selectedWallet = wallet
 
-      if (transactionStore.keyword) {
-        const transaction = await fetchTransactionByHash(transactionStore.keyword)
+      if (transactionHash) {
+        const transaction = await fetchTransactionByHash(transactionHash as string)
         transactionStore.selectedTransaction = transaction
         router.push({
           name: RouteName.TransactionIndex,
