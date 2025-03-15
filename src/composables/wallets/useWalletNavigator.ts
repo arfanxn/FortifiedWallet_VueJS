@@ -6,6 +6,7 @@ import { useAppUI } from '@/composables/appUI.composable'
 import { isInstanceOf } from '@/utils/boolean.utils'
 import { showToast } from '@/helpers/toast.helpers'
 import { ToastType } from '@/enums/toast.enums'
+import { Wallet } from '@/interfaces/wallet.interfaces'
 
 export function useWalletNavigator() {
   // ==========================================================================
@@ -41,17 +42,23 @@ export function useWalletNavigator() {
     router.push({ name: RouteName.WalletCreate })
   }
 
-  const navigateToWalletShow = async () => {
+  const navigateToWalletShow = async (params?: { wallet?: Wallet; walletAddr?: string }) => {
     try {
       startLoading()
 
-      const wallet = await fetchWalletByAddr(walletStore.selectedWallet?.address as string)
+      const walletAddr =
+        params?.wallet?.address ??
+        params?.walletAddr ??
+        walletStore.selectedWallet?.address ??
+        route.params.walletAddr
+
+      const wallet = await fetchWalletByAddr(walletAddr as string)
       if (!wallet) return
 
       walletStore.selectedWallet = wallet
       router.push({
         name: RouteName.WalletShow,
-        params: { walletAddr: wallet.address },
+        params: { walletAddr },
       })
     } catch (error) {
       if (isInstanceOf(error, Error)) showToast(ToastType.Error, error.message)
