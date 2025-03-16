@@ -9,6 +9,8 @@
       :disabled="props.disabled"
       :placeholder="props.placeholder"
       :value="props.value ?? model"
+      :type="props.type"
+      :autocomplete="props.autocomplete"
       @input="emit('onInput', $event)"
       @blur="emit('onBlur', $event)"
       @focus="emit('onFocus', $event)"
@@ -37,8 +39,12 @@ interface Props {
   placeholder?: string
   label?: string
   value?: string
+  type?: 'text' | 'password' | 'email' | 'url' | 'search' | 'tel' | 'number'
+  autocomplete?: 'on' | 'off'
 }
 const props = withDefaults(defineProps<Props>(), {
   disabled: false,
+  type: 'text',
+  autocomplete: 'on',
 })
 </script>
