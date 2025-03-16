@@ -18,6 +18,10 @@ const abis = [
   // ==========================================================================
   // deposit
   'function deposit(address token, uint256 value)',
+  // lockBalancedInUsd
+  'function lockBalancedInUsd(uint256 usdAmount)',
+  // unlockBalanceInUsd
+  'function unlockBalanceInUsd(uint256 usdAmount, string password, string salt)',
   // createTransaction
   'function createTransaction(address token, address to, uint256 value) returns (bytes32 txHash)',
   // approveTransaction
@@ -109,6 +113,79 @@ export const deposit = async (
 
     // If the transaction failed, throw an error
     if (didTransactionFail(receipt)) throw new TransactionFailedError()
+  } catch (error) {
+    throw resolveEthersError(error, contract) ?? error
+  }
+}
+
+/**
+ * Locks a certain amount of a token in a wallet, given in USD, in 18 decimals.
+ *
+ * @param {{ usdAmount: bigint }} params - An object containing the following properties:
+ *   - {bigint} usdAmount - The amount of the token to lock, given in USD and in 18 decimals.
+ * @param {string} walletAddr - The Ethereum address of the wallet to lock the token in.
+ * @param {ethers.Signer} runner - An ethers.js Signer object for interacting with Ethereum.
+ * @returns {Promise<boolean>} A promise that resolves to true if the transaction was successful, false otherwise.
+ * @throws {Error|TransactionFailedError} If fails.
+ */
+export const lockBalancedInUsd = async (
+  params: { usdAmount: bigint /* usdAmount in 18 decimals */ },
+  walletAddr: string,
+  runner: ethers.Signer,
+): Promise<boolean> => {
+  const { usdAmount } = params
+  const contract = new ethers.Contract(walletAddr, abis, runner)
+
+  try {
+    const tx: ethers.TransactionResponse = await contract.lockBalancedInUsd(usdAmount)
+    const receipt: ethers.TransactionReceipt | null = await tx.wait()
+
+    // If the transaction failed, throw an error
+    if (didTransactionSucceed(receipt)) {
+      return true
+    } else throw new TransactionFailedError()
+  } catch (error) {
+    throw resolveEthersError(error, contract) ?? error
+  }
+}
+
+/**
+ * Unlocks a certain amount of a token in a wallet, given in USD, in 18 decimals,
+ * given a password and salt.
+ *
+ * @param {{ usdAmount: bigint, password: string, salt: string }} params - An object containing the following properties:
+ *   - {bigint} usdAmount - The amount of the token to unlock, given in USD and in 18 decimals.
+ *   - {string} password - The password to use for unlocking.
+ *   - {string} salt - The salt to use for unlocking.
+ * @param {string} walletAddr - The Ethereum address of the wallet to unlock the token in.
+ * @param {ethers.Signer} runner - An ethers.js Signer object for interacting with Ethereum.
+ * @returns {Promise<boolean>} A promise that resolves to true if the transaction was successful, false otherwise.
+ * @throws {Error|TransactionFailedError} If fails.
+ */
+export const unlockBalanceInUsd = async (
+  params: {
+    usdAmount: bigint /* usdAmount in 18 decimals */
+    password: string
+    salt: string
+  },
+  walletAddr: string,
+  runner: ethers.Signer,
+): Promise<boolean> => {
+  const { usdAmount, password, salt } = params
+  const contract = new ethers.Contract(walletAddr, abis, runner)
+
+  try {
+    const tx: ethers.TransactionResponse = await contract.unlockBalanceInUsd(
+      usdAmount,
+      password,
+      salt,
+    )
+    const receipt: ethers.TransactionReceipt | null = await tx.wait()
+
+    // If the transaction failed, throw an error
+    if (didTransactionSucceed(receipt)) {
+      return true
+    } else throw new TransactionFailedError()
   } catch (error) {
     throw resolveEthersError(error, contract) ?? error
   }
