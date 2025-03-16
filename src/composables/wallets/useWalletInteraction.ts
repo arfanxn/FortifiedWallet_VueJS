@@ -31,6 +31,7 @@ export function useWalletInteraction() {
 
   // ==========================================================================
   //                            External functions
+  //                            Wallet relateds
   // ==========================================================================
 
   const syncWalletStoreWithRoute = async () => {
@@ -105,6 +106,23 @@ export function useWalletInteraction() {
     }
     await walletService.deposit({ to, token, value }, runner)
   }
+
+  const lockWalletBalance = async (usdAmount: bigint) => {
+    const runner = await ethereumStore.provider!.getSigner()
+    const wallet = walletStore.selectedWallet as Wallet
+    await walletService.lockBalancedInUsd({ usdAmount }, wallet.address, runner)
+  }
+
+  const unlockWalletBalance = async (usdAmount: bigint, password: string, salt: string) => {
+    const runner = await ethereumStore.provider!.getSigner()
+    const wallet = walletStore.selectedWallet as Wallet
+    await walletService.unlockBalanceInUsd({ usdAmount, password, salt }, wallet.address, runner)
+  }
+
+  // ==========================================================================
+  //                            External functions
+  //                            Transaction relateds
+  // ==========================================================================
 
   const syncTransactionStoreWithRoute = async () => {
     const params = route.params
@@ -200,6 +218,8 @@ export function useWalletInteraction() {
     // Interact wallet(s)
     createWallet,
     depositWallet,
+    lockWalletBalance,
+    unlockWalletBalance,
     // Populate wallet(s)
     fetchPaginatedWallets,
     fetchWalletByAddr,
