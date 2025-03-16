@@ -10,28 +10,50 @@
     >
       <div class="flex basis-1/3 flex-col gap-y-2">
         <div class="flex flex-col gap-y-0.5">
-          <h2>Name</h2>
-          <span>{{ walletStore.selectedWallet.name }}</span>
+          <h2>Wallet Name</h2>
+          <span class="ml-4">{{ walletStore.selectedWallet.name }}</span>
         </div>
 
         <div class="flex flex-col gap-y-0.5">
-          <h2>Total balance</h2>
-          <span class="inline-flex items-center">
-            <FontAwesomeIcon :icon="faDollarSign" class="text-sm" />
-            <span>{{ formatUsd(walletStore.selectedWallet.totalBalanceInUsd) }}</span>
-          </span>
+          <h2>Minimun Approvals</h2>
+          <span class="ml-4">{{ walletStore.selectedWallet.minimumApprovals }} signers</span>
         </div>
 
         <div class="flex flex-col gap-y-0.5">
-          <h2>Min approvals</h2>
-          <span>{{ walletStore.selectedWallet.minimumApprovals }}</span>
+          <h2>Balances</h2>
+
+          <div class="flex flex-col gap-y-0.5 pl-4">
+            <div class="flex flex-col gap-y-0.5">
+              <h2>Total balance</h2>
+              <span class="inline-flex items-center">
+                <FontAwesomeIcon :icon="faDollarSign" class="text-sm" />
+                <span>{{ formatUsd(walletStore.selectedWallet.totalBalanceInUsd) }}</span>
+              </span>
+            </div>
+
+            <div class="flex flex-col gap-y-0.5">
+              <h2>Locked balance</h2>
+              <span class="inline-flex items-center">
+                <FontAwesomeIcon :icon="faDollarSign" class="text-sm" />
+                <span>{{ formatUsd(walletStore.selectedWallet.totalLockedBalanceInUsd) }}</span>
+              </span>
+            </div>
+
+            <div class="flex flex-col gap-y-0.5">
+              <h2>Unlocked balance</h2>
+              <span class="inline-flex items-center">
+                <FontAwesomeIcon :icon="faDollarSign" class="text-sm" />
+                <span>{{ formatUsd(walletStore.selectedWallet.totalUnlockedBalanceInUsd) }}</span>
+              </span>
+            </div>
+          </div>
         </div>
       </div>
 
       <div class="flex basis-2/3 flex-col gap-y-2">
         <div class="flex flex-col gap-y-0.5">
-          <h2>Address</h2>
-          <span class="font-mono break-all whitespace-pre-wrap">{{
+          <h2>Wallet Address</h2>
+          <span class="ml-4 font-mono break-all whitespace-pre-wrap">{{
             walletStore.selectedWallet.address
           }}</span>
         </div>
@@ -39,7 +61,7 @@
         <ul class="flex flex-col gap-y-0.5">
           <h2>Signers</h2>
           <li
-            class="flex gap-x-2 font-mono"
+            class="ml-4 flex gap-x-2 font-mono"
             v-for="(signer, index) in walletStore.selectedWallet.signers"
             :key="index"
           >
