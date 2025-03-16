@@ -83,7 +83,6 @@ export function useWalletNavigator() {
   }
 
   const navigatToWalletLock = () => {
-    // TODO: implements the locking functionality
     router.push({
       name: RouteName.WalletLock,
       params: { walletAddr: walletStore.selectedWallet!.address },
