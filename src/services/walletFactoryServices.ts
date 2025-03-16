@@ -5,6 +5,9 @@ import { didTransactionSucceed, resolveEthersError } from '@/helpers/ethersHelpe
 
 const _walletFactoryContractAddr = () => import.meta.env.VITE__WALLET_FACTORY_CONTRACT_ADDRESS
 
+const walletViewAbi =
+  'tuple(string name, address addr, address[] signers, uint256 minimumApprovals, uint256 totalBalanceInUsd, uint256 totalLockedBalanceInUsd, uint256 totalUnlockedBalanceInUsd)'
+
 const abis: ethers.InterfaceAbi = [
   // Errors
   // WalletDoesNotExist
@@ -15,8 +18,8 @@ const abis: ethers.InterfaceAbi = [
   // getWalletAddressesBySigner
   'function getWalletAddressesBySigner(address, uint256, uint256) view returns (address[])',
   // getNewestWalletsBySigner
-  'function getNewestWalletsBySigner(address, uint256, uint256) view returns (tuple(string name, address addr, address[] signers, uint256 minimumApprovals, uint256 totalBalanceInUsd)[])',
-  'function getWallet(address walletAddress) view returns(tuple(string name, address addr, address[] signers, uint256 minimumApprovals, uint256 totalBalanceInUsd))',
+  `function getNewestWalletsBySigner(address, uint256, uint256) view returns (${walletViewAbi}[])`,
+  `function getWallet(address walletAddress) view returns(${walletViewAbi})`,
   // createWallet
   'function createWallet(string, address[], uint256, bytes32) returns (address)',
 
