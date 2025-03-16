@@ -9,6 +9,8 @@ export function useWalletParser() {
       signers: tuple[2],
       minimumApprovals: tuple[3],
       totalBalanceInUsd: tuple[4], // Assuming USD is 18 decimals
+      totalLockedBalanceInUsd: tuple[5], // Assuming USD is 18 decimals
+      totalUnlockedBalanceInUsd: tuple[6], // Assuming USD is 18 decimals
     }
   }
 

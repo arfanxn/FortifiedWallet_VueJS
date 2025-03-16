@@ -4,6 +4,8 @@ export type WalletTuple = [
   string[], // Array of Ethereum addresses of signers
   number, // Minimum number of approvals required for a transaction
   bigint, // Total balance of the wallet in USD
+  bigint, // Total locked balance of the wallet in USD
+  bigint, // Total unlocked balance of the wallet in USD
 ]
 
 export interface Wallet {
@@ -17,6 +19,10 @@ export interface Wallet {
   minimumApprovals: number
   // Total balance of the wallet in USD
   totalBalanceInUsd: bigint
+  // Total locked balance of the wallet in USD
+  totalLockedBalanceInUsd: bigint
+  // Total unlocked balance of the wallet in USD
+  totalUnlockedBalanceInUsd: bigint
 }
 
 export type WalletOrNull = Wallet | null
