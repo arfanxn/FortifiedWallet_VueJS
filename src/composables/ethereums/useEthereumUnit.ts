@@ -1,33 +1,29 @@
 import { computed, Ref, ref, WritableComputedRef } from 'vue'
-import { EthereumUnit } from '@/interfaces/ethereumInterfaces'
-import BigNumber from 'bignumber.js'
 import { ethers } from 'ethers'
+import { EthereumUnit } from '@/interfaces/ethereumInterfaces'
 
 export function useEthereumUnit() {
   const units: EthereumUnit[] = [
-    { text: 'Wei', value: 0 },
-    { text: 'Gwei', value: 9 },
-    { text: 'Ether', value: 18 },
+    { label: 'Wei', value: 0n },
+    { label: 'Gwei', value: 9n },
+    { label: 'Ether', value: 18n },
   ]
-  const unitTexts: string[] = units.map((x) => x.text)
-  const unitValues: number[] = units.map((x) => x.value)
-  const defaultUnit: EthereumUnit = units[0]
+  const unitLabels: string[] = units.map((x) => x.label)
+  const unitValues: bigint[] = units.map((x) => x.value)
+  const defaultUnit: EthereumUnit = units[units.length - 1]
   const selectedUnit: Ref<EthereumUnit> = ref<EthereumUnit>(defaultUnit)
-  const selectedUnitValue: WritableComputedRef<number> = computed({
+  const selectedUnitValue: WritableComputedRef<bigint> = computed({
     get: () => selectedUnit.value.value,
-    set: (value: number) => {
+    set: (value: bigint) => {
       const unit = units.find((x) => x.value === value)
       selectedUnit.value = unit ? unit : defaultUnit
     },
   })
 
-  const etherAmountLabel = computed(() => `Amount (in ${selectedUnit.value.text.toLowerCase()})`)
-
-  function parseBySelectedUnit(value: string | number): BigNumber {
-    return BigNumber(
-      ethers
-        .parseUnits(typeof value === 'number' ? value.toString() : value, selectedUnit.value.value)
-        .toString(),
+  function parseBySelectedUnit(value: string | bigint): bigint {
+    return ethers.parseUnits(
+      typeof value === 'bigint' ? value.toString() : value,
+      selectedUnit.value.value,
     )
   }
 
@@ -41,12 +37,11 @@ export function useEthereumUnit() {
   return {
     // ============================== State variables ==============================
     units,
-    unitTexts,
+    unitLabels,
     unitValues,
     defaultUnit,
     selectedUnit,
     selectedUnitValue,
-    etherAmountLabel,
     // ================================== Methods ==================================
     parseBySelectedUnit,
     resetSelectedUnit,
