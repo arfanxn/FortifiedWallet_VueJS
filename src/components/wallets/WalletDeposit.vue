@@ -127,7 +127,10 @@ const createValidationSchema = (depositType: string) => {
             .concat(ethereumAddressSchema())
             .concat(tokenExistsSchema(fetchTokenMetadata))
         : string().notRequired(),
-    amount: number().label('Amount').required('${label} is required.'),
+    amount: number()
+      .label('Amount')
+      .required('${label} is required.')
+      .moreThan(0, 'Amount must be greater than 0.'),
   })
 }
 const validationSchema = computed(() => createValidationSchema(props.depositType))
