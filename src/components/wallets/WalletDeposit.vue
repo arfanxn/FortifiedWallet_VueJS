@@ -130,7 +130,7 @@ const createValidationSchema = (depositType: string) => {
     amount: number()
       .label('Amount')
       .required('${label} is required.')
-      .moreThan(0, 'Amount must be greater than 0.'),
+      .moreThan(0, '${label} must be greater than 0.'),
   })
 }
 const validationSchema = computed(() => createValidationSchema(props.depositType))
