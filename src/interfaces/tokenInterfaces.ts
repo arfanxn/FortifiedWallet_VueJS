@@ -2,7 +2,7 @@ export interface TokenMetadata {
   address: string
   name: string
   symbol: string
-  decimals: number
+  decimals: bigint
 }
 
 export interface Token {
