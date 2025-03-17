@@ -8,7 +8,7 @@
       :name="props.name"
       :disabled="props.disabled"
       :placeholder="props.placeholder"
-      :value="props.value ?? model"
+      :value="model"
       :type="props.type"
       :autocomplete="props.autocomplete"
       @input="emit('onInput', $event)"
@@ -23,13 +23,12 @@
 
 <script setup lang="ts">
 import { isNotEmpty } from '../utils/booleanUtils'
-import { defineComponent, defineModel, defineEmits, computed } from 'vue'
+import { defineComponent, defineModel, defineEmits, computed, watchEffect } from 'vue'
 
 defineComponent({
   name: 'TextFieldC',
 })
 const emit = defineEmits(['onFocus', 'onBlur', 'onInput', 'onKeyupEnter'])
-
 const inputId = computed(() => Date.now() + props.name)
 const model = defineModel()
 
@@ -46,5 +45,9 @@ const props = withDefaults(defineProps<Props>(), {
   disabled: false,
   type: 'text',
   autocomplete: 'on',
+})
+
+watchEffect(() => {
+  model.value = props.value
 })
 </script>
