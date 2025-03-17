@@ -2,8 +2,9 @@
   <section class="flex flex-col bg-slate-300 text-slate-700">
     <header class="flex flex-row items-center gap-x-4 px-4 py-4 md:px-4">
       <LeftRigthSwitchButtonC
-        v-model="lockOperation"
-        :options="lockOperations"
+        :value="lockOperation"
+        @update:value="(value: string) => (lockOperation = value as 'lock' | 'unlock')"
+        :options="lockOperations as string[]"
         left="Lock"
         right="Unlock"
       />
