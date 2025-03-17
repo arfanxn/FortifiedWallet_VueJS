@@ -71,7 +71,7 @@ export function useWalletNavigator() {
   const navigatToWalletDeposit = () => {
     router.push({
       name: RouteName.WalletDeposit,
-      params: { walletAddr: walletStore.selectedWallet!.address },
+      params: { walletAddr: walletStore.selectedWallet!.address, depositType: 'ether' },
     })
   }
 
