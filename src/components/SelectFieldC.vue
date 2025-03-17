@@ -13,10 +13,10 @@
     >
       <option
         v-for="option in props.options"
-        :key="option.key ?? option.value"
-        :value="option.value"
+        :key="getOptionValue(option)"
+        :value="getOptionValue(option)"
       >
-        {{ option.text }}
+        {{ getOptionLabel(option) }}
       </option>
     </select>
   </div>
@@ -24,7 +24,6 @@
 
 <script setup lang="ts">
 import { defineComponent, defineModel, defineEmits, onMounted, Ref, ref } from 'vue'
-import { SelectFieldComponent } from '@/interfaces/componentInterfaces'
 
 defineComponent({
   name: 'SelectFieldC',
@@ -38,8 +37,32 @@ onMounted(() => {
 const inputId: Ref<string> = ref('')
 const model = defineModel()
 
-const props = withDefaults(defineProps<SelectFieldComponent.Props<any>>(), {
-  disabled: false,
-  options: () => [],
-})
+type Option =
+  | number
+  | string
+  | {
+      label: string
+      value: any
+    }
+const props = withDefaults(
+  defineProps<{
+    name: string
+    label: string
+    disabled?: boolean
+    options: Option[]
+  }>(),
+  {
+    disabled: false,
+  },
+)
+
+const getOptionValue = (option: Option): string | number => {
+  if (typeof option === 'object') return option.value
+  return option
+}
+
+const getOptionLabel = (option: Option): string | number => {
+  if (typeof option === 'object') return option.label
+  return option
+}
 </script>
