@@ -22,3 +22,14 @@ export function getPaginationOffset(page: number, limit: number): number {
   const offset = (page - 1) * limit
   return offset
 }
+
+/**
+ * Returns the last index of a string or array.
+ *
+ * @param {string | T[]} data - The string or array for which to find the last index.
+ * @returns {number} The last index of the provided string or array.
+ */
+
+export function getLastIndex<T>(data: string | T[]): number {
+  return data.length - 1
+}
