@@ -1,8 +1,8 @@
 export type EthereumAddress = string
 
 export interface EthereumUnit {
-  text: string
-  value: number
+  label: string
+  value: bigint
 }
 
 export type EthereumAssetType = 'token' | 'ether'
