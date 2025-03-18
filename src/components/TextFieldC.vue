@@ -8,7 +8,7 @@
       :name="props.name"
       :disabled="props.disabled"
       :placeholder="props.placeholder"
-      :value="model"
+      :value="value ?? model"
       :type="props.type"
       :autocomplete="props.autocomplete"
       @input="emit('onInput', $event)"
@@ -45,9 +45,5 @@ const props = withDefaults(defineProps<Props>(), {
   disabled: false,
   type: 'text',
   autocomplete: 'on',
-})
-
-watchEffect(() => {
-  model.value = props.value
 })
 </script>
