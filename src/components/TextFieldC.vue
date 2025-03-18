@@ -38,12 +38,12 @@ const emit = defineEmits([
 const inputId = computed(() => Date.now() + props.name)
 
 interface Props {
-  modelValue: string | number | null | undefined
   name: string
   disabled?: boolean
   placeholder?: string
   label?: string
-  value?: string
+  value?: string | number | null
+  modelValue?: string | number | null
   type?: 'text' | 'password' | 'email' | 'url' | 'search' | 'tel' | 'number'
   autocomplete?: 'on' | 'off'
 }
