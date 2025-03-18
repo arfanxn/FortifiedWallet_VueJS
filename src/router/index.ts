@@ -27,14 +27,21 @@ const router = createRouter({
           component: () => import('../components/wallets/WalletShow.vue'),
         },
         {
-          path: '/wallets/:walletAddr/deposit/:depositType?',
+          path: '/wallets/:walletAddr/deposit/:depositType(ether|token)',
           name: RouteName.WalletDeposit,
           component: () => import('../components/wallets/WalletDeposit.vue'),
+          props: true,
         },
         {
-          path: '/wallets/:walletAddr/transfer/:transactionType?',
+          path: '/wallets/:walletAddr/transfer/:transactionType(ether|token)',
           name: RouteName.WalletTransfer,
           component: () => import('../components/wallets/WalletTransfer.vue'),
+          props: true,
+        },
+        {
+          path: '/wallets/:walletAddr/lock',
+          name: RouteName.WalletLock,
+          component: () => import('../components/wallets/WalletLock.vue'),
         },
       ],
     },
@@ -43,7 +50,7 @@ const router = createRouter({
     {
       path: '/tokens',
       name: RouteName.TokenIndex,
-      component: () => import('../views/TokensView.vue'),
+      component: () => import('../views/TokenView.vue'),
       meta: {
         requiresWallet: true,
         title: 'Tokens',
@@ -74,6 +81,8 @@ const router = createRouter({
       name: RouteName.WalletConnect,
       component: () => import('../views/ConnectView.vue'),
     },
+
+    // TODO: add not found page
   ],
 })
 
