@@ -20,13 +20,13 @@
         class="md:col-span-4"
         :value="walletAddr"
         :disabled="true"
-        label="From wallet"
+        label="From Wallet"
         name="from"
       />
       <TextFieldC
         class="md:col-span-4"
         v-model="to"
-        label="To wallet"
+        label="To Wallet"
         name="to"
         placeholder="0x..."
       />
@@ -132,7 +132,7 @@ const props = defineProps<{
 const createValidationSchema = () =>
   object({
     to: string()
-      .label('To address')
+      .label('To Wallet')
       .required('${label} is required.')
       .concat(ethereumAddressSchema()),
     token:
