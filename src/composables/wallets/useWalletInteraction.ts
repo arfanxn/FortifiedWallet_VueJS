@@ -99,7 +99,7 @@ export function useWalletInteraction() {
     return address
   }
 
-  const depositWallet = async (to: string, token: string, value: BigNumber) => {
+  const depositWallet = async (to: string, token: string, value: bigint) => {
     const runner = await ethereumStore.provider!.getSigner()
     if (isZeroAddress(token) === false) {
       await tokenService.approve({ token, spender: to, value }, runner)
@@ -146,7 +146,7 @@ export function useWalletInteraction() {
     }
   }
 
-  const createWalletTransaction = async (token: string, to: string, value: BigNumber) => {
+  const createWalletTransaction = async (token: string, to: string, value: bigint) => {
     const runner = await ethereumStore.provider!.getSigner()
     const walletAddr = walletStore.selectedWallet!.address
     const txHash = await walletService.createTransaction(

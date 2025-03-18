@@ -88,7 +88,7 @@ const abis = [
 /**
  * Deposits a certain amount of a token into a wallet.
  *
- * @param {{ to: string, token: string, value: BigNumber }} params - An object containing the following properties:
+ * @param {{ to: string, token: string, value: bigint }} params - An object containing the following properties:
  *   - {string} to - The Ethereum address of the wallet to deposit into.
  *   - {string} token - The Ethereum address of the token to deposit. If this is the zero address, it means depositing Ether.
  *   - {BigNumber} value - The amount of the token to deposit.
@@ -97,7 +97,7 @@ const abis = [
  * @throws {Error|TransactionFailedError} If fails.
  */
 export const deposit = async (
-  params: { to: string; token: string; value: BigNumber },
+  params: { to: string; token: string; value: bigint },
   runner: ethers.Signer,
 ): Promise<void> => {
   const { to, token, value } = params
@@ -192,7 +192,7 @@ export const unlockBalanceInUsd = async (
 }
 
 export const createTransaction = async (
-  params: { token: string; to: string; value: BigNumber },
+  params: { token: string; to: string; value: bigint },
   walletAddr: string,
   runner: ethers.Signer,
 ): Promise<string> => {
