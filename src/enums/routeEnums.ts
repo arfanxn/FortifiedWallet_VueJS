@@ -14,6 +14,7 @@ export enum RouteName {
   WalletLock = 'wallet.lock',
 
   // Tokens relateds
+  Token = 'token',
   TokenIndex = 'token.index',
 
   // Transaction relateds
