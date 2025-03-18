@@ -140,7 +140,7 @@ import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 import ButtonC from '@/components/ButtonC.vue'
 import { library } from '@fortawesome/fontawesome-svg-core'
 import { useWalletInteraction } from '@/composables/wallets/useWalletInteraction'
-import { useTokenMetadata } from '@/composables/tokens/useTokenMetadata'
+import { useTokenMetadataFetch } from '@/composables/tokens/useTokenMetadataFetch'
 import { Transaction } from '@/interfaces/transactionInterfaces'
 import moment from 'moment'
 import BigNumber from 'bignumber.js'
@@ -225,7 +225,7 @@ const {
   cancelWalletTransaction,
   executeWalletTransaction,
 } = useWalletInteraction()
-const { tokenMetadata, fetchTokenMetadata } = useTokenMetadata()
+const { tokenMetadata, fetchTokenMetadata } = useTokenMetadataFetch()
 
 onMounted(async () => {
   // TODO: remove this temporary solution
