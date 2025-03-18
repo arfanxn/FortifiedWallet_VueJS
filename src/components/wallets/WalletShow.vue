@@ -25,7 +25,7 @@
           <div class="flex flex-col gap-y-0.5 pl-4">
             <div class="flex flex-col gap-y-0.5">
               <h2>Total balance</h2>
-              <span class="inline-flex items-center">
+              <span class="ml-2 inline-flex items-center">
                 <FontAwesomeIcon :icon="faDollarSign" class="text-sm" />
                 <span>{{ formatUsd(walletStore.selectedWallet.totalBalanceInUsd) }}</span>
               </span>
@@ -33,7 +33,7 @@
 
             <div class="flex flex-col gap-y-0.5">
               <h2>Locked balance</h2>
-              <span class="inline-flex items-center">
+              <span class="ml-2 inline-flex items-center">
                 <FontAwesomeIcon :icon="faDollarSign" class="text-sm" />
                 <span>{{ formatUsd(walletStore.selectedWallet.totalLockedBalanceInUsd) }}</span>
               </span>
@@ -41,7 +41,7 @@
 
             <div class="flex flex-col gap-y-0.5">
               <h2>Unlocked balance</h2>
-              <span class="inline-flex items-center">
+              <span class="ml-2 inline-flex items-center">
                 <FontAwesomeIcon :icon="faDollarSign" class="text-sm" />
                 <span>{{ formatUsd(walletStore.selectedWallet.totalUnlockedBalanceInUsd) }}</span>
               </span>
