@@ -4,13 +4,13 @@
       <h2 class="text-lg font-bold">Add</h2>
     </header>
 
-    <form class="grid items-start gap-4 px-4 py-4 md:grid-cols-3" @submit.prevent="onSubmit">
+    <form class="grid items-start gap-4 px-4 py-4 md:grid-cols-3" @submit.prevent>
       <div class="grid gap-4 md:col-span-1 md:row-span-4">
         <TextFieldC v-model="form.name" label="Name" name="name" placeholder="Main Wallet" />
         <TextFieldC
-          v-model="form.minimumApprovals"
-          label="Min approvals"
-          name="minimumApprovals"
+          v-model="form.minApprovalCount"
+          label="Min Approval Count"
+          name="min_approval_count"
           placeholder="2"
         />
       </div>
@@ -27,11 +27,11 @@
         <TextFieldC
           v-for="(_, index) in form.signers"
           :key="index"
+          :name="`signer_${index}`"
           v-model="form.signers[index]"
           @onInput="() => signerOnInput(index)"
           :disabled="index === 0"
           :label="`Signer ${index + 1}`"
-          :name="`signer.${index}`"
           placeholder="0x..."
         />
       </div>
@@ -43,155 +43,159 @@
           :icon="faRotateLeft"
           class="bg-red-700! text-slate-200! hover:bg-red-600! hover:text-slate-100!"
         />
-        <ButtonC :text="'Add'" :icon="faPlus" class="" />
+        <ButtonC
+          @onClick="handleCreateSubmission"
+          type="button"
+          :text="'Add'"
+          :icon="faPlus"
+          class=""
+        />
       </div>
     </form>
   </section>
 </template>
 
 <script setup lang="ts">
-import { onMounted, defineComponent, reactive, computed, toRaw } from 'vue'
-import { useVuelidate } from '@vuelidate/core'
-import {
-  required,
-  alphaNum,
-  numeric,
-  between,
-  maxLength,
-  minLength,
-  helpers,
-} from '@vuelidate/validators'
+import { defineComponent, reactive, onUnmounted, watchEffect } from 'vue'
+import { useAppUI } from '@/composables/useAppUI'
 import { useEthereumStore } from '@/stores/useEthereumStore'
-import { validateAndToast } from '@/helpers/validatorHelpers'
-import { isEmpty, isEthAddr, isNotEmpty } from '@/utils/booleanUtils'
-import { faPlus, faRotateLeft } from '@fortawesome/free-solid-svg-icons'
-import { library } from '@fortawesome/fontawesome-svg-core'
 import { useWalletInteraction } from '@/composables/wallets/useWalletInteraction'
-import { showToast } from '@/helpers/toastHelpers'
-import { formatEthAddr } from '@/helpers/stringHelpers'
-import { ToastType } from '@/enums/toastEnums'
+import { useWalletNavigator } from '@/composables/wallets/useWalletNavigator'
 import TextFieldC from '@/components/TextFieldC.vue'
 import ButtonC from '@/components/ButtonC.vue'
-import { useAppUI } from '@/composables/useAppUI'
+import {
+  object,
+  string,
+  number,
+  array,
+  ref as yupRef,
+  ValidationError,
+  TestContext,
+  AnyObject,
+} from 'yup'
+import { alphanumericSchema } from '@/validators/schemas'
+import { faPlus, faRotateLeft } from '@fortawesome/free-solid-svg-icons'
+import { library } from '@fortawesome/fontawesome-svg-core'
+import { formatEthAddr } from '@/helpers/stringHelpers'
+import { isEmpty, isEthAddr, isNotEmpty } from '@/utils/booleanUtils'
+import { showErrorToasts, showToast } from '@/helpers/toastHelpers'
+import { ToastType } from '@/enums/toastEnums'
 import { toSolidityPackedKeccak256Hash } from '@/helpers/ethersHelpers'
-import { useWalletNavigator } from '@/composables/wallets/useWalletNavigator'
 
 library.add(faPlus, faRotateLeft)
 
 const ethereumStore = useEthereumStore()
 const { startLoading, stopLoading } = useAppUI()
-const { createWallet, fetchWalletByAddr } = useWalletInteraction()
+const { createWallet } = useWalletInteraction()
 const { navigateToWalletShow } = useWalletNavigator()
 
 defineComponent({
   name: 'WalletCreate',
 })
 
-onMounted(() => {
-  resetForm()
-})
-
-// Define constants for wallet creation constraints
-const [minimumApprovalsRequired, minumumSigners, maximumSigners] = [2, 2, 10]
+const ALLOWED_MIN_APPROVAL_COUNT = 2
+const ALLOWED_MIN_SIGNERS_LENGTH = 2
+const ALLOWED_MAX_SIGNERS_LENGTH = 10
 
 interface ProcessedForm {
   name: string
   signers: string[]
-  minimumApprovals: number
-  password: string
+  minApprovalCount: number
   passwordHash: string
-  salt: string
 }
+
+const formSchema = () =>
+  object({
+    name: string()
+      .label('Name')
+      .required('${label} is required.')
+      .min(2, '${label} must be at least 2 characters.')
+      .max(32, '${label} must be at most 32 characters.')
+      .concat(alphanumericSchema()),
+    minApprovalCount: number()
+      .label('Min Approval Count')
+      .typeError('${label} must be a number.')
+      .required('${label} is required.')
+      .min(ALLOWED_MIN_APPROVAL_COUNT, '${label} must be at least 2.')
+      .max(yupRef('signers.length'), '${label} cannot exceed the number of signers.'),
+    signers: array()
+      .label('Signers')
+      .required('${label} is required.')
+      .min(
+        ALLOWED_MIN_SIGNERS_LENGTH,
+        '${label}' + ` must be at least ${ALLOWED_MIN_SIGNERS_LENGTH}.`,
+      )
+      .max(
+        ALLOWED_MAX_SIGNERS_LENGTH,
+        '${label}' + ` must be at most ${ALLOWED_MAX_SIGNERS_LENGTH}.`,
+      )
+      .of(string().optional())
+      .test(
+        'valid-signers',
+        '${label} are invalid.',
+        (signers: (string | undefined)[], context: TestContext<AnyObject>) => {
+          const isAboveMin = signers.length > ALLOWED_MIN_SIGNERS_LENGTH
+          const isBelowMax = signers.length < ALLOWED_MAX_SIGNERS_LENGTH
+
+          for (let i = 0; i < signers.length; i++) {
+            const signer = signers[i]
+            const isLast = i === signers.length - 1
+
+            if (isLast && isAboveMin && isBelowMax) continue
+
+            if (i <= 1 && isEmpty(signer))
+              return context.createError({
+                message: '${label}' + ` must be at least ${ALLOWED_MIN_SIGNERS_LENGTH}.`,
+              })
+
+            if (isEthAddr(signer) === false)
+              return context.createError({
+                message: `Signer #${i + 1} is invalid ethereum address.`,
+              })
+          }
+
+          if (new Set(signers).size !== signers.length)
+            return context.createError({
+              message: 'Signers must be unique.',
+            })
+
+          return true
+        },
+      ),
+    password: string()
+      .label('Password')
+      .required('${label} is required.')
+      .min(8, '${label} must be at least 8 characters.')
+      .max(256, '${label} must be at most 256 characters.'),
+    salt: string()
+      .label('Salt')
+      .required('${label} is required.')
+      .length(64, '${label} must be 64 characters long.'),
+  })
+
 interface Form {
   name: string
-  signers: string[]
-  minimumApprovals: number
+  minApprovalCount: number
+  signers: (string | undefined)[]
   password: string
   salt: string
 }
-const form = reactive<Form>({
+const getInitialForm: () => Form = (): Form => ({
   name: '',
-  signers: [],
-  minimumApprovals: 0,
+  minApprovalCount: ALLOWED_MIN_APPROVAL_COUNT,
+  signers: [ethereumStore.activeAccount, undefined],
   password: '',
   salt: '',
 })
-const signersLength = computed(() => form.signers.length)
-const signersLastIndex = computed(() => signersLength.value - 1)
-const signersSecondLastIndex = computed(() => signersLength.value - 2)
+const form = reactive<Form>(getInitialForm())
 
-const rules = computed(() => ({
-  // The name of the wallet is required and must be alphanumeric.
-  name: {
-    required: helpers.withMessage('Name is required.', required),
-    alphaNum: helpers.withMessage('Name must be alphanumeric.', alphaNum),
-  },
-  // The minimum number of approvals required is required, numeric, and between
-  // the minimum number of signers (2) and the length of the signers array, which
-  // is at least 2.
-  minimumApprovals: {
-    required: helpers.withMessage('Minimum approvals is required.', required),
-    numeric: helpers.withMessage('Minimum approvals must be numeric.', numeric),
-    between: helpers.withMessage(
-      `Minimum approvals must be between ${minimumApprovalsRequired} and ${form.signers.length}.`,
-      between(minimumApprovalsRequired, form.signers.length),
-    ),
-  },
-  signers: {
-    // Ensure that there are at least 2 signers
-    minLength: helpers.withMessage(
-      `Signers must be at least ${minumumSigners} provided.`,
-      (signers: string[]) =>
-        signersLength.value >= minumumSigners && isNotEmpty(signers[minumumSigners - 1]),
-    ),
-    // Ensure that there are no more than 10 signers
-    maxLength: helpers.withMessage(
-      `Signers cannot be longer than ${maximumSigners} provided.`,
-      maxLength(maximumSigners),
-    ),
-    // Validate each signer in the signers array by checking if it's in the correct Ethereum address format.
-    // If it's the last signer and the signers array length is not at the minimum or maximum, return true to allow adding a new row.
-    // Otherwise, check if the signer is not empty and matches the Ethereum address regex pattern.
-    ethAddr: helpers.withMessage(
-      'Signers must be valid Ethereum addresses.',
-      (signers: string[]) => {
-        return signers.every((signer: string, index: number) => {
-          // If it's the last signer and the signers array length is not at the minimum or maximum, return true to allow adding a new row.
-          const [isLastIndex, notMinLength, notMaxLength] = [
-            index == signersLastIndex.value,
-            signersLength.value != minumumSigners,
-            signersLength.value != maximumSigners,
-          ]
-          if (isLastIndex && notMinLength && notMaxLength) return true
+watchEffect(() => {
+  form.signers[0] = ethereumStore.activeAccount
+})
 
-          // Validate the signer
-          return isEthAddr(signer)
-        })
-      },
-    ),
-    // Ensure that each signer in the array is unique by checking if the current signer
-    // appears in the array before its current position.
-    unique: helpers.withMessage('Signers must be unique.', (signers: string[]) =>
-      signers.every(
-        // Check that the signer does not exist in any previous positions in the array.
-        (signer, index) => !signers.slice(0, index).includes(signer),
-      ),
-    ),
-  },
-  password: {
-    required: helpers.withMessage('Password is required.', required),
-    minLength: helpers.withMessage('Password must be at least 8 characters.', minLength(8)),
-  },
-  salt: {
-    required: helpers.withMessage('Salt is required.', required),
-    exactLength: helpers.withMessage(
-      'Salt must be exactly 32 characters.',
-      (salt: string) => salt.length == 32,
-    ),
-  },
-}))
-
-const v$ = useVuelidate(rules, form)
+function resetForm() {
+  Object.assign(form, getInitialForm())
+}
 
 /**
  * When a user inputs a signer, either add or remove a row from the form based on the input.
@@ -201,70 +205,56 @@ const v$ = useVuelidate(rules, form)
  * @param {number} index The index of the input field in the signers array.
  */
 function signerOnInput(index: number) {
-  const signer = form.signers[index]
+  const currentSigner = form.signers[index]
+  const totalSigners = form.signers.length
+  const lastSignerIndex = totalSigners - 1
+  const secondLastSignerIndex = totalSigners - 2
 
-  const indexIsLastSignersIndex = index == signersLastIndex.value
-  const signerNotEmpty = isNotEmpty(signer)
-  const signersLengthBelowMax = signersLength.value < maximumSigners
+  // Conditions for adding a new signer field
+  const isEditingLastSigner = index === lastSignerIndex
+  const currentSignerFilled = isNotEmpty(currentSigner)
+  const canAddMoreSigners = totalSigners < ALLOWED_MAX_SIGNERS_LENGTH
 
-  const indexIsSecondLastSignersIndex = index == signersSecondLastIndex.value
-  const signerIsEmpty = isEmpty(signer)
-  const signersLengthAboveMin = signersLength.value > minumumSigners
+  // Conditions for removing the last signer field
+  const isEditingSecondLastSigner = index === secondLastSignerIndex
+  const currentSignerEmpty = isEmpty(currentSigner)
+  const canRemoveSigners = totalSigners > ALLOWED_MIN_SIGNERS_LENGTH
 
-  if (indexIsLastSignersIndex && signerNotEmpty && signersLengthBelowMax) form.signers.push('')
-  else if (indexIsSecondLastSignersIndex && signerIsEmpty && signersLengthAboveMin)
-    form.signers.splice(-1)
+  if (isEditingLastSigner && currentSignerFilled && canAddMoreSigners) {
+    // Add new empty signer when last field is filled
+    form.signers.push(undefined)
+  } else if (isEditingSecondLastSigner && currentSignerEmpty && canRemoveSigners) {
+    // Remove last signer when second last field is emptied
+    form.signers.pop()
+  }
 }
 
-/**
- * Resets the form to its initial state, clearing the name and signers array
- * and setting the minimum approvals required back to the minimum of 2.
- */
-function resetForm() {
-  form.name = ''
-  form.signers = [ethereumStore.activeAccount, '']
-  form.minimumApprovals = minimumApprovalsRequired
-  form.password = ''
-  form.salt = ''
-}
-
-function processForm() {
-  let { name, signers, minimumApprovals, password, salt } = toRaw(form)
-
-  signers = signers.filter((signer, index) => {
-    if (index == signersLastIndex.value && isEmpty(signer)) return false
-    return true
-  })
-
-  const passwordHash = toSolidityPackedKeccak256Hash(password, salt)
-
+function processForm(): ProcessedForm {
   const processedForm: ProcessedForm = {
-    name,
-    signers,
-    minimumApprovals,
-    password,
-    passwordHash,
-    salt,
+    name: form.name,
+    signers: form.signers.filter((s) => s !== undefined) as string[],
+    minApprovalCount: form.minApprovalCount,
+    passwordHash: toSolidityPackedKeccak256Hash(form.password, form.salt),
   }
   return processedForm
 }
 
-async function onSubmit() {
-  if (!(await validateAndToast(v$))) return
-  handleCreateSubmission()
-}
-
 async function handleCreateSubmission() {
   try {
+    formSchema().validateSync(form, { abortEarly: false }) // validate
+
     startLoading()
-    const { name, signers, minimumApprovals, passwordHash } = processForm()
-    const walletAddr = await createWallet(name, signers, minimumApprovals, passwordHash)
+    const { name, signers, minApprovalCount, passwordHash } = processForm()
+    const walletAddr = await createWallet(name, signers, minApprovalCount, passwordHash)
     const message = `Wallet created with address "${formatEthAddr(walletAddr)}".`
     showToast(ToastType.Success, message, 10 * 1000)
     navigateToWalletShow({ walletAddr })
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'Wallet creation failed.'
-    showToast(ToastType.Error, message)
+    let messages: string[] = []
+    if (error instanceof ValidationError) messages = error.errors
+    else if (error instanceof Error) messages = [error.message]
+    else messages = ['Wallet creation failed.']
+    showErrorToasts(messages)
   } finally {
     stopLoading()
   }
