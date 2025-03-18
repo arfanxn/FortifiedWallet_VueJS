@@ -78,7 +78,7 @@ export function useWalletNavigator() {
   const navigateToWalletTransfer = () => {
     router.push({
       name: RouteName.WalletTransfer,
-      params: { walletAddr: walletStore.selectedWallet!.address },
+      params: { walletAddr: walletStore.selectedWallet!.address, transactionType: 'ether' },
     })
   }
 

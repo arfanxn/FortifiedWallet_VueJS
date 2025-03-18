@@ -31,8 +31,8 @@
         placeholder="0x..."
       />
       <TextFieldC
-        v-if="isTokenTransaction"
-        :class="{ 'md:col-span-3': isEtherTransaction, 'md:col-span-4': isTokenTransaction }"
+        v-if="transactionType === 'token'"
+        class="md:col-span-4"
         v-model="token"
         @onInput="tokenOnInput"
         :label="tokenMetadata ? `${tokenMetadata.name} (${tokenMetadata.symbol})` : 'Token'"
@@ -40,7 +40,10 @@
         placeholder="0x..."
       />
       <TextFieldC
-        :class="{ 'md:col-span-3': isEtherTransaction, 'md:col-span-4': isTokenTransaction }"
+        :class="{
+          'md:col-span-3': transactionType === 'ether',
+          'md:col-span-4': transactionType === 'token',
+        }"
         v-model="amount"
         :label="
           transactionType === 'ether'
@@ -53,7 +56,7 @@
         placeholder="7 or 7.0 or 0.7 or 0.000007"
       />
       <SelectFieldC
-        v-if="isEtherTransaction"
+        v-if="transactionType === 'ether'"
         class="md:col-span-1"
         name="unit"
         label="Unit"
@@ -119,14 +122,7 @@ const { createWalletTransaction } = useWalletInteraction()
 const { tokenMetadata, fetchTokenMetadata } = useTokenMetadataFetch()
 const { units, selectedUnit, selectedUnitValue, resetSelectedUnit, parseBySelectedUnit } =
   useEthereumUnit()
-const {
-  selectedAssetType: selectedTransactionType,
-  isEther: isEtherTransaction,
-  isToken: isTokenTransaction,
-  resolveAssetType: resolveTransactionType,
-} = useEthereumAssetType()
 const { navigateToWalletShow } = useWalletNavigator()
-const ethereumStore = useEthereumStore()
 
 const props = defineProps<{
   transactionType: 'ether' | 'token'
