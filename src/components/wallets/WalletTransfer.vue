@@ -3,28 +3,29 @@
     <header class="inline-flex items-center justify-between px-4 py-4 md:px-4">
       <h2 class="text-lg font-bold">Transfer</h2>
 
-      <SwitchEthereumAssetType
-        :value="selectedTransactionType"
-        @onAssetCurrencyChange="
-          (transactionType: WalletTransactionType) => changeTransactionType(transactionType)
-        "
+      <LeftRigthSwitchButtonC
+        :value="transactionType"
+        @update:value="(transactionType) => router.replace({ params: { transactionType } })"
+        :options="['ether', 'token']"
+        left="Ether"
+        right="Token"
       />
     </header>
 
     <form
       class="grid grid-cols-1 items-start justify-between gap-4 px-4 py-4 md:grid-cols-4"
-      @submit.prevent="onSubmit"
+      @submit.prevent="handleCreateWalletTransactionSubmission"
     >
       <TextFieldC
         class="md:col-span-4"
-        v-model="form.from"
+        :value="walletAddr"
         :disabled="true"
         label="From wallet"
         name="from"
       />
       <TextFieldC
         class="md:col-span-4"
-        v-model="form.to"
+        v-model="to"
         label="To wallet"
         name="to"
         placeholder="0x..."
@@ -32,16 +33,22 @@
       <TextFieldC
         v-if="isTokenTransaction"
         :class="{ 'md:col-span-3': isEtherTransaction, 'md:col-span-4': isTokenTransaction }"
-        v-model="form.token"
+        v-model="token"
         @onInput="tokenOnInput"
-        :label="tokenLabel"
+        :label="tokenMetadata ? `${tokenMetadata.name} (${tokenMetadata.symbol})` : 'Token'"
         name="token"
         placeholder="0x..."
       />
       <TextFieldC
         :class="{ 'md:col-span-3': isEtherTransaction, 'md:col-span-4': isTokenTransaction }"
-        v-model="form.amount"
-        :label="tokenAmountLabel"
+        v-model="amount"
+        :label="
+          transactionType === 'ether'
+            ? `Amount (in ${selectedUnit.label})`
+            : tokenMetadata
+              ? `Amount (in ${tokenMetadata.decimals} decimals)`
+              : 'Amount'
+        "
         name="amount"
         placeholder="7 or 7.0 or 0.7 or 0.000007"
       />
@@ -68,7 +75,7 @@
 </template>
 
 <script setup lang="ts">
-import { defineComponent, reactive, computed, onMounted, type ComputedRef, toRaw } from 'vue'
+import { defineComponent, reactive, computed, onMounted, type ComputedRef, toRaw, unref } from 'vue'
 import { useVuelidate } from '@vuelidate/core'
 import { numeric, helpers, requiredIf, required } from '@vuelidate/validators'
 import { validateAndToast } from '@/helpers/validatorHelpers'
@@ -85,13 +92,18 @@ import { useWalletInteraction } from '@/composables/wallets/useWalletInteraction
 import { WalletTransactionType } from '@/enums/walletEnums'
 import { useRoute, useRouter } from 'vue-router'
 import { useAppUI } from '@/composables/useAppUI'
-import { useTokenMetadata } from '@/composables/tokens/useTokenMetadata'
 import { useEthereumUnit } from '@/composables/ethereums/useEthereumUnit'
 import { useEthereumAssetType } from '@/composables/ethereums/useEthereumAssetType'
 import { ethers } from 'ethers'
-import { showToast } from '@/helpers/toastHelpers'
+import { showErrorToasts, showToast } from '@/helpers/toastHelpers'
 import { ToastType } from '@/enums/toastEnums'
 import { useWalletNavigator } from '@/composables/wallets/useWalletNavigator'
+import LeftRigthSwitchButtonC from '@/components/LeftRigthSwitchButtonC.vue'
+import { object, string, number, boolean, InferType } from 'yup'
+import { useForm } from 'vee-validate'
+import { ethereumAddressSchema } from '@/validators/schemas/ethereumSchemas'
+import { tokenExistsSchema } from '@/validators/schemas/tokenSchemas'
+import { useTokenMetadataFetch } from '@/composables/tokens/useTokenMetadataFetch'
 
 library.add(faPlus, faRotateLeft)
 
@@ -104,7 +116,7 @@ defineComponent({
 
 const { startLoading, stopLoading } = useAppUI()
 const { createWalletTransaction } = useWalletInteraction()
-const { tokenMetadata, tokenLabel, tokenAmountLabel, fetchTokenMetadata } = useTokenMetadata()
+const { tokenMetadata, fetchTokenMetadata } = useTokenMetadataFetch()
 const { units, selectedUnit, selectedUnitValue, resetSelectedUnit, parseBySelectedUnit } =
   useEthereumUnit()
 const {
@@ -116,133 +128,79 @@ const {
 const { navigateToWalletShow } = useWalletNavigator()
 const ethereumStore = useEthereumStore()
 
-onMounted(() => {
-  selectedTransactionType.value = resolveTransactionType(
-    route.params?.transactionType?.toString(),
-  ) as WalletTransactionType
-  resetForm()
+const props = defineProps<{
+  transactionType: 'ether' | 'token'
+  walletAddr: string
+}>()
+
+const createValidationSchema = () =>
+  object({
+    to: string()
+      .label('To address')
+      .required('${label} is required.')
+      .concat(ethereumAddressSchema()),
+    token:
+      props.transactionType === 'token'
+        ? string()
+            .label('Token')
+            .required('${label} is required.')
+            .concat(ethereumAddressSchema())
+            .concat(tokenExistsSchema(fetchTokenMetadata))
+        : string().notRequired(),
+    amount: number()
+      .label('Amount')
+      .required('${label} is required.')
+      .moreThan(0, '${label} must be greater than 0.'),
+  })
+const validationSchema = computed(() => createValidationSchema())
+type SchemaType = ReturnType<typeof createValidationSchema>
+type FormValues = InferType<SchemaType>
+const {
+  defineField,
+  resetForm: resetFormValues,
+  validate,
+  validateField,
+} = useForm<FormValues>({
+  validationSchema,
 })
-
-interface ProcessedForm {
-  from: string
-  to: string
-  token: string
-  amount: BigNumber
-}
-interface Form {
-  from: ComputedRef<string>
-  to: string
-  token: string
-  amount: string
-}
-const form = reactive<Form>({
-  from: computed(() => (route.params?.walletAddr as string) ?? ''),
-  to: '',
-  token: '',
-  amount: '',
-})
-
-const v$ = useVuelidate(
-  computed(() => ({
-    from: {
-      ethAddr: helpers.withMessage(
-        'From wallet address must be valid Ethereum address.',
-        isEthAddr,
-      ),
-    },
-    to: {
-      ethAddr: helpers.withMessage('To address must be valid Ethereum address.', isEthAddr),
-    },
-    token: {
-      requiredIf: helpers.withMessage(
-        'Token address is required.',
-        requiredIf(isTokenTransaction.value),
-      ),
-      ethAddr: helpers.withMessage(
-        'Token address must be valid Ethereum address.',
-        // If this is a token deposit, the token address must be a valid Ethereum address.
-        // If it's an ether deposit, the token address is not required.
-        (address: string) => (isTokenTransaction.value ? isEthAddr(address) : true),
-      ),
-      tokenExists: helpers.withMessage(
-        'Token does not exist.',
-        // If this is a token deposit, the token address must exist and be a valid Ethereum address.
-        // If it's an ether deposit, the token address is not required.
-        () => (isTokenTransaction.value ? !!tokenMetadata.value : true),
-      ),
-    },
-    amount: {
-      required: helpers.withMessage('Amount is required.', required),
-      numeric: helpers.withMessage('Amount must be numeric.', numeric),
-      aboveZero: helpers.withMessage(`Amount must be above zero.`, (amount: string) =>
-        BigNumber(amount).gt(0),
-      ),
-    },
-  })),
-  form,
-)
-
-function changeTransactionType(transactionType: WalletTransactionType) {
-  selectedTransactionType.value = transactionType
-  router.replace({ params: { transactionType } })
-}
+const [to] = defineField('to')
+const [token] = defineField('token')
+const [amount] = defineField('amount')
 
 function resetForm(): void {
-  form.to = ''
-  form.token = ''
-  form.amount = ''
+  resetFormValues()
   resetSelectedUnit()
 }
 
-/**
- * Processes the input form data into a format that can be used for
- * making a deposit transaction.
- *
- * If the deposit is for ether, it converts the amount to the specified
- * unit, e.g., ether, gwei, etc., and sets the token address to the
- * zero address.
- *
- * If the deposit is for a token, it converts the amount to the token's
- * decimals and sets the token address to the specified token address.
- *
- * @returns {ProcessedForm} An object containing the wallet address,
- * token address, and amount in the format expected by the deposit
- * transaction.
- */
-function processForm(): ProcessedForm {
-  let { from, to, token, amount } = toRaw(form)
-  const processedForm: ProcessedForm = {
-    from: from as string,
-    to: to as string,
-    token: token as string,
-    amount: BigNumber(amount),
-  }
-  if (isEtherTransaction.value) {
-    processedForm.amount = parseBySelectedUnit(amount)
-
-    /* Set the token address to the zero address when depositing ether.
-    This is because the deposit transaction is always an ether transaction.
-    The token address is only used when depositing a token. */
-    processedForm.token = ethers.ZeroAddress
-  } else if (isTokenTransaction.value && tokenMetadata.value) {
-    processedForm.amount = BigNumber(
-      ethers.parseUnits(amount!.toString(), tokenMetadata.value.decimals).toString(),
-    )
-  }
-  return processedForm
-}
-
 async function tokenOnInput() {
-  if (isTokenTransaction.value && isEthAddr(form.token)) await fetchTokenMetadata(form.token)
+  const { valid } = await validateField('token')
+  if (valid) await fetchTokenMetadata(unref(token) as string)
   else tokenMetadata.value = undefined
 }
 
-async function onSubmit() {
-  if (!(await validateAndToast(v$))) return
-  await handleCreateWalletTransactionSubmission()
+interface ProcessedForm {
+  to: string
+  token: string
+  amount: bigint
+}
+function processForm(): ProcessedForm {
+  return {
+    to: unref(to) as string,
+    token: props.transactionType === 'ether' ? ethers.ZeroAddress : (unref(token) as string),
+    amount:
+      props.transactionType === 'ether'
+        ? parseBySelectedUnit(unref(amount).toString())
+        : ethers.parseUnits(unref(amount)!.toString(), tokenMetadata.value!.decimals),
+  }
 }
 
 async function handleCreateWalletTransactionSubmission() {
+  const { valid, errors } = await validate()
+  if (!valid) {
+    showErrorToasts(Object.values(errors)!)
+    return
+  }
+
   try {
     startLoading()
     const processedForm: ProcessedForm = processForm()
@@ -253,7 +211,7 @@ async function handleCreateWalletTransactionSubmission() {
     )
     const message = `Transaction created with transaction hash "${txHash}".`
     showToast(ToastType.Success, message, 15 * 1000)
-    navigateToWalletShow({ walletAddr: processedForm.from })
+    navigateToWalletShow({ walletAddr: props.walletAddr })
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Transaction creation failed.'
     showToast(ToastType.Error, message, 5 * 1000)
