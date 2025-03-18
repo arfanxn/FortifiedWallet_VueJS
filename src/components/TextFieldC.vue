@@ -8,14 +8,13 @@
       :name="props.name"
       :disabled="props.disabled"
       :placeholder="props.placeholder"
-      :value="value ?? model"
+      :value="inputValue"
       :type="props.type"
       :autocomplete="props.autocomplete"
-      @input="emit('onInput', $event)"
+      @input="(event) => onInput(event)"
       @blur="emit('onBlur', $event)"
       @focus="emit('onFocus', $event)"
       @keyup.enter="emit('onKeyupEnter', $event)"
-      v-model="model"
       class="w-full rounded-lg border border-slate-600 px-4 py-2 transition-all focus:border-transparent focus:ring-2 focus:ring-slate-600 focus:outline-none"
     />
   </div>
@@ -23,16 +22,23 @@
 
 <script setup lang="ts">
 import { isNotEmpty } from '../utils/booleanUtils'
-import { defineComponent, defineModel, defineEmits, computed, watchEffect } from 'vue'
+import { defineComponent, defineEmits, computed, watchEffect } from 'vue'
 
 defineComponent({
   name: 'TextFieldC',
 })
-const emit = defineEmits(['onFocus', 'onBlur', 'onInput', 'onKeyupEnter'])
+const emit = defineEmits([
+  'onFocus',
+  'onBlur',
+  'onInput',
+  'onKeyupEnter',
+  'update:modelValue',
+  'update:value',
+])
 const inputId = computed(() => Date.now() + props.name)
-const model = defineModel()
 
 interface Props {
+  modelValue: string | number | null | undefined
   name: string
   disabled?: boolean
   placeholder?: string
@@ -46,4 +52,15 @@ const props = withDefaults(defineProps<Props>(), {
   type: 'text',
   autocomplete: 'on',
 })
+
+const inputValue = computed(() => props.modelValue ?? props.value ?? '')
+
+const onInput = (event: Event) => {
+  const value = (event.target as HTMLInputElement).value
+
+  // Emit both events to support all use cases
+  emit('update:modelValue', value)
+  emit('update:value', value)
+  emit('onInput', event)
+}
 </script>
