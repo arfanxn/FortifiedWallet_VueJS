@@ -5,7 +5,7 @@
     @click="onClick()"
   >
     <FontAwesomeIcon v-if="props.icon" :icon="props.icon" class="text-sm" />
-    <span>{{ props.text }}</span>
+    <span v-if="props.text">{{ props.text }}</span>
   </button>
 </template>
 
@@ -23,7 +23,7 @@ const emit = defineEmits(['onClick'])
 const router = useRouter()
 
 interface Props {
-  text: string
+  text?: string
   to?: RouteLocationRaw
   type?: 'submit' | 'reset' | 'button'
   icon?: IconDefinition
