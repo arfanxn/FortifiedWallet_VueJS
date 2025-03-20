@@ -1,4 +1,4 @@
-import { createRouter, createWebHistory } from 'vue-router'
+import { createRouter, createWebHistory, RouteLocationNormalizedGeneric } from 'vue-router'
 import { RouteName } from '@/enums/routeEnums'
 import { useEthereumInteraction } from '@/composables/ethereums/useEthereumInteraction'
 
@@ -49,12 +49,24 @@ const router = createRouter({
     // Token page
     {
       path: '/tokens',
-      name: RouteName.TokenIndex,
+      name: RouteName.Token,
       component: () => import('../views/TokenView.vue'),
       meta: {
         requiresWallet: true,
         title: 'Tokens',
       },
+      children: [
+        {
+          path: '/wallets/:walletAddr/tokens/:tokenAddr?',
+          name: RouteName.TokenIndex,
+          component: () => import('../components/tokens/TokenIndex.vue'),
+        },
+        {
+          path: '/wallets/:walletAddr/tokens/:tokenAddr/add',
+          name: RouteName.TokenAdd,
+          component: () => import('../components/tokens/TokenIndex.vue'),
+        },
+      ],
     },
 
     // Transaction page
