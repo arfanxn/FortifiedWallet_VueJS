@@ -25,7 +25,12 @@ export const useTokenStore = defineStore('token', () => {
   // ==========================================================================
   //                                Actions
   // ==========================================================================
-  //
+  const reset = () => {
+    tokens.value = []
+    selectedToken.value = undefined
+    currentPage.value = 1
+    keyword.value = undefined
+  }
 
   // ==========================================================================
   //                              Initializations
@@ -40,6 +45,6 @@ export const useTokenStore = defineStore('token', () => {
     currentPage,
     keyword,
     // ================================= Methods ===================================
-    //
+    reset,
   }
 })
