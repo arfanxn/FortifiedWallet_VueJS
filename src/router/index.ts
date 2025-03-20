@@ -130,8 +130,6 @@ router.beforeEach((to, from, next) => {
   const appName = import.meta.env.VITE__APP_NAME
   document.title = isString(to.meta.title) ? `${to.meta.title} | ${appName}` : appName
 
-  console.log(to.meta)
-
   if (to.meta.requiresWallet) {
     const { isConnected, connect } = useEthereumInteraction()
     isConnected ? connect() : next({ name: RouteName.Connect })

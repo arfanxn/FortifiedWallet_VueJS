@@ -24,7 +24,6 @@ export function useEthereumInteraction() {
 
     if (hasListened.value === false) {
       ethereumService.listenAccountsChanged(async (accounts: string[]) => {
-        console.log('this executed')
         await disconnect()
         navigateToConnect()
         showToast(ToastType.Info, 'Accounts changed, please reconnect.', 5 * 1000)

@@ -64,8 +64,6 @@ export function useTokenNavigator() {
 
       const tokenAddr = getTokenAddrFromParams(params)
 
-      console.log('tokenAddr: ', tokenAddr)
-
       walletStore.selectedWallet = wallet
 
       if (tokenAddr) {
