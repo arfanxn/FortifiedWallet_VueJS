@@ -1,5 +1,6 @@
 import { Wallet, WalletTuple } from '@/interfaces/walletInterfaces'
 import { Transaction, TransactionTuple } from '@/interfaces/transactionInterfaces'
+import { Token, TokenTuple } from '@/interfaces/tokenInterfaces'
 
 export function useWalletParser() {
   const tupleToWallet = (tuple: WalletTuple): Wallet => {
@@ -29,8 +30,21 @@ export function useWalletParser() {
     }
   }
 
+  const tupleToToken = (tuple: TokenTuple): Token => {
+    return {
+      address: tuple[0],
+      name: tuple[1],
+      symbol: tuple[2],
+      decimals: tuple[3],
+      balance: tuple[4],
+      balanceInUsd: tuple[5],
+      priceInUsd: tuple[6],
+    }
+  }
+
   return {
     tupleToWallet,
     tupleToTransaction,
+    tupleToToken,
   }
 }
