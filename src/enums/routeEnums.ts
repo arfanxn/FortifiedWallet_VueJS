@@ -16,6 +16,7 @@ export enum RouteName {
   // Tokens relateds
   Token = 'token',
   TokenIndex = 'token.index',
+  TokenAdd = 'token.add',
 
   // Transaction relateds
   Transaction = 'transaction',
