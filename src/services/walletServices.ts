@@ -1,6 +1,5 @@
 import { TransactionFailedError } from '@/errors/ethereumErrors'
 import { isZeroAddress } from '@/helpers/stringHelpers'
-import BigNumber from 'bignumber.js'
 import { ethers } from 'ethers'
 import { TransactionTuple } from '@/interfaces/transactionInterfaces'
 import {
@@ -8,9 +7,12 @@ import {
   didTransactionSucceed,
   resolveEthersError,
 } from '@/helpers/ethersHelpers'
+import { TokenTuple } from '@/interfaces/tokenInterfaces'
 
 const transactionViewAbi =
   'tuple(bytes32 hash, address token, address to, uint256 value, uint256 valueInUsd, uint8 approvalCount, address[] approvers, uint256 createdAt, uint256 executedAt, uint256 cancelledAt)'
+const tokenViewAbi =
+  'tuple(address addr, string name, string symbol, uint256 decimals, uint256 balance, uint256 balanceInUsd, uint256 priceInUsd)'
 
 const abis = [
   // ==========================================================================
@@ -22,6 +24,18 @@ const abis = [
   'function lockBalancedInUsd(uint256 usdAmount)',
   // unlockBalanceInUsd
   'function unlockBalanceInUsd(uint256 usdAmount, string password, string salt)',
+  // getBalance
+  `function getBalance(address tokenAddress) view returns (tuple(uint256 balance, uint256 balanceInUsd))`,
+  // addToken
+  'function addToken(address tokenAddress)',
+  // removeToken
+  'function removeToken(address tokenAddress)',
+  // getTokenAddresses
+  `function getTokenAddresses(uint256 offset, uint256 limit, bool descending) view returns (address[])`,
+  // getToken
+  `function getToken(address tokenAddress) view returns (${tokenViewAbi})`,
+  // getTokens
+  `function getTokens(uint256 offset, uint256 limit, bool descending) view returns (${tokenViewAbi}[])`,
   // createTransaction
   'function createTransaction(address token, address to, uint256 value) returns (bytes32 txHash)',
   // approveTransaction
@@ -68,6 +82,11 @@ const abis = [
   'error OnlySigner()',
   'error InvalidPasswordHashLength()',
   'error PasswordHashMismatch()',
+  // Errors related to tokens
+  'error TokenDoesNotExist()',
+  'error TokenAlreadyAdded()',
+  'error TokenNotAdded()',
+  'error TokenNotSupported()',
   // Errors related to transactions
   'error DepositFailed()',
   'error TransactionDoesNotExist()',
@@ -186,6 +205,88 @@ export const unlockBalanceInUsd = async (
     if (didTransactionSucceed(receipt)) {
       return true
     } else throw new TransactionFailedError()
+  } catch (error) {
+    throw resolveEthersError(error, contract) ?? error
+  }
+}
+
+export const getBalance = async (
+  params: { tokenAddr: string },
+  walletAddr: string,
+  runner: ethers.Signer,
+): Promise<bigint[]> => {
+  const { tokenAddr } = params
+  const contract = new ethers.Contract(walletAddr, abis, runner)
+  try {
+    const [balance, balanceInUsd] = await contract.getBalance(tokenAddr)
+    return [balance as bigint, balanceInUsd as bigint]
+  } catch (error) {
+    throw resolveEthersError(error, contract) ?? error
+  }
+}
+
+export const addToken = async (
+  params: { address: string },
+  walletAddr: string,
+  runner: ethers.Signer,
+) => {
+  const { address } = params
+  const contract = new ethers.Contract(walletAddr, abis, runner)
+  try {
+    const tx: ethers.TransactionResponse = await contract.addToken(address)
+    const receipt: ethers.TransactionReceipt | null = await tx.wait()
+    if (didTransactionSucceed(receipt)) {
+      return true
+    } else throw new TransactionFailedError()
+  } catch (error) {
+    throw resolveEthersError(error, contract) ?? error
+  }
+}
+
+export const removeToken = async (
+  params: { address: string },
+  walletAddr: string,
+  runner: ethers.Signer,
+) => {
+  const { address } = params
+  const contract = new ethers.Contract(walletAddr, abis, runner)
+  try {
+    const tx: ethers.TransactionResponse = await contract.removeToken(address)
+    const receipt: ethers.TransactionReceipt | null = await tx.wait()
+    if (didTransactionSucceed(receipt)) {
+      return true
+    } else throw new TransactionFailedError()
+  } catch (error) {
+    throw resolveEthersError(error, contract) ?? error
+  }
+}
+
+export const getToken = async (
+  params: { address: string },
+  walletAddr: string,
+  runner: ethers.BrowserProvider,
+): Promise<TokenTuple> => {
+  const { address } = params
+  const contract = new ethers.Contract(walletAddr, abis, runner)
+  try {
+    const tuple: TokenTuple = await contract.getToken(address)
+    return tuple
+  } catch (error) {
+    throw resolveEthersError(error, contract) ?? error
+  }
+}
+
+export const getTokens = async (
+  params: { offset: number; limit: number; descending?: boolean },
+  walletAddr: string,
+  runner: ethers.BrowserProvider,
+): Promise<TokenTuple[]> => {
+  const { offset, limit } = params
+  const descending = params.descending ?? false
+  const contract = new ethers.Contract(walletAddr, abis, runner)
+  try {
+    const tuples: TokenTuple[] = await contract.getTokens(offset, limit, descending)
+    return tuples
   } catch (error) {
     throw resolveEthersError(error, contract) ?? error
   }
