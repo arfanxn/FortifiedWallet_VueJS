@@ -5,6 +5,14 @@ export interface TokenMetadata {
   decimals: bigint
 }
 
+export type TokenTuple = [string, string, string, number, bigint, bigint, bigint]
+
 export interface Token {
-  // TODO: implements this
+  address: string
+  name: string
+  symbol: string
+  decimals: number
+  balance: bigint
+  balanceInUsd: bigint
+  priceInUsd: bigint
 }
