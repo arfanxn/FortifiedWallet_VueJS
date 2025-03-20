@@ -25,10 +25,10 @@
           @onClick="() => navigateToDashboard()"
         />
         <SidebarListItem
-          :isActive="$route.matched[0]?.name === RouteName.TokenIndex"
+          :isActive="$route.matched[0]?.name === RouteName.Token"
           :icon="faCoins"
           text="0xTokens"
-          @onClick="() => router.push({ name: RouteName.TokenIndex })"
+          @onClick="() => router.push({ name: RouteName.Token })"
         />
         <SidebarListItem
           :isActive="$route.matched[0]?.name === RouteName.Transaction"
