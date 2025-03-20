@@ -25,4 +25,6 @@ export enum RouteName {
 
   // User relateds
   NotificationIndex = 'notification.index',
+
+  ErrorView = 'ErrorView',
 }
