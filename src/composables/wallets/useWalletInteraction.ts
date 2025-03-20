@@ -1,18 +1,20 @@
-import { useEthereumStore } from '@/stores/useEthereumStore'
-import { useWalletStore } from '@/stores/useWalletStore'
-import { useTransactionStore } from '@/stores/useTransactionStore'
-import * as walletService from '@/services/walletServices'
-import * as walletFactoryService from '@/services/walletFactoryServices'
-import * as tokenService from '@/services/tokenServices'
-import { useRoute } from 'vue-router'
 import { ethers } from 'ethers'
 import BigNumber from 'bignumber.js'
-import { getPaginationOffset } from '@/utils/numberUtils'
-import { isNonEmptyString, isStringNumber } from '@/utils/booleanUtils'
-import { isZeroAddress } from '@/helpers/stringHelpers'
-import { useWalletParser } from './useWalletParser'
-import { Wallet } from '@/interfaces/walletInterfaces'
+import { useRoute } from 'vue-router'
+import { useEthereumStore } from '@/stores/useEthereumStore'
+import { useTokenStore } from '@/stores/useTokenStore'
+import { useTransactionStore } from '@/stores/useTransactionStore'
+import { useWalletStore } from '@/stores/useWalletStore'
+import * as tokenService from '@/services/tokenServices'
+import * as walletFactoryService from '@/services/walletFactoryServices'
+import * as walletService from '@/services/walletServices'
 import { Transaction } from '@/interfaces/transactionInterfaces'
+import { Wallet } from '@/interfaces/walletInterfaces'
+import { Token } from '@/interfaces/tokenInterfaces'
+import { isZeroAddress } from '@/helpers/stringHelpers'
+import { isNonEmptyString, isStringNumber } from '@/utils/booleanUtils'
+import { getPaginationOffset } from '@/utils/numberUtils'
+import { useWalletParser } from './useWalletParser'
 
 export function useWalletInteraction() {
   // ==========================================================================
@@ -21,8 +23,9 @@ export function useWalletInteraction() {
   const route = useRoute()
   const ethereumStore = useEthereumStore()
   const walletStore = useWalletStore()
+  const tokenStore = useTokenStore()
   const transactionStore = useTransactionStore()
-  const { tupleToWallet, tupleToTransaction } = useWalletParser()
+  const { tupleToWallet, tupleToTransaction, tupleToToken } = useWalletParser()
 
   // ==========================================================================
   //                            Internal functions
@@ -117,6 +120,75 @@ export function useWalletInteraction() {
     const runner = await ethereumStore.provider!.getSigner()
     const wallet = walletStore.selectedWallet as Wallet
     await walletService.unlockBalanceInUsd({ usdAmount, password, salt }, wallet.address, runner)
+  }
+
+  // ==========================================================================
+  //                            External functions
+  //                            Token relateds
+  // ==========================================================================
+
+  const syncTokenStoreWithRoute = async () => {
+    const params = route.params
+    const query = route.query
+    const currentPage = isStringNumber(query.page) ? parseInt(query.page as string) : 1
+    const keyword = isNonEmptyString(params.tokenAddr) ? (params.tokenAddr as string) : undefined
+    const walletAddr = isNonEmptyString(params.walletAddr)
+      ? (params.walletAddr as string)
+      : undefined
+    tokenStore.$patch({ currentPage, keyword })
+    if (walletAddr) {
+      if (keyword) {
+        const token = await fetchTokenByAddr(keyword)
+        tokenStore.selectedToken = token
+      } else {
+        await fetchPaginatedTokens(currentPage)
+        tokenStore.selectedToken = undefined
+      }
+    }
+  }
+
+  const addToken = async (address: string) => {
+    const runner = await ethereumStore.provider!.getSigner()
+    const wallet = walletStore.selectedWallet as Wallet
+    await walletService.addToken({ address }, wallet.address, runner)
+  }
+
+  const removeToken = async (address: string) => {
+    const runner = await ethereumStore.provider!.getSigner()
+    const wallet = walletStore.selectedWallet as Wallet
+    await walletService.removeToken({ address }, wallet.address, runner)
+  }
+
+  const fetchPaginatedTokens = async (page: number): Promise<void> => {
+    const runner = ethereumStore.provider as ethers.BrowserProvider
+    const wallet = walletStore.selectedWallet as Wallet
+    const limit = 10
+    const offset = getPaginationOffset(page, limit)
+    const tuples = await walletService.getTokens(
+      {
+        offset,
+        limit,
+      },
+      wallet.address,
+      runner,
+    )
+    // Convert the tuples to Wallet objects and store them in the walletStore
+    tokenStore.tokens = tuples.map(tupleToToken)
+    tokenStore.currentPage = page
+  }
+
+  const fetchTokenByAddr = async (address: string): Promise<Token> => {
+    try {
+      const runner = ethereumStore.provider as ethers.BrowserProvider
+      const wallet = walletStore.selectedWallet as Wallet
+      const tuple = await walletService.getToken({ address }, wallet.address, runner)
+      const token = tupleToToken(tuple)
+      tokenStore.selectedToken = token
+      return token
+    } catch (error) {
+      tokenStore.tokens = []
+      throw error
+    }
   }
 
   // ==========================================================================
@@ -223,15 +295,23 @@ export function useWalletInteraction() {
     // Populate wallet(s)
     fetchPaginatedWallets,
     fetchWalletByAddr,
+    // Interact token store
+    syncTokenStoreWithRoute,
+    // Interact token(s)
+    addToken,
+    removeToken,
+    // Populate wallet's token(s)
+    fetchPaginatedTokens,
+    fetchTokenByAddr,
     // Interact transaction store
     syncTransactionStoreWithRoute,
-    // Interact wallet transaction(s)
+    // Interact wallet's transaction(s)
     createWalletTransaction,
     approveWalletTransaction,
     revokeWalletTransaction,
     cancelWalletTransaction,
     executeWalletTransaction,
-    // Populate wallet transaction(s)
+    // Populate wallet's transaction(s)
     fetchPaginatedTransactions,
     fetchTransactionByHash,
   }
