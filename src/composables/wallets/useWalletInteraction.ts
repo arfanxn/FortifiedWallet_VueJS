@@ -1,5 +1,4 @@
 import { ethers } from 'ethers'
-import BigNumber from 'bignumber.js'
 import { useRoute } from 'vue-router'
 import { useEthereumStore } from '@/stores/useEthereumStore'
 import { useTokenStore } from '@/stores/useTokenStore'
@@ -183,7 +182,7 @@ export function useWalletInteraction() {
       const wallet = walletStore.selectedWallet as Wallet
       const tuple = await walletService.getToken({ address }, wallet.address, runner)
       const token = tupleToToken(tuple)
-      tokenStore.selectedToken = token
+      tokenStore.tokens = [token]
       return token
     } catch (error) {
       tokenStore.tokens = []
@@ -285,6 +284,7 @@ export function useWalletInteraction() {
     //
 
     // ================================== Methods ==================================
+    // ================================== Wallet ==================================
     // Interact wallet store
     syncWalletStoreWithRoute,
     // Interact wallet(s)
@@ -295,6 +295,7 @@ export function useWalletInteraction() {
     // Populate wallet(s)
     fetchPaginatedWallets,
     fetchWalletByAddr,
+    // ================================== Token ==================================
     // Interact token store
     syncTokenStoreWithRoute,
     // Interact token(s)
@@ -303,6 +304,7 @@ export function useWalletInteraction() {
     // Populate wallet's token(s)
     fetchPaginatedTokens,
     fetchTokenByAddr,
+    // ================================== Transaction ==============================
     // Interact transaction store
     syncTransactionStoreWithRoute,
     // Interact wallet's transaction(s)
