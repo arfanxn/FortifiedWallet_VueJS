@@ -95,6 +95,11 @@
       "
       class="flex flex-col items-start gap-y-4 font-medium"
     >
+      <ul class="grid w-full grid-cols-[6fr_2fr_4fr] px-4 font-semibold">
+        <li>Name</li>
+        <li>Price</li>
+        <li class="ml-auto">Balance</li>
+      </ul>
       <TokenListItem
         v-for="(token, index) in tokenStore.tokens"
         :key="index"
@@ -108,10 +113,7 @@
     <!-- Message displayed when no wallets are found -->
     <div
       v-else-if="
-        route.name === RouteName.TokenIndex &&
-        tokenStore.tokens.length === 0 &&
-        !isLoading &&
-        ethereumStore.isConnected
+        route.name === RouteName.TokenIndex && tokenStore.tokens.length === 0 && !isLoading
       "
       class="flex items-center justify-center"
     >
@@ -122,7 +124,7 @@
       v-else-if="route.name === RouteName.TokenAdd && !isLoading"
       class="flex w-full cursor-pointer flex-col px-4 py-2 transition-all duration-200 hover:bg-slate-400 hover:text-slate-800"
     >
-      <div v-if="tokenMetadataToAdd" class="flex w-full justify-between">
+      <div v-if="tokenMetadataToAdd" class="flex w-full items-center justify-between">
         <div class="flex flex-col gap-x-2 font-semibold">
           <span class="text-lg">{{ tokenMetadataToAdd.name }}</span>
 
@@ -136,7 +138,7 @@
           @onClick="async () => await handleConfirmAddSubmission()"
           type="button"
           :icon="faCheck"
-          class="ml-auto px-1 py-1 outline-slate-300! hover:text-slate-100!"
+          class="ml-auto size-6! justify-center rounded-md! p-0! outline-none! hover:text-slate-100!"
         />
       </div>
     </div>
@@ -201,6 +203,7 @@ import { useRoute } from 'vue-router'
 import { RouteName } from '@/enums/routeEnums'
 import { useTokenMetadataFetch } from '@/composables/tokens/useTokenMetadataFetch'
 import { useWalletInteraction } from '@/composables/wallets/useWalletInteraction'
+import { TokenMetadata } from '@/interfaces/tokenInterfaces'
 
 library.add(
   faArrowRightLong,
@@ -228,8 +231,8 @@ const walletStore = useWalletStore()
 const tokenStore = useTokenStore()
 const { isLoading, startLoading, stopLoading } = useAppUI()
 const { addToken } = useWalletInteraction()
-const { tokenMetadata: tokenMetadataToAdd, fetchTokenMetadata: fetchTokenMetadataToAdd } =
-  useTokenMetadataFetch()
+const tokenMetadataToAdd = ref<TokenMetadata | undefined>()
+const { fetchTokenMetadata: fetchTokenMetadataToAdd } = useTokenMetadataFetch()
 const { navigateToTokenIndex, navigateToTokenAdd } = useTokenNavigator()
 const {
   walletBalance: walletEthBalance,
@@ -245,6 +248,7 @@ const keywordSchema = () =>
   isNotEmpty(tokenStore.keyword)
     ? string().label(findLabel).concat(ethereumAddressSchema())
     : string().label(findLabel).nullable()
+const requiredKeywordSchema = () => keywordSchema().required('${label} is required.')
 
 watchEffect(async () => {
   const wallet = walletStore.selectedWallet
@@ -287,9 +291,20 @@ async function handleFindSubmission() {
   }
 }
 
+watchEffect(async () => {
+  const routeName = route.name
+  const tokenAddr = tokenStore.keyword
+  if (routeName === RouteName.TokenAdd && isString(tokenAddr)) {
+    try {
+      requiredKeywordSchema().validateSync(tokenAddr)
+      tokenMetadataToAdd.value = await fetchTokenMetadataToAdd(tokenAddr)
+    } catch (error) {}
+  }
+})
+
 async function validateAndNavigateToTokenAdd() {
   try {
-    keywordSchema().required('${label} is required.').validateSync(tokenStore.keyword)
+    requiredKeywordSchema().validateSync(tokenStore.keyword)
     if (tokenStore.keyword) navigateToTokenAdd({ tokenAddr: tokenStore.keyword })
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Token add failed.'

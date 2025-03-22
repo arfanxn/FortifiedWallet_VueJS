@@ -72,7 +72,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, defineComponent, unref } from 'vue'
+import { computed, defineComponent, ref, unref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { faPlus, faRotateLeft } from '@fortawesome/free-solid-svg-icons'
 import { library } from '@fortawesome/fontawesome-svg-core'
@@ -94,6 +94,7 @@ import { useWalletInteraction } from '@/composables/wallets/useWalletInteraction
 import { useWalletNavigator } from '@/composables/wallets/useWalletNavigator'
 import { useWalletStore } from '@/stores/useWalletStore'
 import { ToastType } from '@/enums/toastEnums'
+import { TokenMetadata } from '@/interfaces/tokenInterfaces'
 
 library.add(faPlus, faRotateLeft)
 
@@ -107,7 +108,8 @@ const route = useRoute()
 const walletStore = useWalletStore()
 const { startLoading, stopLoading } = useAppUI()
 const { depositWallet } = useWalletInteraction()
-const { tokenMetadata, fetchTokenMetadata } = useTokenMetadataFetch()
+const tokenMetadata = ref<TokenMetadata | undefined>()
+const { fetchTokenMetadata } = useTokenMetadataFetch()
 const { units, selectedUnit, selectedUnitValue, parseBySelectedUnit, resetSelectedUnit } =
   useEthereumUnit()
 const { navigateToWalletShow } = useWalletNavigator()
@@ -154,7 +156,7 @@ function resetForm() {
 
 async function tokenOnInput() {
   const { valid } = await validateField('token')
-  if (valid) await fetchTokenMetadata(unref(token) as string)
+  if (valid) tokenMetadata.value = await fetchTokenMetadata(unref(token) as string)
   else tokenMetadata.value = undefined
 }
 

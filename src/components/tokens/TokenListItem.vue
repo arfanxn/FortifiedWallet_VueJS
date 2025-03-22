@@ -3,28 +3,46 @@
     class="flex w-full cursor-pointer flex-col px-4 py-2 transition-all duration-200 hover:bg-slate-400 hover:text-slate-800"
   >
     <div class="flex w-full">
-      <div class="flex basis-7/12 flex-col gap-x-2 font-semibold">
+      <div
+        class="flex min-w-0 basis-6/12 flex-col gap-x-2 font-semibold"
+        :class="{
+          'pr-8': isAddressHovered,
+        }"
+      >
         <span class="text-lg">{{ token.name }}</span>
 
-        <div class="inline-flex gap-x-1">
+        <div class="inline-flex gap-x-0.5">
           <span
-            class="text-xs"
+            class="text-xs break-all"
+            :class="{
+              'whitespace-normal': isAddressHovered,
+              'whitespace-nowrap': !isAddressHovered,
+            }"
             @mouseenter="isAddressHovered = true"
             @mouseleave="isAddressHovered = false"
-            >{{ isAddressHovered ? token.address : formatEthAddr(token.address) }}</span
           >
+            {{ isAddressHovered ? token.address : formatEthAddr(token.address) }}
+          </span>
           <span class="text-xs">({{ token.symbol }})</span>
         </div>
       </div>
 
-      <div class="flex basis-2/12 items-center">
+      <div class="flex min-w-0 basis-2/12 items-center text-sm font-semibold">
         <FontAwesomeIcon :icon="faDollarSign" class="text-sm" />
         <span>{{ formatUsd(token.priceInUsd) }}</span>
       </div>
 
-      <div class="flex basis-3/12 flex-row-reverse items-center">
-        <FontAwesomeIcon :icon="faDollarSign" class="text-sm" />
-        <span>{{ formatUsd(token.balanceInUsd) }}</span>
+      <div
+        class="flex min-w-0 basis-4/12 flex-row items-center justify-end gap-x-0.5 text-sm font-semibold"
+      >
+        <span>
+          {{ `${ethers.formatUnits(token.balance, token.decimals)} ${token.symbol}` }}
+        </span>
+        <span>
+          (<FontAwesomeIcon :icon="faDollarSign" class="text-sm" />{{
+            formatUsd(token.balanceInUsd)
+          }})
+        </span>
       </div>
     </div>
 
@@ -32,8 +50,8 @@
       v-if="isHovered"
       @onClick="() => handleRemoveTokenSubmission()"
       type="button"
-      :icon="faTrash"
-      class="ml-auto px-1 py-1 outline-slate-300! hover:text-slate-100!"
+      :icon="faXmark"
+      class="ml-auto size-6! justify-center rounded-md! p-0! outline-none! hover:text-slate-100!"
     />
   </li>
 </template>
@@ -55,7 +73,7 @@ import {
   faMinus,
   faEquals,
   faUserCheck,
-  faTrash,
+  faXmark,
 } from '@fortawesome/free-solid-svg-icons'
 import { formatEthAddr, formatUsd } from '@/helpers/stringHelpers'
 import { Wallet } from '@/interfaces/walletInterfaces'
@@ -64,6 +82,7 @@ import { ToastType } from '@/enums/toastEnums'
 import { Token } from '@/interfaces/tokenInterfaces'
 import { useTokenNavigator } from '@/composables/tokens/useTokenNavigator'
 import { useTokenStore } from '@/stores/useTokenStore'
+import { ethers } from 'ethers'
 
 library.add(
   faArrowRightArrowLeft,
@@ -76,7 +95,7 @@ library.add(
   faMinus,
   faEquals,
   faUserCheck,
-  faTrash,
+  faXmark,
 )
 
 const props = defineProps<{

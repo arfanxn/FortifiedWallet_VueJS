@@ -78,7 +78,16 @@
 </template>
 
 <script setup lang="ts">
-import { defineComponent, reactive, computed, onMounted, type ComputedRef, toRaw, unref } from 'vue'
+import {
+  defineComponent,
+  reactive,
+  computed,
+  onMounted,
+  type ComputedRef,
+  toRaw,
+  unref,
+  ref,
+} from 'vue'
 import { useVuelidate } from '@vuelidate/core'
 import { numeric, helpers, requiredIf, required } from '@vuelidate/validators'
 import { validateAndToast } from '@/helpers/validatorHelpers'
@@ -107,6 +116,7 @@ import { useForm } from 'vee-validate'
 import { ethereumAddressSchema } from '@/validators/schemas/ethereumSchemas'
 import { tokenExistsSchema } from '@/validators/schemas/tokenSchemas'
 import { useTokenMetadataFetch } from '@/composables/tokens/useTokenMetadataFetch'
+import { TokenMetadata } from '@/interfaces/tokenInterfaces'
 
 library.add(faPlus, faRotateLeft)
 
@@ -119,7 +129,8 @@ defineComponent({
 
 const { startLoading, stopLoading } = useAppUI()
 const { createWalletTransaction } = useWalletInteraction()
-const { tokenMetadata, fetchTokenMetadata } = useTokenMetadataFetch()
+const tokenMetadata = ref<TokenMetadata | undefined>()
+const { fetchTokenMetadata } = useTokenMetadataFetch()
 const { units, selectedUnit, selectedUnitValue, resetSelectedUnit, parseBySelectedUnit } =
   useEthereumUnit()
 const { navigateToWalletShow } = useWalletNavigator()
@@ -170,7 +181,7 @@ function resetForm(): void {
 
 async function tokenOnInput() {
   const { valid } = await validateField('token')
-  if (valid) await fetchTokenMetadata(unref(token) as string)
+  if (valid) tokenMetadata.value = await fetchTokenMetadata(unref(token) as string)
   else tokenMetadata.value = undefined
 }
 

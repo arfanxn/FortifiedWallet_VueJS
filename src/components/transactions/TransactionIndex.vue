@@ -129,7 +129,7 @@ onUnmounted(() => {
 
 async function handlePaginate(page: number) {
   transactionStore.currentPage = page
-  navigateToTransactionIndex()
+  await navigateToTransactionIndex()
 }
 
 async function handleFindSubmission() {

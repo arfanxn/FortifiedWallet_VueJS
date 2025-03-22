@@ -135,15 +135,14 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { computed, ref } from 'vue'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 import ButtonC from '@/components/ButtonC.vue'
 import { library } from '@fortawesome/fontawesome-svg-core'
 import { useWalletInteraction } from '@/composables/wallets/useWalletInteraction'
-import { useTokenMetadataFetch } from '@/composables/tokens/useTokenMetadataFetch'
+import { useTokenMetadataStore } from '@/stores/useTokenMetadataStore'
 import { Transaction } from '@/interfaces/transactionInterfaces'
 import moment from 'moment'
-import BigNumber from 'bignumber.js'
 import {
   faArrowRightArrowLeft,
   faArrowRightLong,
@@ -163,9 +162,6 @@ import { areSameEthAddrs, isZeroEthAddr } from '@/utils/booleanUtils'
 import { useEthereumStore } from '@/stores/useEthereumStore'
 import { showToast } from '@/helpers/toastHelpers'
 import { ToastType } from '@/enums/toastEnums'
-import { useTransactionStore } from '@/stores/useTransactionStore'
-import { useRouter } from 'vue-router'
-import { RouteName } from '@/enums/routeEnums'
 import { useTransactionNavigator } from '@/composables/transactions/useTransactionNavigator'
 
 library.add(
@@ -187,8 +183,15 @@ const props = defineProps<{
   isHovered: boolean
 }>()
 
-const router = useRouter()
 const ethereumStore = useEthereumStore()
+const { navigateToTransactionIndex } = useTransactionNavigator()
+const {
+  approveWalletTransaction,
+  revokeWalletTransaction,
+  cancelWalletTransaction,
+  executeWalletTransaction,
+} = useWalletInteraction()
+const tokenMetadataStore = useTokenMetadataStore()
 
 const isHashHovered = ref(false)
 const isFromHovered = ref(false)
@@ -215,21 +218,9 @@ const isTransactionApprovedByCurrentSigner = computed(
       areSameEthAddrs(approver, ethereumStore.activeAccount),
     ).length > 0,
 )
-
-const transactionStore = useTransactionStore()
-const { navigateToTransactionIndex } = useTransactionNavigator()
-const {
-  fetchTransactionByHash,
-  approveWalletTransaction,
-  revokeWalletTransaction,
-  cancelWalletTransaction,
-  executeWalletTransaction,
-} = useWalletInteraction()
-const { tokenMetadata, fetchTokenMetadata } = useTokenMetadataFetch()
-
-onMounted(async () => {
-  // TODO: remove this temporary solution
-  if (isTokenTransaction.value) await fetchTokenMetadata(props.transaction.token)
+const tokenMetadata = computed(() => {
+  if (props.transaction.token === ethers.ZeroAddress) return
+  else return tokenMetadataStore.findTokenMetadataByAddr(props.transaction.token)
 })
 
 async function handleTransactionActionSubmission(
