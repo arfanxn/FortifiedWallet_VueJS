@@ -1,4 +1,4 @@
-import { useRoute, useRouter } from 'vue-router'
+import { RouteLocationRaw, useRoute, useRouter } from 'vue-router'
 import { RouteName } from '@/enums/routeEnums'
 import { useAppUI } from '@/composables/useAppUI'
 import { useEthereumStore } from '@/stores/useEthereumStore'
@@ -10,6 +10,9 @@ import { showToast } from '@/helpers/toastHelpers'
 import { ToastType } from '@/enums/toastEnums'
 import { Wallet } from '@/interfaces/walletInterfaces'
 import { Transaction } from '@/interfaces/transactionInterfaces'
+import { useTokenMetadataStore } from '@/stores/useTokenMetadataStore'
+import { useTokenMetadataInteraction } from '../tokens/useTokenMetadataInteraction'
+import { ethers } from 'ethers'
 
 export function useTransactionNavigator() {
   // ==========================================================================
@@ -17,7 +20,6 @@ export function useTransactionNavigator() {
   // ==========================================================================
   const route = useRoute()
   const router = useRouter()
-  const ethereumStore = useEthereumStore()
   const walletStore = useWalletStore()
   const transactionStore = useTransactionStore()
   const {
@@ -26,6 +28,7 @@ export function useTransactionNavigator() {
     fetchPaginatedTransactions,
     fetchTransactionByHash,
   } = useWalletInteraction()
+  const { fetchTokenMetadatas } = useTokenMetadataInteraction()
   const { withLoading, startLoading, stopLoading } = useAppUI()
 
   // ==========================================================================
@@ -71,25 +74,35 @@ export function useTransactionNavigator() {
 
       walletStore.selectedWallet = wallet
 
+      let routeLocationRaw: RouteLocationRaw
+      let selectedTransaction: Transaction | undefined
+
       if (transactionHash) {
         const transaction = await fetchTransactionByHash(transactionHash as string)
-        transactionStore.selectedTransaction = transaction
-        router.push({
+        selectedTransaction = transaction
+        routeLocationRaw = {
           name: RouteName.TransactionIndex,
           params: {
             walletAddr: walletStore.selectedWallet!.address,
             transactionHash: transaction.hash,
           },
-        })
+        }
       } else {
         await fetchPaginatedTransactions(transactionStore.currentPage)
-        transactionStore.selectedTransaction = undefined
-        router.push({
+        selectedTransaction = undefined
+        routeLocationRaw = {
           name: RouteName.TransactionIndex,
           params: { walletAddr: walletStore.selectedWallet!.address },
           query: { page: transactionStore.currentPage },
-        })
+        }
       }
+
+      transactionStore.selectedTransaction = selectedTransaction
+      const tokenAddresses = transactionStore.transactions
+        .filter((t) => t.token !== ethers.ZeroAddress)
+        .map((t) => t.token)
+      await fetchTokenMetadatas(tokenAddresses)
+      await router.push(routeLocationRaw)
     } catch (error) {
       if (isInstanceOf(error, Error)) showToast(ToastType.Error, error.message)
       else throw error
