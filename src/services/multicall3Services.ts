@@ -39,7 +39,6 @@ export const aggregate3 = async (
   try {
     return await contract.aggregate3.staticCall(params.calls)
   } catch (error) {
-    console.log(error)
     throw resolveEthersError(error, contract) ?? error
   }
 }
