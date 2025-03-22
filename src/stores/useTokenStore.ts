@@ -11,7 +11,6 @@ export const useTokenStore = defineStore('token', () => {
   // ==========================================================================
   //                                State
   // ==========================================================================
-  const token = ref<Token>()
   const tokens = ref<Token[]>([])
   const selectedToken = ref<Token | undefined>()
   const currentPage = ref<number>(1)
@@ -39,7 +38,6 @@ export const useTokenStore = defineStore('token', () => {
 
   return {
     // ============================== State variables ==============================
-    token,
     tokens,
     selectedToken,
     currentPage,
