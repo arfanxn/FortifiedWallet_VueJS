@@ -3,7 +3,7 @@ import { ethers } from 'ethers'
 import { WalletTuple } from '@/interfaces/walletInterfaces'
 import { didTransactionSucceed, resolveEthersError } from '@/helpers/ethersHelpers'
 
-const _walletFactoryContractAddr = () => import.meta.env.VITE__WALLET_FACTORY_CONTRACT_ADDRESS
+const _walletFactoryContractAddr = () => import.meta.env.VITE__WALLET_FACTORY
 
 const walletViewAbi =
   'tuple(string name, address addr, address[] signers, uint256 minimumApprovals, uint256 totalBalanceInUsd, uint256 totalLockedBalanceInUsd, uint256 totalUnlockedBalanceInUsd)'
