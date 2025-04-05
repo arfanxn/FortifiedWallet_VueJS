@@ -14,8 +14,6 @@ A secure cryptocurrency wallet management web application built with Vue.js. Man
 - **State Management**: Pinia
 - **Blockchain Interaction**: Ethers.js v6
 - **Styling**: Tailwind CSS + DaisyUI
-- **Authentication**: Auth0 integration
-- **Testing**: Vitest, Testing Library
 - **Build Tool**: Vite
 
 ## 🚀 Getting Started
