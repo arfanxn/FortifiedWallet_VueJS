@@ -1,35 +1,73 @@
-# FortifiedWallet
+# Fortified Wallet
 
-This template should help get you started developing with Vue 3 in Vite.
+A secure cryptocurrency wallet management web application built with Vue.js. Manage digital assets with ease and security and intuitive controls.
 
-## Recommended IDE Setup
+## 🌟 Features
 
-[VSCode](https://code.visualstudio.com/) + [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur).
+- **Secure Authentication**
+- **Wallet Management**
+- **Transaction Operations**
 
-## Customize configuration
+## 🛠️ Technologies Used
 
-See [Vite Configuration Reference](https://vite.dev/config/).
+- **Core Framework**: Vue.js 3 (Composition API)
+- **State Management**: Pinia
+- **Blockchain Interaction**: Ethers.js v6
+- **Styling**: Tailwind CSS + DaisyUI
+- **Authentication**: Auth0 integration
+- **Testing**: Vitest, Testing Library
+- **Build Tool**: Vite
 
-## Project Setup
+## 🚀 Getting Started
 
-```sh
-npm install
-```
+### Prerequisites
 
-### Compile and Hot-Reload for Development
+- Node.js v18+
+- npm v9+
+- Git
 
-```sh
-npm run dev
-```
+### Installation
 
-### Compile and Minify for Production
+1. **Clone the repository**
 
-```sh
-npm run build
-```
+   ```bash
+   git clone https://github.com/arfanxn/FortifiedWallet_VueJS.git
+   cd FortifiedWallet_VueJS
+   ```
 
-### Lint with [ESLint](https://eslint.org/)
+2. **Install dependencies**
 
-```sh
-npm run lint
-```
+   ```bash
+   npm install
+   ```
+
+3. **Configure environment variables**  
+   Create `.env` file:
+   ```
+   cp .env.example .env
+   ```
+
+4. **Run development server**
+
+   ```bash
+   npm run dev
+   ```
+
+5. **Build for production**
+   ```bash
+   npm run build
+   ```
+
+## 🤝 Contributing
+
+We welcome contributions! Please follow these guidelines:
+
+1. Fork the repository
+2. Create feature branch: `git checkout -b feature/your-feature`
+3. Commit changes: `git commit -m 'feature: add new feature'`
+4. Push to branch: `git push origin feature/your-feature`
+5. Open Pull Request
+
+## License
+
+Distributed under the MIT License. See `LICENSE` for more information.
